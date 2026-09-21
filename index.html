@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>화장수리 V7 Self Hosted Face</title><style>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>화장수리 V7.1 3 Point Brow</title><style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;background:#fff;color:#262124}button{font:inherit}#app{height:100dvh;display:grid;grid-template-rows:58px minmax(0,1fr) 66px;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 header{display:flex;align-items:center;gap:9px;padding:8px 13px;border-bottom:1px solid #f1e8eb;background:#fff;z-index:40}.tool{width:42px;height:42px;border:0;border-radius:13px;background:#fff1f5;font-size:20px}.save{margin-left:auto;color:#d95d84}
 main{position:relative;min-height:0;background:#faf7f8;overflow:hidden;display:flex;justify-content:center;align-items:center;padding:8px}.stage{position:relative;width:min(calc(100vw - 16px),calc((100dvh - 140px)*.8));height:auto;aspect-ratio:4/5;max-height:100%;overflow:hidden;background:#eee8ea;border-radius:18px;touch-action:none}.photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#9d9095;font-size:14px}
@@ -12,7 +12,7 @@ window.faceReady=false;window.faceDetecting=false;rail.onclick=e=>{const c=e.tar
 function load(f){if(!f)return;window.faceReady=false;L.style.display=R.style.display='none';P.src=URL.createObjectURL(f);P.style.display='block';$('#empty').style.display='none'}$('#cam').onclick=()=>$('#camIn').click();$('#gallery').onclick=()=>$('#galIn').click();$('#camIn').onchange=e=>load(e.target.files[0]);$('#galIn').onchange=e=>load(e.target.files[0]);$('#browTab').onclick=()=>S.classList.toggle('open');
 function drag(el,mirror=false){let pts={},base=null;const read=()=>el.dataset.v?el.dataset.v.split(',').map(Number):[0,0,1,0];const apply=v=>{el.dataset.v=v.join(',');el.style.transform='translate('+v[0]+'px,'+v[1]+'px) scale('+v[2]+') rotate('+v[3]+'deg)'+(mirror?' scaleX(-1)':'')};el.onpointerdown=e=>{el.setPointerCapture(e.pointerId);pts[e.pointerId]=[e.clientX,e.clientY];base={p:JSON.parse(JSON.stringify(pts)),v:read()}};el.onpointermove=e=>{if(!pts[e.pointerId])return;pts[e.pointerId]=[e.clientX,e.clientY];let a=Object.values(pts),b=Object.values(base.p),v=base.v.slice();if(a.length===1){v[0]+=a[0][0]-b[0][0];v[1]+=a[0][1]-b[0][1]}else{let d0=Math.hypot(b[1][0]-b[0][0],b[1][1]-b[0][1]),d=Math.hypot(a[1][0]-a[0][0],a[1][1]-a[0][1]);v[2]=Math.max(.45,Math.min(2,v[2]*d/d0));v[3]+=(Math.atan2(a[1][1]-a[0][1],a[1][0]-a[0][0])-Math.atan2(b[1][1]-b[0][1],b[1][0]-b[0][0]))*180/Math.PI}apply(v)};el.onpointerup=el.onpointercancel=e=>delete pts[e.pointerId]}drag(L);drag(R,true);
 $('#save').onclick=()=>{if(!P.src)return alert('먼저 사진을 불러와 주세요.');alert('현재 상담 이미지 저장 기능을 연결하는 단계입니다.')};
-</script><div id="build-badge-v5" style="position:fixed;right:8px;top:8px;z-index:99999;background:#111;color:#fff;font:11px/1.2 sans-serif;padding:4px 6px;border-radius:6px;opacity:.72">V7 · SELF-HOSTED</div><script type="module">
+</script><div id="build-badge-v5" style="position:fixed;right:8px;top:8px;z-index:99999;background:#111;color:#fff;font:11px/1.2 sans-serif;padding:4px 6px;border-radius:6px;opacity:.72">V7.1 · 3-POINT</div><script type="module">
 import { FaceLandmarker, FilesetResolver } from "./vendor/mediapipe/vision_bundle.mjs";
 (function(){
  const img=document.getElementById('photo'),st=document.getElementById('stage'),bl=document.getElementById('left'),br=document.getElementById('right');
@@ -27,15 +27,26 @@ import { FaceLandmarker, FilesetResolver } from "./vendor/mediapipe/vision_bundl
   return landmarkerPromise;
  }
  function point(p){const sw=st.clientWidth,sh=st.clientHeight,iw=img.naturalWidth,ih=img.naturalHeight,sc=Math.max(sw/iw,sh/ih),ox=(sw-iw*sc)/2,oy=(sh-ih*sc)/2;return{x:ox+p.x*iw*sc,y:oy+p.y*ih*sc}}
- function browBox(lm,ids){const ps=ids.map(i=>point(lm[i]));const xs=ps.map(p=>p.x),ys=ps.map(p=>p.y);return{x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys)}}
- function put(el,b,mirror){const w=(b.x1-b.x0)*1.10,h=w*.34,x=(b.x0+b.x1)/2-w/2,y=(b.y0+b.y1)/2-h/2;el.style.left=x+'px';el.style.top=y+'px';el.style.width=w+'px';el.style.height=h+'px';el.dataset.v='0,0,1,0';el.style.transform=mirror?'scaleX(-1)':'none'}
+ function put3(el,start,arch,end,mirror){
+   const a=point(start), p=point(arch), z=point(end);
+   const dx=z.x-a.x,dy=z.y-a.y,w=Math.hypot(dx,dy),ang=Math.atan2(dy,dx)*180/Math.PI;
+   const h=Math.max(w*.27,12),x=(a.x+z.x)/2-w/2,y=(a.y+z.y)/2-h/2;
+   el.style.left=x+'px';el.style.top=y+'px';el.style.width=w+'px';el.style.height=h+'px';
+   el.dataset.v='0,0,1,'+ang;el.style.transform='rotate('+ang+'deg)'+(mirror?' scaleX(-1)':'');
+   el.dataset.anchor=JSON.stringify({start:a,arch:p,end:z});
+ }
  async function detect(){
   window.faceReady=false;window.faceDetecting=true;window.faceDetectError='';bl.style.display=br.style.display='none';
   try{
    await img.decode().catch(()=>{}); if(!img.naturalWidth) throw new Error('사진 준비 실패');
    const fd=await Promise.race([engine(),new Promise((_,rej)=>setTimeout(()=>rej(new Error('내장 얼굴인식 엔진 로딩 시간 초과')),12000))]);
    const r=fd.detect(img); if(!r.faceLandmarks||!r.faceLandmarks.length) throw new Error('얼굴을 찾지 못함');
-   const lm=r.faceLandmarks[0]; put(bl,browBox(lm,LB),false); put(br,browBox(lm,RB),true); window.faceReady=true;
+   const lm=r.faceLandmarks[0];
+   // Three-point brow geometry: inner start / arch / outer tail from MediaPipe landmarks.
+   // Left: 55 -> 105 -> 70, Right: 285 -> 334 -> 300.
+   put3(bl,lm[55],lm[105],lm[70],false);
+   put3(br,lm[285],lm[334],lm[300],true);
+   window.faceReady=true;
   }catch(e){window.faceDetectError=String(e&&e.message||e)}
   finally{window.faceDetecting=false;window.dispatchEvent(new CustomEvent('faceDetectionDone',{detail:{found:window.faceReady,error:window.faceDetectError}}))}
  }
