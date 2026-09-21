@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>화장수리 V8 Face Ratio</title><style>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>화장수리 V8.1 Full Length</title><style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;background:#fff;color:#262124}button{font:inherit}#app{height:100dvh;display:grid;grid-template-rows:58px minmax(0,1fr) 66px;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 header{display:flex;align-items:center;gap:9px;padding:8px 13px;border-bottom:1px solid #f1e8eb;background:#fff;z-index:40}.tool{width:42px;height:42px;border:0;border-radius:13px;background:#fff1f5;font-size:20px}.save{margin-left:auto;color:#d95d84}
 main{position:relative;min-height:0;background:#faf7f8;overflow:hidden;display:flex;justify-content:center;align-items:center;padding:8px}.stage{position:relative;width:min(calc(100vw - 16px),calc((100dvh - 140px)*.8));height:auto;aspect-ratio:4/5;max-height:100%;overflow:hidden;background:#eee8ea;border-radius:18px;touch-action:none}.photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#9d9095;font-size:14px}
@@ -12,7 +12,7 @@ window.faceReady=false;window.faceDetecting=false;rail.onclick=e=>{const c=e.tar
 function load(f){if(!f)return;window.faceReady=false;L.style.display=R.style.display='none';P.src=URL.createObjectURL(f);P.style.display='block';$('#empty').style.display='none'}$('#cam').onclick=()=>$('#camIn').click();$('#gallery').onclick=()=>$('#galIn').click();$('#camIn').onchange=e=>load(e.target.files[0]);$('#galIn').onchange=e=>load(e.target.files[0]);$('#browTab').onclick=()=>S.classList.toggle('open');
 function drag(el,mirror=false){let pts={},base=null;const read=()=>el.dataset.v?el.dataset.v.split(',').map(Number):[0,0,1,0];const apply=v=>{el.dataset.v=v.join(',');el.style.transform='translate('+v[0]+'px,'+v[1]+'px) scale('+v[2]+') rotate('+v[3]+'deg)'+(mirror?' scaleX(-1)':'')};el.onpointerdown=e=>{el.setPointerCapture(e.pointerId);pts[e.pointerId]=[e.clientX,e.clientY];base={p:JSON.parse(JSON.stringify(pts)),v:read()}};el.onpointermove=e=>{if(!pts[e.pointerId])return;pts[e.pointerId]=[e.clientX,e.clientY];let a=Object.values(pts),b=Object.values(base.p),v=base.v.slice();if(a.length===1){v[0]+=a[0][0]-b[0][0];v[1]+=a[0][1]-b[0][1]}else{let d0=Math.hypot(b[1][0]-b[0][0],b[1][1]-b[0][1]),d=Math.hypot(a[1][0]-a[0][0],a[1][1]-a[0][1]);v[2]=Math.max(.45,Math.min(2,v[2]*d/d0));v[3]+=(Math.atan2(a[1][1]-a[0][1],a[1][0]-a[0][0])-Math.atan2(b[1][1]-b[0][1],b[1][0]-b[0][0]))*180/Math.PI}apply(v)};el.onpointerup=el.onpointercancel=e=>delete pts[e.pointerId]}drag(L);drag(R,true);
 $('#save').onclick=()=>{if(!P.src)return alert('먼저 사진을 불러와 주세요.');alert('현재 상담 이미지 저장 기능을 연결하는 단계입니다.')};
-</script><div id="build-badge-v5" style="position:fixed;right:8px;top:8px;z-index:99999;background:#111;color:#fff;font:11px/1.2 sans-serif;padding:4px 6px;border-radius:6px;opacity:.72">V8 · FACE-RATIO</div><script type="module">
+</script><div id="build-badge-v5" style="position:fixed;right:8px;top:8px;z-index:99999;background:#111;color:#fff;font:11px/1.2 sans-serif;padding:4px 6px;border-radius:6px;opacity:.72">V8.1 · FULL-LENGTH</div><script type="module">
 import { FaceLandmarker, FilesetResolver } from "./vendor/mediapipe/vision_bundle.mjs";
 (function(){
  const img=document.getElementById('photo'),st=document.getElementById('stage'),bl=document.getElementById('left'),br=document.getElementById('right');
@@ -40,7 +40,7 @@ import { FaceLandmarker, FilesetResolver } from "./vendor/mediapipe/vision_bundl
    const lm=r.faceLandmarks[0];
    // Eye inner corners: 133/362. Nose-side hollow is estimated slightly toward nose from inner canthus.
    const li=point(lm[133]),ri=point(lm[362]),nose=point(lm[1]);
-   const lStart={x:li.x+(nose.x-li.x)*.18,y:li.y}, rStart={x:ri.x+(nose.x-ri.x)*.18,y:ri.y};
+   const lStart={x:li.x+(nose.x-li.x)*.34,y:li.y}, rStart={x:ri.x+(nose.x-ri.x)*.34,y:ri.y};
    // Iris diameter. Brow LOWER EDGE = top of an identical second pupil/iris circle stacked above the first.
    const iris=(ids)=>ids.map(i=>point(lm[i]));
    const LI=iris([468,469,470,471,472]), RI=iris([473,474,475,476,477]);
@@ -48,7 +48,9 @@ import { FaceLandmarker, FilesetResolver } from "./vendor/mediapipe/vision_bundl
    const lc=circle(LI),rc=circle(RI); const lBase=lc.cy-1.5*lc.d, rBase=rc.cy-1.5*rc.d;
    // Tail: ray from outer nose wing through outer eye corner; intersect brow lower-edge height.
    const ln=point(lm[98]),rn=point(lm[327]),lo=point(lm[33]),ro=point(lm[263]);
-   const lTail=lineAtY(ln,lo,lBase),rTail=lineAtY(rn,ro,rBase);
+   const lTail0=lineAtY(ln,lo,lBase),rTail0=lineAtY(rn,ro,rBase);
+   // Keep the anatomical ray, but extend the tail slightly toward the temple so the overlay reaches the designed endpoint.
+   const lTail={x:lTail0.x+(lTail0.x-nose.x)*.12,y:lBase},rTail={x:rTail0.x+(rTail0.x-nose.x)*.12,y:rBase};
    place(bl,lStart,lTail,lBase,false); place(br,rStart,rTail,rBase,true);
    window.faceReady=true;
   }catch(e){window.faceDetectError=String(e&&e.message||e)}
