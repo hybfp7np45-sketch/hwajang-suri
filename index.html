@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>화장수리 V8.2 Locked Ratio</title><style>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>화장수리 V8.3 Scale Up</title><style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;background:#fff;color:#262124}button{font:inherit}#app{height:100dvh;display:grid;grid-template-rows:58px minmax(0,1fr) 66px;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 header{display:flex;align-items:center;gap:9px;padding:8px 13px;border-bottom:1px solid #f1e8eb;background:#fff;z-index:40}.tool{width:42px;height:42px;border:0;border-radius:13px;background:#fff1f5;font-size:20px}.save{margin-left:auto;color:#d95d84}
 main{position:relative;min-height:0;background:#faf7f8;overflow:hidden;display:flex;justify-content:center;align-items:center;padding:8px}.stage{position:relative;width:min(calc(100vw - 16px),calc((100dvh - 140px)*.8));height:auto;aspect-ratio:4/5;max-height:100%;overflow:hidden;background:#eee8ea;border-radius:18px;touch-action:none}.photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#9d9095;font-size:14px}
@@ -12,7 +12,7 @@ window.faceReady=false;window.faceDetecting=false;rail.onclick=e=>{const c=e.tar
 function load(f){if(!f)return;window.faceReady=false;L.style.display=R.style.display='none';P.src=URL.createObjectURL(f);P.style.display='block';$('#empty').style.display='none'}$('#cam').onclick=()=>$('#camIn').click();$('#gallery').onclick=()=>$('#galIn').click();$('#camIn').onchange=e=>load(e.target.files[0]);$('#galIn').onchange=e=>load(e.target.files[0]);$('#browTab').onclick=()=>S.classList.toggle('open');
 function drag(el,mirror=false){let pts={},base=null;const read=()=>el.dataset.v?el.dataset.v.split(',').map(Number):[0,0,1,0];const apply=v=>{el.dataset.v=v.join(',');el.style.transform='translate('+v[0]+'px,'+v[1]+'px) scale('+v[2]+') rotate('+v[3]+'deg)'+(mirror?' scaleX(-1)':'')};el.onpointerdown=e=>{el.setPointerCapture(e.pointerId);pts[e.pointerId]=[e.clientX,e.clientY];base={p:JSON.parse(JSON.stringify(pts)),v:read()}};el.onpointermove=e=>{if(!pts[e.pointerId])return;pts[e.pointerId]=[e.clientX,e.clientY];let a=Object.values(pts),b=Object.values(base.p),v=base.v.slice();if(a.length===1){v[0]+=a[0][0]-b[0][0];v[1]+=a[0][1]-b[0][1]}else{let d0=Math.hypot(b[1][0]-b[0][0],b[1][1]-b[0][1]),d=Math.hypot(a[1][0]-a[0][0],a[1][1]-a[0][1]);v[2]=Math.max(.45,Math.min(2,v[2]*d/d0));v[3]+=(Math.atan2(a[1][1]-a[0][1],a[1][0]-a[0][0])-Math.atan2(b[1][1]-b[0][1],b[1][0]-b[0][0]))*180/Math.PI}apply(v)};el.onpointerup=el.onpointercancel=e=>delete pts[e.pointerId]}drag(L);drag(R,true);
 $('#save').onclick=()=>{if(!P.src)return alert('먼저 사진을 불러와 주세요.');alert('현재 상담 이미지 저장 기능을 연결하는 단계입니다.')};
-</script><div id="build-badge-v5" style="position:fixed;right:8px;top:8px;z-index:99999;background:#111;color:#fff;font:11px/1.2 sans-serif;padding:4px 6px;border-radius:6px;opacity:.72">V8.2 · LOCKED-RATIO</div><script type="module">
+</script><div id="build-badge-v5" style="position:fixed;right:8px;top:8px;z-index:99999;background:#111;color:#fff;font:11px/1.2 sans-serif;padding:4px 6px;border-radius:6px;opacity:.72">V8.3 · SCALE-UP</div><script type="module">
 import { FaceLandmarker, FilesetResolver } from "./vendor/mediapipe/vision_bundle.mjs";
 (function(){
  const img=document.getElementById('photo'),st=document.getElementById('stage'),bl=document.getElementById('left'),br=document.getElementById('right');
@@ -31,9 +31,9 @@ import { FaceLandmarker, FilesetResolver } from "./vendor/mediapipe/vision_bundl
    // Preserve the original hair-pattern aspect ratio (SVG viewBox 700×330).
    // The three facial reference points determine only the fitted width/position;
    // height follows automatically from the source pattern ratio, so it cannot flatten into a "nail" shape.
-   const a={x:start.x,y:baseY},z={x:tail.x,y:baseY},w=Math.abs(z.x-a.x);
+   const a={x:start.x,y:baseY},z={x:tail.x,y:baseY}; const rawW=Math.abs(z.x-a.x),w=rawW*1.28;
    const PATTERN_RATIO=330/700;
-   const h=w*PATTERN_RATIO,x=Math.min(a.x,z.x),y=baseY-h*.78;
+   const h=w*PATTERN_RATIO,innerX=Math.min(a.x,z.x),outerX=Math.max(a.x,z.x),x=mirror?outerX-w:innerX,y=baseY-h*.78;
    el.style.left=x+'px';el.style.top=y+'px';el.style.width=w+'px';el.style.height=h+'px';
    el.dataset.v='0,0,1,0';el.style.transform=mirror?'scaleX(-1)':'none';
  }
