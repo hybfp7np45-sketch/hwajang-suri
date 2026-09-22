@@ -1,9 +1,9 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>화장수리 V9.3 Manual Studio</title><style>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>화장수리 V9.4 Manual Studio</title><style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;background:#fff;color:#262124}button{font:inherit}#app{height:100dvh;display:grid;grid-template-rows:58px minmax(0,1fr) 66px;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 header{display:flex;align-items:center;gap:9px;padding:8px 13px;border-bottom:1px solid #f1e8eb;background:#fff;z-index:40}.tool{width:42px;height:42px;border:0;border-radius:13px;background:#fff1f5;font-size:20px}.save{margin-left:auto;color:#d95d84}
 main{position:relative;min-height:0;background:#faf7f8;overflow:hidden;display:flex;justify-content:center;align-items:center;padding:8px;touch-action:none;overscroll-behavior:none}.stage{position:relative;width:min(calc(100vw - 16px),calc((100dvh - 140px)*.8));height:auto;aspect-ratio:4/5;max-height:100%;overflow:hidden;background:#eee8ea;border-radius:18px;touch-action:none}.photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;pointer-events:none;-webkit-user-drag:none}.existing-brow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:10}.brow.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#9d9095;font-size:14px}
 .brow{position:absolute;touch-action:none;transform-origin:center;z-index:12}.brow.right{transform:scaleX(-1)}.brow svg{width:100%;height:100%;display:block;pointer-events:none}
-.brow.selected{outline:1px dashed #e45d89}.rh{position:absolute;width:16px;height:16px;border:2px solid #d94f7c;background:#fff;border-radius:50%;z-index:20;display:none}.brow.selected .rh{display:block}.nw{left:-8px;top:-8px}.n{left:calc(50% - 8px);top:-8px}.ne{right:-8px;top:-8px}.e{right:-8px;top:calc(50% - 8px)}.se{right:-8px;bottom:-8px}.s{left:calc(50% - 8px);bottom:-8px}.sw{left:-8px;bottom:-8px}.w{left:-8px;top:calc(50% - 8px)}.rot{left:calc(50% - 9px);top:-34px;width:18px;height:18px;background:#d94f7c}.del{right:-12px;top:-38px;width:22px;height:22px;background:#222;color:#fff;border:0;font:16px/18px sans-serif}.layers{max-height:220px;overflow:auto}
+.brow.selected{outline:1px dashed #e45d89}.rh{position:absolute;width:8px;height:8px;border:1.5px solid #d94f7c;background:#fff;border-radius:50%;z-index:20;display:none;touch-action:none}.rh:after{content:'';position:absolute;left:50%;top:50%;width:30px;height:30px;transform:translate(-50%,-50%)}.brow.selected .rh{display:block}.brow.selected .nw,.brow.selected .ne,.brow.selected .se,.brow.selected .sw{background:#d94f7c}.nw{left:-4px;top:-4px}.n{left:calc(50% - 4px);top:-4px}.ne{right:-4px;top:-4px}.e{right:-4px;top:calc(50% - 4px)}.se{right:-4px;bottom:-4px}.s{left:calc(50% - 4px);bottom:-4px}.sw{left:-4px;bottom:-4px}.w{left:-4px;top:calc(50% - 4px)}.rot{left:calc(50% - 8px);top:-34px;width:16px;height:16px;background:#fff;border:1.5px solid #d94f7c}.rot:before{content:'↻';position:absolute;inset:-3px;font:15px/20px sans-serif;color:#d94f7c;text-align:center}.del{right:-9px;top:-34px;width:18px;height:18px;background:#222;color:#fff;border:0;font:16px/18px sans-serif}.layers{max-height:220px;overflow:auto}
 .editbar{position:absolute;left:8px;right:8px;bottom:174px;z-index:34;display:none;gap:5px;align-items:center;justify-content:center;flex-wrap:wrap}.editbar.show{display:flex}.editbar button,.layers button{border:1px solid #ead8de;background:#fff;border-radius:10px;min-width:38px;height:34px;font-size:12px}.nudge{display:grid;grid-template-columns:34px 34px 34px;grid-template-rows:30px 30px}.nudge button{min-width:34px;height:30px}.layers{position:absolute;right:10px;top:10px;z-index:32;width:190px;background:#ffffffeb;border-radius:12px;padding:6px;display:none;box-shadow:0 3px 12px #0002}.layers.show{display:grid;gap:4px}.layers .layerrow{touch-action:none;cursor:grab}.layers .dragging{opacity:.5}.layerclose{position:sticky;top:0;height:30px!important;background:#fff4f7!important;font-weight:700}.world{position:absolute;inset:0;transform-origin:0 0;touch-action:none}.existing-brow{mix-blend-mode:normal}.layers button{padding:0 8px}.layers .on{border-color:#dc6d90;background:#fff0f5}
 .camview{position:fixed;inset:0;background:#000;z-index:999999;display:none}.camview.show{display:block}.camview video,.camview canvas{width:100%;height:100%;object-fit:cover}.grid{position:absolute;inset:0;pointer-events:none;display:none;background:linear-gradient(to right,transparent 33.15%,#fff9 33.25%,#fff9 33.55%,transparent 33.65%,transparent 66.45%,#fff9 66.55%,#fff9 66.85%,transparent 66.95%),linear-gradient(to bottom,transparent 33.15%,#fff9 33.25%,#fff9 33.55%,transparent 33.65%,transparent 49.85%,#fff 49.95%,#fff 50.15%,transparent 50.25%,transparent 66.45%,#fff9 66.55%,#fff9 66.85%,transparent 66.95%)}.grid.on{display:block}.grid:after{content:'';position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px;border:1px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #0004}.camctl{position:absolute;left:0;right:0;bottom:30px;display:flex;justify-content:center;gap:18px}.camctl button{width:58px;height:58px;border-radius:50%;border:2px solid #fff;background:#ffffff33;color:#fff;font-size:22px}.camctl .shot{background:#fff;border:6px solid #ffffff66}.camclose{position:absolute;top:22px;left:18px;border:0;background:#0006;color:#fff;border-radius:20px;padding:8px 12px}.gridbtn{position:absolute;top:22px;right:18px;border:1px solid #fff8;background:#0006;color:#fff;border-radius:20px;padding:8px 12px}
 nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #f0e6e9;background:#fff;z-index:50}nav button{border:0;background:#fff;font-size:13px;color:#777}.active{color:#d7557d!important;font-weight:700}
@@ -31,11 +31,12 @@ function drawExistingBrowLayer(){
  const iw=P.naturalWidth,ih=P.naturalHeight,sc=Math.max(w/iw,h/ih),rw=iw*sc,rh=ih*sc,ox=(w-rw)/2,oy=(h-rh)/2;c.drawImage(P,ox,oy,rw,rh);
  const im=c.getImageData(0,0,tmp.width,tmp.height),a=im.data,W=tmp.width,H=tmp.height;
  // Tight eyebrow-only bands. Keep dark, locally hair-like pixels; all skin pixels become transparent.
- for(let y=0;y<H;y++)for(let x=0;x<W;x++){const nx=x/W,ny=y/H;const inL=nx>.15&&nx<.48&&ny>.245&&ny<.385,inR=nx>.52&&nx<.85&&ny>.245&&ny<.385,i=(y*W+x)*4;
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const nx=x/W,ny=y/H;const inL=nx>.11&&nx<.49&&ny>.225&&ny<.405,inR=nx>.51&&nx<.89&&ny>.225&&ny<.405,i=(y*W+x)*4;
    if(!(inL||inR)){a[i+3]=0;continue}
    const lum=.299*a[i]+.587*a[i+1]+.114*a[i+2],ch=Math.max(a[i],a[i+1],a[i+2])-Math.min(a[i],a[i+1],a[i+2]);
-   const hair=lum<125 || (lum<165&&ch<58&&a[i]<a[i+1]+28);
-   a[i+3]=hair?Math.min(255,Math.max(0,(170-lum)*5)):0;
+   const r=a[i],g=a[i+1],b=a[i+2];const skinLike=r>g&&g>b&&r-b>18;
+   const hair=lum<145 || (lum<185&&ch<70&&!skinLike) || (lum<170&&r<g+22&&b<g+28);
+   a[i+3]=hair?Math.min(255,Math.max(55,(195-lum)*4.2)):0;
  }
  c.putImageData(im,0,0);out.drawImage(tmp,0,0,w,h);
 }
@@ -52,9 +53,24 @@ $('#copyflip').onclick=()=>{if(!selected)return;const axis=faceAxisX??stage.clie
 edit.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{if(!selected)return;const [x,y]=b.dataset.n.split(',').map(Number);selected.style.left=(parseFloat(selected.style.left)+x)+'px';selected.style.top=(parseFloat(selected.style.top)+y)+'px'});
 $('#layerbtn').onclick=()=>layers.classList.toggle('show');
 let layerDrag=null;
-layers.addEventListener('pointerdown',e=>{const b=e.target.closest('.layerrow');if(!b)return;if(b.dataset.id){const el=brows.find(x=>x.dataset.id===b.dataset.id);if(el)select(el)}layerDrag={b,id:b.dataset.id,fixed:b.dataset.fixed,y:e.clientY};b.setPointerCapture?.(e.pointerId);b.classList.add('dragging');e.preventDefault()});
-layers.addEventListener('pointermove',e=>{if(!layerDrag)return;const rows=[...layers.querySelectorAll('.layerrow')];const over=rows.find(r=>{const q=r.getBoundingClientRect();return e.clientY>q.top&&e.clientY<q.bottom});if(over&&over!==layerDrag.b&&over.dataset.fixed!=='skin'){if(e.clientY<over.getBoundingClientRect().top+over.offsetHeight/2)layers.insertBefore(layerDrag.b,over);else layers.insertBefore(layerDrag.b,over.nextSibling)}e.preventDefault()});
-layers.addEventListener('pointerup',e=>{if(!layerDrag)return;layerDrag.b.classList.remove('dragging');const ids=[...layers.querySelectorAll('.layerrow[data-id]')].map(x=>x.dataset.id).reverse();brows.sort((a,b)=>ids.indexOf(a.dataset.id)-ids.indexOf(b.dataset.id));syncZ();layerDrag=null});
+layers.addEventListener('pointerdown',e=>{
+ const row=e.target.closest('.layerrow');if(!row)return;
+ if(row.dataset.id){const el=brows.find(x=>x.dataset.id===row.dataset.id);if(el)select(el)}
+ layerDrag={row,id:row.dataset.id,startY:e.clientY,moved:false};row.classList.add('dragging');e.preventDefault();e.stopPropagation()
+});
+document.addEventListener('pointermove',e=>{
+ if(!layerDrag)return; if(Math.abs(e.clientY-layerDrag.startY)>4)layerDrag.moved=true;
+ const rows=[...layers.querySelectorAll('.layerrow')].filter(r=>r!==layerDrag.row);
+ const over=rows.find(r=>{const q=r.getBoundingClientRect();return e.clientY>=q.top&&e.clientY<=q.bottom});
+ if(over&&over.dataset.fixed!=='skin'){const q=over.getBoundingClientRect();layers.insertBefore(layerDrag.row,e.clientY<q.top+q.height/2?over:over.nextSibling)}
+ e.preventDefault()
+},{passive:false});
+document.addEventListener('pointerup',()=>{
+ if(!layerDrag)return;layerDrag.row.classList.remove('dragging');
+ const topToBottom=[...layers.querySelectorAll('.layerrow[data-id]')].map(r=>r.dataset.id);
+ const byId=Object.fromEntries(brows.map(b=>[b.dataset.id,b]));brows=topToBottom.slice().reverse().map(id=>byId[id]).filter(Boolean);
+ syncZ();layerDrag=null
+});
 layers.addEventListener('click',e=>{if(e.target.closest('.layerclose'))layers.classList.remove('show')});
 let stageDrag=null,lastTap=0;
 function setWorld(){world.style.transform='translate('+panX+'px,'+panY+'px) scale('+zoom+')'}
@@ -75,9 +91,9 @@ stage.addEventListener('pointerup',endPointer);stage.addEventListener('pointerca
 ['contextmenu','selectstart','dragstart'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
 document.addEventListener('touchmove',e=>{if(e.target.closest('#stage'))e.preventDefault()},{passive:false});
 let stream=null;const cv=$('#camview'),video=$('#camvideo'),grid=$('#grid');
-$('#cam').onclick=async()=>{try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});video.srcObject=stream;grid.classList.remove('on');$('#gridbtn').textContent='격자 ON';cv.classList.add('show')}catch(e){$('#camIn').click()}};
+$('#cam').onclick=async()=>{cv.classList.add('show');grid.classList.add('on');$('#gridbtn').textContent='격자 OFF';try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('camera unavailable');stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});video.srcObject=stream;await video.play()}catch(e){cv.classList.remove('show');alert('앱 카메라 권한을 허용해 주세요. 카메라 권한이 허용되면 격자와 기준선을 보면서 바로 촬영할 수 있어요.')}};
 $('#camIn').onchange=e=>load(e.target.files[0]);$('#gridbtn').onclick=()=>{grid.classList.toggle('on');$('#gridbtn').textContent=grid.classList.contains('on')?'격자 OFF':'격자 ON'};
 function closeCam(){cv.classList.remove('show');if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}$('#camclose').onclick=closeCam;
 $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d');c.width=video.videoWidth;c.height=video.videoHeight;ctx.drawImage(video,0,0);c.toBlob(blob=>{showBlob(blob);closeCam()},'image/jpeg',.94)};
 $('#save').onclick=()=>alert('저장 합성은 다음 연결 단계입니다.');renderLayers();
-</script><div id="build-badge-v5" style="position:fixed;right:8px;top:8px;z-index:99999;background:#111;color:#fff;font:11px/1.2 sans-serif;padding:4px 6px;border-radius:6px;opacity:.72">V9.3 · MANUAL-STUDIO</div><div class="camview" id="camview"><video id="camvideo" autoplay playsinline muted></video><div class="grid" id="grid"></div><button class="camclose" id="camclose">닫기</button><button class="gridbtn" id="gridbtn">격자</button><div class="camctl"><button class="shot" id="shot" aria-label="촬영"></button></div><canvas id="camcanvas" hidden></canvas></div></body></html>
+</script><div id="build-badge-v5" style="position:fixed;right:8px;top:8px;z-index:99999;background:#111;color:#fff;font:11px/1.2 sans-serif;padding:4px 6px;border-radius:6px;opacity:.72">V9.4 · MANUAL-STUDIO</div><div class="camview" id="camview"><video id="camvideo" autoplay playsinline muted></video><div class="grid" id="grid"></div><button class="camclose" id="camclose">닫기</button><button class="gridbtn" id="gridbtn">격자</button><div class="camctl"><button class="shot" id="shot" aria-label="촬영"></button></div><canvas id="camcanvas" hidden></canvas></div></body></html>
