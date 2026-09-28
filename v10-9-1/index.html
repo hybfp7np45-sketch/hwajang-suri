@@ -1,0 +1,8 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>화장수리 V10.9.1</title><style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden}</style></head><body><iframe id="app" src="../v10-9/index.html"></iframe><script>
+const frame=document.getElementById('app');
+frame.onload=()=>{const w=frame.contentWindow,d=frame.contentDocument;
+const badge=d.getElementById('build-badge-v5');if(badge)badge.textContent='V10.9.1 · MANUAL-STUDIO';
+const sig=d.querySelector('[data-design="시그니처"]'),rail=d.getElementById('rail'),sheet=d.getElementById('sheet');
+if(sig)sig.addEventListener('click',()=>{setTimeout(()=>{rail.style.display='flex';sheet.className='sheet level3';rail.innerHTML='';
+[['시그니처 · 엠보','../v10-9-1/assets/signature-embo1.png'],['시그니처 · 헤스','../v10-9-1/assets/signature-hes1.png']].forEach(([name,src])=>{const b=d.createElement('button');b.className='card tech-card';b.innerHTML='<div class="mini"><img src="'+src+'" style="width:100%;height:100%;object-fit:contain"></div><small>'+name.replace('시그니처 · ','')+'</small>';b.onclick=()=>{const p=d.getElementById('photo');if(!p.src)return w.alert('먼저 사진을 불러와 주세요.');w.addBrow({name,src,ratio:57/290})};rail.appendChild(b)})},0)},true);
+};</script></body></html>
