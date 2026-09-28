@@ -78,27 +78,6 @@
       if (e.target.matches('input[type="color"]')) applyColor(getSelected(), e.target.value);
     });
 
-    const applyColor = (color) => {
-      const brow = getSelected();
-      if (!brow) return;
-      brow.dataset.color = color;
-      const img = brow.querySelector('img');
-      if (!img) return;
-      img.style.backgroundColor = color;
-      img.style.mixBlendMode = 'multiply';
-      img.style.filter = 'sepia(1) saturate(3)';
-    };
-
-    colorbar.querySelectorAll('.swatch[data-c]').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        applyColor(btn.dataset.c);
-      });
-    });
-    const picker = document.getElementById('colorpicker');
-    if (picker) picker.addEventListener('input', (e) => applyColor(e.target.value));
-
     intensity.addEventListener('input', (e) => {
       const brow = getSelected();
       if (!brow) return;
