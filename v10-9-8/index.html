@@ -40,7 +40,7 @@ function renderLayers(){const prior=[...layers.querySelectorAll('.layerrow')].ma
 function syncZ(){P.style.zIndex=1;const ordered=[...layers?.querySelectorAll?.('.layerrow')||[]];let z=10;
  if(ordered.length){[...ordered].reverse().forEach(r=>{if(r.dataset.fixed==='skin')return;if(r.dataset.fixed==='existing')EB.style.zIndex=z++;else{const el=brows.find(x=>x.dataset.id===r.dataset.id);if(el)el.style.zIndex=z++}})}
  else{brows.forEach(el=>el.style.zIndex=z++);EB.style.zIndex=z++}renderLayers()}
-rail.onclick=e=>{const c=e.target.closest('.tech-card');if(!c)return;if(!P.src)return alert('먼저 사진을 불러와 주세요.');const n=c.dataset.name;if(n==='시그니처 · 섀도우1'){addBrow({name:n,src:browAssets[n],flip:false,ratio:330/700,imgScale:1});return}addBrow({name:n,src:browAssets[n],flip:n==='아치 · 섀도우',ratio:330/700,imgScale:n.includes('섀도우')?.88:1})};
+rail.onclick=e=>{const c=e.target.closest('.tech-card');if(!c)return;if(!P.src)return alert('먼저 사진을 불러와 주세요.');const n=c.dataset.name;if(n==='시그니처 · 섀도우1'){addBrow({name:n,src:browAssets[n],flip:false,ratio:330/700,imgScale:1});return}addBrow({name:n,src:browAssets[n],flip:n==='아치 · 섀도우'||n==='기본형 · 섀도우1',ratio:330/700,imgScale:n.includes('섀도우')?.88:1})};
 function drawExistingBrowLayer(){
  const w=stage.clientWidth,h=stage.clientHeight,dpr=devicePixelRatio||1;EB.width=w*dpr;EB.height=h*dpr;EB.style.width=w+'px';EB.style.height=h+'px';
  const out=EB.getContext('2d');out.setTransform(dpr,0,0,dpr,0,0);out.clearRect(0,0,w,h);
