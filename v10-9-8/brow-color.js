@@ -13,12 +13,11 @@
     try{custom=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}
     if(!Array.isArray(custom)||custom.length!==7) custom=defaults.slice();
 
-    // Keep the picker control, rebuild the palette as fixed 7 + editable 7.
     [...colors.querySelectorAll('.swatch')].forEach(x=>x.remove());
     const pickerWrap=picker.closest('.pickerwrap');
     const grid=document.createElement('div');
     grid.className='brow-color-grid';
-    grid.style.cssText='display:grid;grid-template-columns:repeat(7,32px);gap:9px;width:max-content;flex:0 0 auto';
+    grid.style.cssText='display:grid;grid-template-columns:repeat(7,32px);grid-template-rows:repeat(2,32px);gap:8px 9px;width:max-content;flex:0 0 auto';
 
     function chip(c,editable,i){
       const b=document.createElement('button');
@@ -31,10 +30,17 @@
     custom.forEach((c,i)=>grid.appendChild(chip(c,true,i)));
     colors.insertBefore(grid,pickerWrap||colors.firstChild);
     colors.style.overflowX='visible';
+    colors.style.alignItems='center';
     if(pickerWrap){pickerWrap.style.flex='0 0 36px';pickerWrap.style.alignSelf='center'}
 
     const selected=()=>document.querySelector('.brow.selected');
-    let editSlot=null,longTimer=null,longStart=null;
+    let editSlot=null;
+
+    function markEditSlot(b){
+      grid.querySelectorAll('.brow-custom').forEach(x=>x.style.outline='');
+      editSlot=b;
+      if(b) b.style.outline='2px solid #d94f7c';
+    }
 
     function tint(brow,color){
       if(!brow||!color)return;
@@ -49,30 +55,25 @@
       const b=e.target.closest('.swatch');if(!b)return;
       e.preventDefault();e.stopPropagation();
       tint(selected(),b.dataset.browColor);
+      if(b.classList.contains('brow-custom')) markEditSlot(b);
+      else markEditSlot(null);
     },true);
 
-    // Editable second row: long-press a chip to replace that saved color.
-    grid.addEventListener('pointerdown',e=>{
-      const b=e.target.closest('.brow-custom');if(!b)return;
-      longStart={x:e.clientX,y:e.clientY,b};
-      longTimer=setTimeout(()=>{editSlot=b;picker.value=b.dataset.browColor;picker.click();longTimer=null},500);
-    },true);
-    const cancelLong=e=>{if(longTimer){clearTimeout(longTimer);longTimer=null}longStart=null};
-    grid.addEventListener('pointermove',e=>{if(longStart&&(Math.abs(e.clientX-longStart.x)>8||Math.abs(e.clientY-longStart.y)>8))cancelLong()},true);
-    grid.addEventListener('pointerup',cancelLong,true);grid.addEventListener('pointercancel',cancelLong,true);
-
-    // Rainbow picker changes the brow immediately. If opened by long-pressing a second-row chip,
-    // that slot is also replaced and saved persistently.
+    // User flow: tap one of the lower 7 slots, then tap the rainbow picker.
+    // The picked color replaces that slot immediately and is persisted locally.
     const picked=e=>{
-      const c=e.target.value;tint(selected(),c);
+      const c=e.target.value;
+      tint(selected(),c);
       if(editSlot){
         const i=Number(editSlot.dataset.slot);
-        custom[i]=c;localStorage.setItem(key,JSON.stringify(custom));
-        editSlot.dataset.browColor=c;editSlot.style.background=c;
+        custom[i]=c;
+        localStorage.setItem(key,JSON.stringify(custom));
+        editSlot.dataset.browColor=c;
+        editSlot.style.background=c;
       }
     };
     picker.addEventListener('input',picked,true);
-    picker.addEventListener('change',e=>{picked(e);editSlot=null},true);
+    picker.addEventListener('change',picked,true);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initBrowColor);else initBrowColor();
 })();
