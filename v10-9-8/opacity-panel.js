@@ -7,12 +7,19 @@
     if (!colorBtn || !colorbar || !intensity) return;
 
     const getSelected = () => document.querySelector('.brow.selected');
+    const closePanel = () => colorbar.classList.remove('show');
 
     colorBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       const brow = getSelected();
       if (!brow) return;
+
+      if (colorbar.classList.contains('show')) {
+        closePanel();
+        return;
+      }
+
       colorbar.classList.add('show');
       const value = Math.round((parseFloat(brow.style.opacity || '1')) * 100);
       intensity.value = value;
@@ -27,6 +34,12 @@
       brow.dataset.intensity = String(value);
       if (intensityVal) intensityVal.textContent = value + '%';
     });
+
+    document.addEventListener('pointerdown', (e) => {
+      if (!colorbar.classList.contains('show')) return;
+      if (colorbar.contains(e.target) || colorBtn.contains(e.target)) return;
+      closePanel();
+    }, true);
   }
 
   if (document.readyState === 'loading') {
