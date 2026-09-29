@@ -7,11 +7,10 @@
     if(!colors||!picker) return;
 
     const fixed=['#2b211f','#4a332b','#68483a','#211b1a','#8b4f12','#a76500','#9a7200'];
-    const defaults=['#342824','#5a3c30','#76503f','#2c2422','#4d332b','#805b49','#3b2c28'];
-    const key='hwajang-brow-custom-7-v1';
+    const key='hwajang-brow-custom-7-v2';
     let custom;
     try{custom=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}
-    if(!Array.isArray(custom)||custom.length!==7) custom=defaults.slice();
+    if(!Array.isArray(custom)||custom.length!==7) custom=Array(7).fill(null);
 
     [...colors.querySelectorAll('.swatch')].forEach(x=>x.remove());
     const pickerWrap=picker.closest('.pickerwrap');
@@ -19,11 +18,15 @@
     grid.className='brow-color-grid';
     grid.style.cssText='display:grid;grid-template-columns:repeat(7,32px);grid-template-rows:repeat(2,32px);gap:8px 9px;width:max-content;flex:0 0 auto';
 
+    function paintSlot(b,c){
+      if(c){b.dataset.browColor=c;b.style.background=c;b.classList.remove('empty')}
+      else{delete b.dataset.browColor;b.style.background='#fff';b.classList.add('empty')}
+    }
     function chip(c,editable,i){
       const b=document.createElement('button');
       b.type='button'; b.className='swatch '+(editable?'brow-custom':'brow-fixed');
-      b.dataset.browColor=c; b.style.background=c;
       if(editable)b.dataset.slot=String(i);
+      paintSlot(b,c);
       return b;
     }
     fixed.forEach(c=>grid.appendChild(chip(c,false,-1)));
@@ -34,7 +37,7 @@
     if(pickerWrap){pickerWrap.style.flex='0 0 36px';pickerWrap.style.alignSelf='center'}
 
     const selected=()=>document.querySelector('.brow.selected');
-    let editSlot=null;
+    let editSlot=null,longPressTimer=null,longPressed=false;
 
     function markEditSlot(b){
       grid.querySelectorAll('.brow-custom').forEach(x=>x.style.outline='');
@@ -54,22 +57,31 @@
     grid.addEventListener('click',e=>{
       const b=e.target.closest('.swatch');if(!b)return;
       e.preventDefault();e.stopPropagation();
-      tint(selected(),b.dataset.browColor);
-      if(b.classList.contains('brow-custom')) markEditSlot(b);
-      else markEditSlot(null);
+      if(longPressed){longPressed=false;return}
+      if(b.classList.contains('brow-custom')) markEditSlot(b); else markEditSlot(null);
+      if(b.dataset.browColor)tint(selected(),b.dataset.browColor);
     },true);
 
-    // User flow: tap one of the lower 7 slots, then tap the rainbow picker.
-    // The picked color replaces that slot immediately and is persisted locally.
+    const startLongPress=e=>{
+      const b=e.target.closest('.brow-custom');if(!b)return;
+      clearTimeout(longPressTimer);longPressed=false;
+      longPressTimer=setTimeout(()=>{
+        const i=Number(b.dataset.slot);custom[i]=null;localStorage.setItem(key,JSON.stringify(custom));
+        paintSlot(b,null);markEditSlot(b);longPressed=true;
+      },650);
+    };
+    const cancelLongPress=()=>{clearTimeout(longPressTimer);longPressTimer=null};
+    grid.addEventListener('pointerdown',startLongPress,true);
+    grid.addEventListener('pointerup',cancelLongPress,true);
+    grid.addEventListener('pointercancel',cancelLongPress,true);
+    grid.addEventListener('pointerleave',cancelLongPress,true);
+
     const picked=e=>{
       const c=e.target.value;
       tint(selected(),c);
       if(editSlot){
         const i=Number(editSlot.dataset.slot);
-        custom[i]=c;
-        localStorage.setItem(key,JSON.stringify(custom));
-        editSlot.dataset.browColor=c;
-        editSlot.style.background=c;
+        custom[i]=c;localStorage.setItem(key,JSON.stringify(custom));paintSlot(editSlot,c);
       }
     };
     picker.addEventListener('input',picked,true);
@@ -86,28 +98,13 @@
     const visiblePanel=()=>{
       const candidates=[document.getElementById('colorbar'),document.getElementById('layers'),document.getElementById('sheet')];
       let best=null;
-      for(const el of candidates){
-        if(!el)continue;
-        const cs=getComputedStyle(el),r=el.getBoundingClientRect();
-        if(cs.display==='none'||cs.visibility==='hidden'||r.height<2)continue;
-        if(!best||r.top<best.top)best=r;
-      }
-      if(best)return best;
-      const nav=document.querySelector('nav');
-      return nav?nav.getBoundingClientRect():null;
+      for(const el of candidates){if(!el)continue;const cs=getComputedStyle(el),r=el.getBoundingClientRect();if(cs.display==='none'||cs.visibility==='hidden'||r.height<2)continue;if(!best||r.top<best.top)best=r}
+      if(best)return best;const nav=document.querySelector('nav');return nav?nav.getBoundingClientRect():null;
     };
-    const dock=()=>{
-      if(!edit.classList.contains('show'))return;
-      const r=visiblePanel();if(!r)return;
-      edit.style.top='auto';
-      edit.style.bottom=Math.max(0,window.innerHeight-r.top+gap)+'px';
-    };
+    const dock=()=>{if(!edit.classList.contains('show'))return;const r=visiblePanel();if(!r)return;edit.style.top='auto';edit.style.bottom=Math.max(0,window.innerHeight-r.top+gap)+'px'};
     const obs=new MutationObserver(()=>requestAnimationFrame(dock));
     [edit,document.getElementById('colorbar'),document.getElementById('layers'),document.getElementById('sheet')].filter(Boolean).forEach(el=>obs.observe(el,{attributes:true,attributeFilter:['class','style']}));
-    window.addEventListener('resize',dock,{passive:true});
-    window.addEventListener('orientationchange',()=>setTimeout(dock,120),{passive:true});
-    document.addEventListener('click',()=>requestAnimationFrame(dock),true);
-    requestAnimationFrame(dock);
+    window.addEventListener('resize',dock,{passive:true});window.addEventListener('orientationchange',()=>setTimeout(dock,120),{passive:true});document.addEventListener('click',()=>requestAnimationFrame(dock),true);requestAnimationFrame(dock);
   }
 
   function initAll(){initBrowColor();initEditbarDock()}
