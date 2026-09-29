@@ -2,7 +2,7 @@
   function loadIosPicker(){
     if(document.querySelector('script[data-suri-ios-picker]')) return;
     const s=document.createElement('script');
-    s.src='./ios-color-picker.js?cb=picker3';
+    s.src='./ios-color-picker.js?cb=picker0929f113';
     s.dataset.suriIosPicker='1';
     document.head.appendChild(s);
   }
