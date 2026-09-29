@@ -88,6 +88,21 @@
     picker.addEventListener('change',picked,true);
   }
 
+  function initExclusivePanels(){
+    const sheet=document.getElementById('sheet');
+    const color=document.getElementById('colorbar');
+    const layers=document.getElementById('layers');
+    const colorBtn=document.getElementById('colorbtn');
+    const layerBtn=document.getElementById('layerbtn');
+    const browTab=document.getElementById('browTab');
+    if(!sheet||!color||!layers)return;
+    const closeSheet=()=>{sheet.className='sheet level1';sheet.style.height='0';};
+    if(colorBtn) colorBtn.addEventListener('click',()=>{closeSheet();layers.classList.remove('show')},true);
+    if(layerBtn) layerBtn.addEventListener('click',()=>{closeSheet();color.classList.remove('show')},true);
+    if(browTab) browTab.addEventListener('pointerup',()=>{color.classList.remove('show');layers.classList.remove('show')},true);
+    if(browTab) browTab.addEventListener('click',()=>{color.classList.remove('show');layers.classList.remove('show')},true);
+  }
+
   function initEditbarDock(){
     const edit=document.getElementById('editbar');
     if(!edit)return;
@@ -107,6 +122,6 @@
     window.addEventListener('resize',dock,{passive:true});window.addEventListener('orientationchange',()=>setTimeout(dock,120),{passive:true});document.addEventListener('click',()=>requestAnimationFrame(dock),true);requestAnimationFrame(dock);
   }
 
-  function initAll(){initBrowColor();initEditbarDock()}
+  function initAll(){initBrowColor();initExclusivePanels();initEditbarDock()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initAll);else initAll();
 })();
