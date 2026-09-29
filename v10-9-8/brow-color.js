@@ -30,8 +30,89 @@
     colors.insertBefore(grid,colors.firstChild);
     const head=color.querySelector('.colorhead');
     let current=color.querySelector('.brow-current-color');if(!current&&head){current=document.createElement('span');current.className='brow-current-color';current.style.cssText='display:inline-block;width:28px;height:28px;border-radius:7px;border:1px solid #c8c8cc;box-shadow:inset 0 0 0 1px #fff;background:#5b3b2e;margin-left:8px;vertical-align:middle;flex:0 0 28px';head.querySelector('b')?.after(current)}
-    let eyedrop=color.querySelector('.brow-eyedrop');if(!eyedrop&&head){eyedrop=document.createElement('button');eyedrop.type='button';eyedrop.className='brow-eyedrop';eyedrop.setAttribute('aria-label','스포이드');eyedrop.innerHTML='<svg viewBox="0 0 28 28" width="23" height="23" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.4 3.7c1.8-1.8 4.7-1.8 6.5 0s1.8 4.7 0 6.5l-2.2 2.2-6.5-6.5 2.2-2.2Z" fill="currentColor"/><path d="m17.9 8.6-2.2 2.2 1.5 1.5-8.8 8.8-3.6 1.2 1.2-3.6 8.8-8.8 1.5 1.5 2.2-2.2"/><path d="M5.9 18.8 9 21.9"/></g></svg>';eyedrop.style.cssText='width:32px;height:32px;border:1px solid #d8cbd0;border-radius:50%;background:#fff;color:#444;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 32px;margin-left:auto';head.appendChild(eyedrop)}
-    if(eyedrop&&!eyedrop.dataset.pickerBound){eyedrop.dataset.pickerBound='1';eyedrop.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const photo=document.getElementById('photo'),stage=document.getElementById('stage');if(!photo||!stage||!photo.src)return;eyedrop.style.background='#fff1f5';stage.style.cursor='crosshair';let lens=document.getElementById('browEyedropLens');if(!lens){lens=document.createElement('div');lens.id='browEyedropLens';lens.style.cssText='position:fixed;width:86px;height:86px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 12px #0008;z-index:2147482999;pointer-events:none;display:none;overflow:hidden;background:#fff';lens.innerHTML='<canvas width="86" height="86" style="width:86px;height:86px"></canvas><i style="position:absolute;left:39px;top:39px;width:8px;height:8px;border:2px solid #fff;box-shadow:0 0 0 1px #111;border-radius:50%"></i>';document.body.appendChild(lens)}const lc=lens.querySelector('canvas'),lctx=lc.getContext('2d',{willReadFrequently:true});const sample=(ev,commit)=>{const r=photo.getBoundingClientRect();if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom)return;try{const cv=document.createElement('canvas');cv.width=photo.naturalWidth;cv.height=photo.naturalHeight;const ctx=cv.getContext('2d',{willReadFrequently:true});ctx.drawImage(photo,0,0);const x=Math.max(0,Math.min(cv.width-1,Math.floor((ev.clientX-r.left)/r.width*cv.width))),y=Math.max(0,Math.min(cv.height-1,Math.floor((ev.clientY-r.top)/r.height*cv.height)));lctx.imageSmoothingEnabled=false;lctx.clearRect(0,0,86,86);lctx.drawImage(cv,x-10,y-10,21,21,0,0,86,86);const p=ctx.getImageData(x,y,1,1).data,hex='#'+[p[0],p[1],p[2]].map(n=>n.toString(16).padStart(2,'0')).join('');lens.style.display='block';lens.style.left=Math.max(8,Math.min(innerWidth-94,ev.clientX-43))+'px';lens.style.top=Math.max(8,ev.clientY-112)+'px';lens.style.borderColor=hex;if(current)current.style.background=hex;if(commit)applyPaletteColor(hex)}catch(err){}};const move=ev=>{ev.preventDefault();ev.stopPropagation();sample(ev,false)},up=ev=>{ev.preventDefault();ev.stopPropagation();sample(ev,true);stage.removeEventListener('pointermove',move,true);stage.removeEventListener('pointerup',up,true);stage.removeEventListener('pointercancel',cancel,true);lens.style.display='none';stage.style.cursor='';eyedrop.style.background='#fff'},cancel=()=>{stage.removeEventListener('pointermove',move,true);stage.removeEventListener('pointerup',up,true);stage.removeEventListener('pointercancel',cancel,true);lens.style.display='none';stage.style.cursor='';eyedrop.style.background='#fff'};stage.addEventListener('pointermove',move,true);stage.addEventListener('pointerup',up,true);stage.addEventListener('pointercancel',cancel,true)},true)}
+    let eyedrop=color.querySelector('.brow-eyedrop');
+    if(!eyedrop&&head){
+      eyedrop=document.createElement('button');eyedrop.type='button';eyedrop.className='brow-eyedrop';eyedrop.setAttribute('aria-label','스포이드');
+      eyedrop.innerHTML='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"><path d="M15.9 2.8c1.25-1.25 3.28-1.25 4.53 0s1.25 3.28 0 4.53l-2.05 2.05-4.53-4.53 2.05-2.05Z"/><path d="m15.55 6.55-1.45 1.45 1.25 1.25-8.65 8.65-3.25 1.05 1.05-3.25 8.65-8.65 1.25 1.25 1.45-1.45"/><path d="M4.55 15.65 6.75 17.85"/></g></svg>';
+      eyedrop.style.cssText='width:32px;height:32px;border:1px solid #d8cbd0;border-radius:50%;background:#fff;color:#444;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 32px;margin-left:auto';
+      head.appendChild(eyedrop)
+    }
+    if(eyedrop&&!eyedrop.dataset.pickerBound){
+      eyedrop.dataset.pickerBound='1';
+      eyedrop.addEventListener('click',e=>{
+        e.preventDefault();e.stopPropagation();
+        const photo=document.getElementById('photo'),stage=document.getElementById('stage');
+        if(!photo||!stage||!photo.src)return;
+        eyedrop.style.background='#fff1f5';
+        stage.dataset.eyedropActive='1';
+        stage.style.cursor='crosshair';
+        stage.style.touchAction='none';
+
+        let marker=document.getElementById('browEyedropLens');
+        if(!marker){
+          marker=document.createElement('div');marker.id='browEyedropLens';
+          marker.style.cssText='position:fixed;width:42px;height:42px;border-radius:50%;border:1.5px solid rgba(255,255,255,.95);box-shadow:0 1px 5px #0004;z-index:2147482999;pointer-events:none;display:none;background:rgba(30,30,30,.16);transform:translate(-50%,-50%)';
+          marker.innerHTML='<i style="position:absolute;left:50%;top:50%;width:12px;height:1.5px;background:#fff;transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 1px #0008"></i><i style="position:absolute;left:50%;top:50%;width:1.5px;height:12px;background:#fff;transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 1px #0008"></i>';
+          document.body.appendChild(marker)
+        }
+
+        const source=document.createElement('canvas');
+        source.width=photo.naturalWidth;source.height=photo.naturalHeight;
+        const sourceCtx=source.getContext('2d',{willReadFrequently:true});
+        try{sourceCtx.drawImage(photo,0,0)}catch(_){cleanup();return}
+        let activePointer=null,lastSample=0;
+
+        const sample=(ev,commit=false)=>{
+          const r=photo.getBoundingClientRect();
+          if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom)return;
+          const now=performance.now();
+          if(!commit&&now-lastSample<32)return;
+          lastSample=now;
+          const x=Math.max(0,Math.min(source.width-1,Math.floor((ev.clientX-r.left)/r.width*source.width)));
+          const y=Math.max(0,Math.min(source.height-1,Math.floor((ev.clientY-r.top)/r.height*source.height)));
+          try{
+            const p=sourceCtx.getImageData(x,y,1,1).data;
+            const hex='#'+[p[0],p[1],p[2]].map(n=>n.toString(16).padStart(2,'0')).join('');
+            marker.style.display='block';marker.style.left=ev.clientX+'px';marker.style.top=ev.clientY+'px';marker.style.background=hex;
+            if(current)current.style.background=hex;
+            if(commit)applyPaletteColor(hex)
+          }catch(_){}
+        };
+        const down=ev=>{
+          if(activePointer!==null)return;
+          activePointer=ev.pointerId;
+          ev.preventDefault();ev.stopImmediatePropagation();
+          try{stage.setPointerCapture(ev.pointerId)}catch(_){}
+          sample(ev,false)
+        };
+        const move=ev=>{
+          if(ev.pointerId!==activePointer)return;
+          ev.preventDefault();ev.stopImmediatePropagation();
+          sample(ev,false)
+        };
+        const up=ev=>{
+          if(ev.pointerId!==activePointer)return;
+          ev.preventDefault();ev.stopImmediatePropagation();
+          sample(ev,true);cleanup()
+        };
+        const cancel=ev=>{
+          if(activePointer!==null&&ev.pointerId!==activePointer)return;
+          ev.preventDefault();ev.stopImmediatePropagation();cleanup()
+        };
+        function cleanup(){
+          stage.removeEventListener('pointerdown',down,true);
+          stage.removeEventListener('pointermove',move,true);
+          stage.removeEventListener('pointerup',up,true);
+          stage.removeEventListener('pointercancel',cancel,true);
+          marker.style.display='none';stage.style.cursor='';delete stage.dataset.eyedropActive;eyedrop.style.background='#fff';
+          activePointer=null
+        }
+        stage.addEventListener('pointerdown',down,true);
+        stage.addEventListener('pointermove',move,true);
+        stage.addEventListener('pointerup',up,true);
+        stage.addEventListener('pointercancel',cancel,true)
+      },true)
+    }
     const hex2rgb=x=>{x=(x||'#735b54').replace('#','');return [parseInt(x.slice(0,2),16),parseInt(x.slice(2,4),16),parseInt(x.slice(4,6),16)]};
     function applyPaletteColor(hex){if(current)current.style.background=hex;const brow=document.querySelector('.brow.selected');if(!brow||!hex)return;brow.dataset.color=hex;brow.dataset.browColor=hex;const img=brow.querySelector('img');if(!img)return;if(!img.dataset.originalSrc)img.dataset.originalSrc=img.src;const source=img.dataset.originalSrc,[tr,tg,tb]=hex2rgb(hex),src=new Image();src.onload=()=>{const cv=document.createElement('canvas');cv.width=src.naturalWidth;cv.height=src.naturalHeight;const ctx=cv.getContext('2d',{willReadFrequently:true});ctx.drawImage(src,0,0);const data=ctx.getImageData(0,0,cv.width,cv.height),p=data.data;for(let i=0;i<p.length;i+=4){if(!p[i+3])continue;const lum=(.299*p[i]+.587*p[i+1]+.114*p[i+2])/255,detail=.72+.28*lum;p[i]=Math.min(255,tr*detail);p[i+1]=Math.min(255,tg*detail);p[i+2]=Math.min(255,tb*detail)}ctx.putImageData(data,0,0);img.src=cv.toDataURL('image/png')};src.src=source}
     grid.addEventListener('click',e=>{const sw=e.target.closest('.swatch');if(!sw||!sw.dataset.browColor)return;e.preventDefault();e.stopPropagation();applyPaletteColor(sw.dataset.browColor)},true);
