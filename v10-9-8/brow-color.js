@@ -6,6 +6,12 @@
     s.dataset.suriIosPicker='1';
     document.head.appendChild(s);
   }
+  function openIosPicker(){
+    const open=()=>{const modal=document.getElementById('suriIosPicker');if(modal){modal.classList.add('open');return true}return false};
+    if(open()) return;
+    loadIosPicker();
+    let tries=0;const timer=setInterval(()=>{tries++;if(open()||tries>20)clearInterval(timer)},25);
+  }
   function initBrowColor(){
     const bar=document.getElementById('colorbar');
     if(!bar) return;
@@ -37,7 +43,7 @@
     nativePicker.addEventListener('input',applyCustomColor);
     nativePicker.addEventListener('change',applyCustomColor);
     grid.addEventListener('click',e=>{const b=e.target.closest('.swatch');if(!b)return;e.preventDefault();e.stopPropagation();if(b.dataset.browColor){nativePicker.value=b.dataset.browColor;current.style.background=b.dataset.browColor;tint(selected(),b.dataset.browColor)}if(b.classList.contains('brow-custom'))markEditSlot(b);else markEditSlot(null)},true);
-    rainbow.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();const modal=document.getElementById('suriIosPicker');if(modal){nativeWrap.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));return;}loadIosPicker();setTimeout(()=>{if(nativeWrap)nativeWrap.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))},80)});
+    rainbow.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();openIosPicker()});
     loadIosPicker();
   }
   function initPanelFlow(){
