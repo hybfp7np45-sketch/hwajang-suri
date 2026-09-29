@@ -23,16 +23,18 @@
   }
   function initPanelFlow(){
     const sheet=document.getElementById('sheet'),color=document.getElementById('colorbar'),layers=document.getElementById('layers'),edit=document.getElementById('editbar'),colorBtn=document.getElementById('colorbtn'),layerBtn=document.getElementById('layerbtn'),browTab=document.getElementById('browTab'),design=document.getElementById('designRail'),rail=document.getElementById('rail');
-    if(!sheet||!color||!layers||!edit)return; const gap=5;
-    const closeSheet=()=>{sheet.className='sheet level1';sheet.style.setProperty('height','0','important')};
-    const dockTo=el=>{requestAnimationFrame(()=>{const r=el.getBoundingClientRect();edit.style.setProperty('position','fixed','important');edit.style.setProperty('top','auto','important');edit.style.setProperty('bottom',Math.max(0,window.innerHeight-r.top+gap)+'px','important')})};
-    const openBrow=()=>{color.classList.remove('show');layers.classList.remove('show');sheet.style.removeProperty('height');if(design)design.style.display='flex';if(rail)rail.style.display='none';sheet.className='sheet level2';dockTo(sheet)};
-    const openColor=()=>{layers.classList.remove('show');closeSheet();if(design)design.style.display='none';if(rail)rail.style.display='none';setTimeout(()=>dockTo(color),0)};
-    const openLayer=()=>{color.classList.remove('show');closeSheet();if(design)design.style.display='none';if(rail)rail.style.display='none';setTimeout(()=>dockTo(layers),0)};
+    if(!sheet||!color||!layers||!edit)return;
+    const gap=5;
+    const hideBrowSheet=()=>{sheet.className='sheet level1';sheet.style.setProperty('height','0','important');if(design)design.style.display='none';if(rail)rail.style.display='none'};
+    const dockAbove=el=>requestAnimationFrame(()=>{const r=el.getBoundingClientRect();edit.style.setProperty('position','fixed','important');edit.style.setProperty('top','auto','important');edit.style.setProperty('bottom',Math.max(66,window.innerHeight-r.top+gap)+'px','important')});
+    const dockBottom=()=>{edit.style.setProperty('position','fixed','important');edit.style.setProperty('top','auto','important');edit.style.setProperty('bottom','71px','important')};
+    const openBrow=()=>{color.classList.remove('show');layers.classList.remove('show');sheet.style.removeProperty('height');if(design)design.style.display='flex';if(rail)rail.style.display='none';sheet.className='sheet level2';dockAbove(sheet)};
+    const openColor=()=>{layers.classList.remove('show');hideBrowSheet();setTimeout(()=>{if(color.classList.contains('show'))dockAbove(color);else dockBottom()},0)};
+    const openLayer=()=>{color.classList.remove('show');hideBrowSheet();setTimeout(()=>{if(layers.classList.contains('show'))dockAbove(layers);else dockBottom()},0)};
     if(colorBtn)colorBtn.addEventListener('click',openColor,true);
     if(layerBtn)layerBtn.addEventListener('click',openLayer,true);
     if(browTab){browTab.addEventListener('pointerup',openBrow,true);browTab.addEventListener('click',openBrow,true)}
-    window.addEventListener('resize',()=>{if(color.classList.contains('show'))dockTo(color);else if(layers.classList.contains('show'))dockTo(layers);else if(sheet.getBoundingClientRect().height>2)dockTo(sheet)},{passive:true});
+    window.addEventListener('resize',()=>{if(color.classList.contains('show'))dockAbove(color);else if(layers.classList.contains('show'))dockAbove(layers);else if(sheet.getBoundingClientRect().height>2)dockAbove(sheet);else dockBottom()},{passive:true});
   }
   function initAll(){initBrowColor();initPanelFlow()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initAll);else initAll();
