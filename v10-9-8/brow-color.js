@@ -75,5 +75,41 @@
     picker.addEventListener('input',picked,true);
     picker.addEventListener('change',picked,true);
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initBrowColor);else initBrowColor();
+
+  function initEditbarDock(){
+    const edit=document.getElementById('editbar');
+    if(!edit)return;
+    const style=document.createElement('style');
+    style.textContent='.editbar{position:fixed!important;bottom:auto;align-items:flex-end!important;flex-wrap:nowrap!important}.editbar .nudge{align-self:flex-end}';
+    document.head.appendChild(style);
+    const gap=5;
+    const visiblePanel=()=>{
+      const candidates=[document.getElementById('colorbar'),document.getElementById('layers'),document.getElementById('sheet')];
+      let best=null;
+      for(const el of candidates){
+        if(!el)continue;
+        const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+        if(cs.display==='none'||cs.visibility==='hidden'||r.height<2)continue;
+        if(!best||r.top<best.top)best=r;
+      }
+      if(best)return best;
+      const nav=document.querySelector('nav');
+      return nav?nav.getBoundingClientRect():null;
+    };
+    const dock=()=>{
+      if(!edit.classList.contains('show'))return;
+      const r=visiblePanel();if(!r)return;
+      edit.style.top='auto';
+      edit.style.bottom=Math.max(0,window.innerHeight-r.top+gap)+'px';
+    };
+    const obs=new MutationObserver(()=>requestAnimationFrame(dock));
+    [edit,document.getElementById('colorbar'),document.getElementById('layers'),document.getElementById('sheet')].filter(Boolean).forEach(el=>obs.observe(el,{attributes:true,attributeFilter:['class','style']}));
+    window.addEventListener('resize',dock,{passive:true});
+    window.addEventListener('orientationchange',()=>setTimeout(dock,120),{passive:true});
+    document.addEventListener('click',()=>requestAnimationFrame(dock),true);
+    requestAnimationFrame(dock);
+  }
+
+  function initAll(){initBrowColor();initEditbarDock()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initAll);else initAll();
 })();
