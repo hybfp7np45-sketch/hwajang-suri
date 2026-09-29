@@ -22,8 +22,20 @@ function boot(){
  let [rr,gg,bb]=hex2rgb(input.value),[h,s,v]=rgb2hsv(rr,gg,bb); const dot=$('.sicp-dot',modal),spec=$('.sicp-spectrum',modal),preview=$('.sicp-preview',modal);
  function apply(hex){input.value=hex;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));preview.style.background=hex;}
  function sync(){const hex=rgb2hex(...hsv2rgb(h,s,v));apply(hex);$('[data-k=h]',modal).value=h;$('[data-k=s]',modal).value=Math.round(s*100);$('[data-k=v]',modal).value=Math.round(v*100);$('[data-v=h]',modal).textContent=Math.round(h)+'°';$('[data-v=s]',modal).textContent=Math.round(s*100)+'%';$('[data-v=v]',modal).textContent=Math.round(v*100)+'%';dot.style.left=(h/360*100)+'%';dot.style.top=((1-v)*100)+'%';}
- const grid=$('.sicp-grid',modal), hues=[0,15,30,45,60,90,120,150,180,200,220,240,270,300,330];
- for(let row=0;row<10;row++)for(let col=0;col<12;col++){let hex;if(row===0){let q=Math.round(255*(1-col/11));hex=rgb2hex(q,q,q);}else{let hh=hues[Math.floor(col/12*hues.length)]||330,ss=.18+row*.09,vv=1-(row-1)*.075;hex=rgb2hex(...hsv2rgb(hh,clamp(ss,0,1),clamp(vv,.25,1)));}let b=document.createElement('button');b.className='sicp-cell';b.style.background=hex;b.dataset.hex=hex;b.addEventListener('click',()=>{[rr,gg,bb]=hex2rgb(hex);[h,s,v]=rgb2hsv(rr,gg,bb);sync();});grid.appendChild(b);}
+ const grid=$('.sicp-grid',modal);
+ const iosRows=[
+ ['#ffffff','#e5e5e5','#cccccc','#b2b2b2','#999999','#808080','#666666','#4d4d4d','#333333','#1a1a1a','#0d0d0d','#000000'],
+ ['#ffcccc','#ffe0cc','#fff0cc','#ffffcc','#e6ffcc','#ccffcc','#ccffe6','#ccffff','#cce6ff','#ccccff','#e6ccff','#ffccff'],
+ ['#ff9999','#ffc299','#ffe099','#ffff99','#ccff99','#99ff99','#99ffcc','#99ffff','#99ccff','#9999ff','#cc99ff','#ff99ff'],
+ ['#ff6666','#ffa366','#ffd166','#ffff66','#b3ff66','#66ff66','#66ffb3','#66ffff','#66b3ff','#6666ff','#b366ff','#ff66ff'],
+ ['#ff3333','#ff8533','#ffc233','#ffff33','#99ff33','#33ff33','#33ff99','#33ffff','#3399ff','#3333ff','#9933ff','#ff33ff'],
+ ['#ff0000','#ff6600','#ffb300','#ffff00','#80ff00','#00ff00','#00ff80','#00ffff','#0080ff','#0000ff','#8000ff','#ff00ff'],
+ ['#cc0000','#cc5200','#cc8f00','#cccc00','#66cc00','#00cc00','#00cc66','#00cccc','#0066cc','#0000cc','#6600cc','#cc00cc'],
+ ['#990000','#993d00','#996b00','#999900','#4d9900','#009900','#00994d','#009999','#004d99','#000099','#4d0099','#990099'],
+ ['#660000','#662900','#664700','#666600','#336600','#006600','#006633','#006666','#003366','#000066','#330066','#660066'],
+ ['#330000','#331400','#332400','#333300','#1a3300','#003300','#00331a','#003333','#001a33','#000033','#1a0033','#330033']
+ ];
+ iosRows.flat().forEach(hex=>{let b=document.createElement('button');b.className='sicp-cell';b.style.background=hex;b.dataset.hex=hex;b.addEventListener('click',()=>{[rr,gg,bb]=hex2rgb(hex);[h,s,v]=rgb2hsv(rr,gg,bb);sync();});grid.appendChild(b);});
  function pickSpec(e){let r=spec.getBoundingClientRect(),x=clamp(e.clientX-r.left,0,r.width),y=clamp(e.clientY-r.top,0,r.height);h=x/r.width*360;v=1-y/r.height;s=clamp(.2+y/r.height*.8,0,1);sync();}
  spec.addEventListener('pointerdown',e=>{spec.setPointerCapture(e.pointerId);pickSpec(e)});spec.addEventListener('pointermove',e=>{if(spec.hasPointerCapture(e.pointerId))pickSpec(e)});
  modal.querySelectorAll('.sicp-tab').forEach(b=>b.onclick=()=>{modal.querySelectorAll('.sicp-tab').forEach(x=>x.classList.toggle('on',x===b));modal.querySelectorAll('.sicp-pane').forEach(x=>x.classList.toggle('on',x.dataset.pane===b.dataset.tab));});
