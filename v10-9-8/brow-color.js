@@ -27,8 +27,8 @@
     const closeSheet=()=>{sheet.className='sheet level1';sheet.style.setProperty('height','0','important')};
     const dockTo=el=>{requestAnimationFrame(()=>{const r=el.getBoundingClientRect();edit.style.setProperty('position','fixed','important');edit.style.setProperty('top','auto','important');edit.style.setProperty('bottom',Math.max(0,window.innerHeight-r.top+gap)+'px','important')})};
     const openBrow=()=>{color.classList.remove('show');layers.classList.remove('show');sheet.style.removeProperty('height');if(design)design.style.display='flex';if(rail)rail.style.display='none';sheet.className='sheet level2';dockTo(sheet)};
-    const openColor=()=>{layers.classList.remove('show');closeSheet();setTimeout(()=>dockTo(color),0)};
-    const openLayer=()=>{color.classList.remove('show');closeSheet();setTimeout(()=>dockTo(layers),0)};
+    const openColor=()=>{layers.classList.remove('show');closeSheet();if(design)design.style.display='none';if(rail)rail.style.display='none';setTimeout(()=>dockTo(color),0)};
+    const openLayer=()=>{color.classList.remove('show');closeSheet();if(design)design.style.display='none';if(rail)rail.style.display='none';setTimeout(()=>dockTo(layers),0)};
     if(colorBtn)colorBtn.addEventListener('click',openColor,true);
     if(layerBtn)layerBtn.addEventListener('click',openLayer,true);
     if(browTab){browTab.addEventListener('pointerup',openBrow,true);browTab.addEventListener('click',openBrow,true)}
