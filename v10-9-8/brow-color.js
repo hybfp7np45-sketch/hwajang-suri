@@ -24,10 +24,10 @@
   function initPanelFlow(){
     const sheet=document.getElementById('sheet'),color=document.getElementById('colorbar'),layers=document.getElementById('layers'),edit=document.getElementById('editbar'),colorBtn=document.getElementById('colorbtn'),layerBtn=document.getElementById('layerbtn'),browTab=document.getElementById('browTab'),design=document.getElementById('designRail'),rail=document.getElementById('rail');
     if(!sheet||!color||!layers||!edit)return;
-    const gap=5;
+    const gap=5; /* edit controls are pinned to the photo top */
     const hideBrowSheet=()=>{sheet.className='sheet level1';sheet.style.setProperty('height','0','important');if(design)design.style.display='none';if(rail)rail.style.display='none'};
     const dockAbove=el=>requestAnimationFrame(()=>{const r=el.getBoundingClientRect();edit.style.setProperty('position','fixed','important');edit.style.setProperty('top','auto','important');edit.style.setProperty('bottom',Math.max(66,window.innerHeight-r.top+gap)+'px','important')});
-    const dockBottom=()=>{edit.style.setProperty('position','fixed','important');edit.style.setProperty('top','auto','important');edit.style.setProperty('bottom','71px','important')};
+    const dockBottom=()=>dockAbove(null);
     const openBrow=()=>{color.classList.remove('show');layers.classList.remove('show');sheet.style.removeProperty('height');if(design)design.style.display='flex';if(rail)rail.style.display='none';sheet.className='sheet level2';dockAbove(sheet)};
     const openColor=()=>{layers.classList.remove('show');hideBrowSheet();setTimeout(()=>{if(color.classList.contains('show'))dockAbove(color);else dockBottom()},0)};
     const openLayer=()=>{color.classList.remove('show');hideBrowSheet();setTimeout(()=>{if(layers.classList.contains('show'))dockAbove(layers);else dockBottom()},0)};
