@@ -26,7 +26,7 @@
     if(!sheet||!color||!layers||!edit)return;
     const gap=5; /* edit controls are pinned to the photo top */
     const hideBrowSheet=()=>{sheet.className='sheet level1';sheet.style.setProperty('height','0','important');if(design)design.style.display='none';if(rail)rail.style.display='none'};
-    const dockAbove=el=>requestAnimationFrame(()=>{const r=el.getBoundingClientRect();edit.style.setProperty('position','fixed','important');edit.style.setProperty('top','auto','important');edit.style.setProperty('bottom',Math.max(66,window.innerHeight-r.top+gap)+'px','important')});
+    const dockAbove=el=>requestAnimationFrame(()=>{const r=document.getElementById('stage').getBoundingClientRect();edit.style.setProperty('position','fixed','important');edit.style.setProperty('top',(r.top+6)+'px','important');edit.style.setProperty('bottom','auto','important');edit.style.setProperty('align-items','flex-end','important')});
     const dockBottom=()=>dockAbove(null);
     const openBrow=()=>{color.classList.remove('show');layers.classList.remove('show');sheet.style.removeProperty('height');if(design)design.style.display='flex';if(rail)rail.style.display='none';sheet.className='sheet level2';dockAbove(sheet)};
     const openColor=()=>{layers.classList.remove('show');hideBrowSheet();setTimeout(()=>{if(color.classList.contains('show'))dockAbove(color);else dockBottom()},0)};
