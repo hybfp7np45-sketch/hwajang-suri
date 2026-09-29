@@ -1,4 +1,4 @@
-(() => {
+(()=>{
   function loadIosPicker(){
     if(document.querySelector('script[data-suri-ios-picker]')) return;
     const s=document.createElement('script');
@@ -12,9 +12,27 @@
     loadIosPicker();
     let tries=0;const timer=setInterval(()=>{tries++;if(open()||tries>40)clearInterval(timer)},25);
   }
+  function restorePalette(){
+    const color=document.getElementById('colorbar');
+    if(!color)return;
+    const colors=color.querySelector('#colors')||color.querySelector('.colors');
+    if(!colors)return;
+    colors.querySelectorAll('.brow-restored-grid').forEach(x=>x.remove());
+    const old=[...colors.querySelectorAll('.swatch')];
+    old.forEach(x=>x.style.display='none');
+    const fixed=['#2b211f','#4a332b','#68483a','#211b1a','#8b4f12','#a76500','#9a7200','#55362d','#b07942'];
+    const key='hwajang-brow-custom-9-v1';let custom;
+    try{custom=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}
+    if(!Array.isArray(custom)||custom.length!==9)custom=Array(9).fill('');
+    const grid=document.createElement('div');grid.className='brow-restored-grid';
+    grid.style.cssText='display:grid;grid-template-columns:repeat(9,28px);grid-template-rows:repeat(2,28px);gap:6px 8px;width:max-content;flex:0 0 auto';
+    [...fixed,...custom].forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.className='swatch '+(i<9?'brow-fixed':'brow-custom');b.dataset.browColor=c||'';if(i>=9)b.dataset.slot=String(i-9);b.style.cssText='display:block;width:28px;height:28px;border-radius:50%;border:1px solid #d8cbd0;padding:0;background:'+(c||'#fff');grid.appendChild(b)});
+    colors.insertBefore(grid,colors.firstChild);
+  }
   function initPanelFlow(){
     const sheet=document.getElementById('sheet'),color=document.getElementById('colorbar'),layers=document.getElementById('layers'),edit=document.getElementById('editbar'),colorBtn=document.getElementById('colorbtn'),layerBtn=document.getElementById('layerbtn'),browTab=document.getElementById('browTab'),design=document.getElementById('designRail'),rail=document.getElementById('rail');
     if(!sheet||!layers||!edit)return;
+    restorePalette();
     if(color){color.classList.remove('show');color.style.setProperty('display','none','important')}
     const hideBrowSheet=()=>{sheet.className='sheet level1';sheet.style.setProperty('height','0','important');if(design)design.style.display='none';if(rail)rail.style.display='none'};
     const pinEditTop=()=>requestAnimationFrame(()=>{const st=document.getElementById('stage');if(!st)return;const r=st.getBoundingClientRect();edit.style.setProperty('position','fixed','important');edit.style.setProperty('top',(r.top+6)+'px','important');edit.style.setProperty('bottom','auto','important');edit.style.setProperty('align-items','center','important')});
