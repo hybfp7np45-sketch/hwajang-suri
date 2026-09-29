@@ -14,7 +14,7 @@ function boot(){
  #suriIosPicker.open{display:flex}.sicp-card{width:min(366px,calc(100vw - 28px));background:#f7f7f8;border-radius:20px 20px 0 0;box-shadow:0 18px 50px #0004;overflow:hidden;color:#111;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;padding-bottom:env(safe-area-inset-bottom)}
  .sicp-head{height:50px;display:grid;grid-template-columns:1fr 44px;align-items:center;padding:0 8px 0 16px;background:#fff}.sicp-title{display:flex;align-items:center;justify-content:flex-start;gap:8px}.sicp-title b{font-size:17px}.sicp-current{width:22px;height:22px;border-radius:50%;border:1px solid #c8c8cc;box-shadow:inset 0 0 0 1px #fff}.sicp-x{grid-column:2;border:0;background:#e9e9ec;width:30px;height:30px;border-radius:50%;font-size:22px;line-height:26px;color:#666;justify-self:center}
  .sicp-tabs{margin:10px 12px 12px;display:grid;grid-template-columns:repeat(3,1fr);background:#e5e5e8;border-radius:9px;padding:2px}.sicp-tab{height:32px;border:0;border-radius:7px;background:transparent;font-size:13px}.sicp-tab.on{background:#fff;box-shadow:0 1px 4px #0002;font-weight:600}
- .sicp-pane{display:none;padding:0 14px 16px}.sicp-pane.on{display:block}.sicp-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;background:#fff;border-radius:10px;padding:5px}.sicp-cell{aspect-ratio:1;border:0;border-radius:3px;padding:0;min-width:0}.sicp-cell.sel{outline:3px solid #fff;box-shadow:0 0 0 2px #111}
+ .sicp-pane{display:none;padding:0 14px 16px}.sicp-pane.on{display:block}.sicp-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:0;background:#fff;border-radius:10px;overflow:hidden;padding:0}.sicp-cell{aspect-ratio:1;border:0;border-radius:0;padding:0;min-width:0}.sicp-cell.sel{outline:3px solid #fff;outline-offset:-4px;box-shadow:inset 0 0 0 2px #111}
  .sicp-spectrum{height:238px;border-radius:12px;position:relative;touch-action:none;background:linear-gradient(to top,#000 0%,transparent 58%),linear-gradient(to right,#fff 0%,rgba(255,255,255,0) 42%),linear-gradient(90deg,#ff0000 0%,#ff9500 14%,#ffcc00 23%,#34c759 38%,#00c7be 50%,#0a84ff 64%,#5e5ce6 77%,#bf5af2 88%,#ff2d55 100%);overflow:hidden}.sicp-dot{position:absolute;width:24px;height:24px;border:3px solid #fff;border-radius:50%;box-shadow:0 1px 4px #0008;transform:translate(-50%,-50%);pointer-events:none}
  .sicp-sliders{display:grid;gap:15px;padding:6px 2px 4px}.sicp-row{display:grid;grid-template-columns:72px 1fr 44px;gap:9px;align-items:center;font-size:13px}.sicp-row input[type=range]{width:100%;margin:0}.sicp-val{text-align:right;font-variant-numeric:tabular-nums}.sicp-preview{height:42px;border-radius:10px;border:1px solid #d0d0d4}
  `;document.head.appendChild(style);
@@ -24,16 +24,16 @@ function boot(){
  function sync(){const hex=rgb2hex(...hsv2rgb(h,s,v));apply(hex);$('[data-k=h]',modal).value=h;$('[data-k=s]',modal).value=Math.round(s*100);$('[data-k=v]',modal).value=Math.round(v*100);$('[data-v=h]',modal).textContent=Math.round(h)+'°';$('[data-v=s]',modal).textContent=Math.round(s*100)+'%';$('[data-v=v]',modal).textContent=Math.round(v*100)+'%';dot.style.left=(h/360*100)+'%';dot.style.top=((1-v)*100)+'%';modal.querySelectorAll('.sicp-cell').forEach(c=>c.classList.toggle('sel',c.dataset.hex.toLowerCase()===hex.toLowerCase()));}
  const grid=$('.sicp-grid',modal);
  const iosRows=[
- ['#ffffff','#e5e5e5','#cccccc','#b2b2b2','#999999','#808080','#666666','#4d4d4d','#333333','#1a1a1a','#0d0d0d','#000000'],
- ['#ffcccc','#ffe0cc','#fff0cc','#ffffcc','#e6ffcc','#ccffcc','#ccffe6','#ccffff','#cce6ff','#ccccff','#e6ccff','#ffccff'],
- ['#ff9999','#ffc299','#ffe099','#ffff99','#ccff99','#99ff99','#99ffcc','#99ffff','#99ccff','#9999ff','#cc99ff','#ff99ff'],
- ['#ff6666','#ffa366','#ffd166','#ffff66','#b3ff66','#66ff66','#66ffb3','#66ffff','#66b3ff','#6666ff','#b366ff','#ff66ff'],
- ['#ff3333','#ff8533','#ffc233','#ffff33','#99ff33','#33ff33','#33ff99','#33ffff','#3399ff','#3333ff','#9933ff','#ff33ff'],
- ['#ff0000','#ff6600','#ffb300','#ffff00','#80ff00','#00ff00','#00ff80','#00ffff','#0080ff','#0000ff','#8000ff','#ff00ff'],
- ['#cc0000','#cc5200','#cc8f00','#cccc00','#66cc00','#00cc00','#00cc66','#00cccc','#0066cc','#0000cc','#6600cc','#cc00cc'],
- ['#990000','#993d00','#996b00','#999900','#4d9900','#009900','#00994d','#009999','#004d99','#000099','#4d0099','#990099'],
- ['#660000','#662900','#664700','#666600','#336600','#006600','#006633','#006666','#003366','#000066','#330066','#660066'],
- ['#330000','#331400','#332400','#333300','#1a3300','#003300','#00331a','#003333','#001a33','#000033','#1a0033','#330033']
+ ['#ffffff','#ebebeb','#d6d6d6','#c2c2c2','#adadad','#999999','#858585','#707070','#5c5c5c','#474747','#333333','#000000'],
+ ['#004d40','#00695c','#00796b','#00897b','#009688','#26a69a','#4db6ac','#80cbc4','#b2dfdb','#e0f2f1','#f1f8e9','#fff8e1'],
+ ['#006064','#00838f','#0097a7','#00acc1','#00bcd4','#26c6da','#4dd0e1','#80deea','#b2ebf2','#e0f7fa','#f0f4c3','#fff3e0'],
+ ['#0d47a1','#1565c0','#1976d2','#1e88e5','#2196f3','#42a5f5','#64b5f6','#90caf9','#bbdefb','#e3f2fd','#f8bbd0','#fce4ec'],
+ ['#1a237e','#283593','#303f9f','#3949ab','#3f51b5','#5c6bc0','#7986cb','#9fa8da','#c5cae9','#e8eaf6','#e1bee7','#f3e5f5'],
+ ['#4a148c','#6a1b9a','#7b1fa2','#8e24aa','#9c27b0','#ab47bc','#ba68c8','#ce93d8','#e1bee7','#f3e5f5','#f8bbd0','#fce4ec'],
+ ['#880e4f','#ad1457','#c2185b','#d81b60','#e91e63','#ec407a','#f06292','#f48fb1','#f8bbd0','#fce4ec','#ffcdd2','#ffebee'],
+ ['#b71c1c','#c62828','#d32f2f','#e53935','#f44336','#ef5350','#e57373','#ef9a9a','#ffcdd2','#ffebee','#ffe0b2','#fff3e0'],
+ ['#e65100','#ef6c00','#f57c00','#fb8c00','#ff9800','#ffa726','#ffb74d','#ffcc80','#ffe0b2','#fff3e0','#fff9c4','#fffde7'],
+ ['#f57f17','#f9a825','#fbc02d','#fdd835','#ffeb3b','#ffee58','#fff176','#fff59d','#fff9c4','#fffde7','#f1f8e9','#ffffff']
  ];
  iosRows.flat().forEach(hex=>{let b=document.createElement('button');b.className='sicp-cell';b.style.background=hex;b.dataset.hex=hex;b.addEventListener('click',()=>{[rr,gg,bb]=hex2rgb(hex);[h,s,v]=rgb2hsv(rr,gg,bb);sync();});grid.appendChild(b);});
  function pickSpec(e){let r=spec.getBoundingClientRect(),x=clamp(e.clientX-r.left,0,r.width),y=clamp(e.clientY-r.top,0,r.height);h=x/r.width*360;s=clamp(x/r.width*.25+.75,0,1);v=clamp(1-y/r.height,0,1);sync();}
