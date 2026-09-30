@@ -51,8 +51,8 @@
         let marker=document.getElementById('browEyedropLens');
         if(!marker){
           marker=document.createElement('div');marker.id='browEyedropLens';
-          marker.style.cssText='position:fixed;width:54px;height:54px;border-radius:50%;border:1.5px solid rgba(255,255,255,.95);box-shadow:0 1px 5px #0004;z-index:2147482999;pointer-events:none;display:none;background:rgba(30,30,30,.16);transform:translate(-50%,-50%)';
-          marker.innerHTML='<i style="position:absolute;left:50%;top:50%;width:12px;height:1.5px;background:#fff;transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 1px #0008"></i><i style="position:absolute;left:50%;top:50%;width:1.5px;height:12px;background:#fff;transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 1px #0008"></i>';
+          marker.style.cssText='position:fixed;width:72px;height:72px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.98);box-shadow:0 2px 8px #0006;z-index:2147482999;pointer-events:none;display:none;background:#fff;transform:translate(-50%,-50%)';
+          marker.innerHTML='<canvas width="72" height="72" style="display:block;width:72px;height:72px"></canvas><i style="position:absolute;left:50%;top:50%;width:16px;height:1.5px;background:#fff;transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 2px #000"></i><i style="position:absolute;left:50%;top:50%;width:1.5px;height:16px;background:#fff;transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 2px #000"></i>';
           document.body.appendChild(marker)
         }
 
@@ -73,8 +73,9 @@
           try{
             const p=sourceCtx.getImageData(x,y,1,1).data;
             const hex='#'+[p[0],p[1],p[2]].map(n=>n.toString(16).padStart(2,'0')).join('');
-            marker.style.display='block';marker.style.left=ev.clientX+'px';marker.style.top=Math.max(34,ev.clientY-64)+'px';marker.style.background=hex;
-            if(current)current.style.background=hex;
+            const lens=marker.querySelector('canvas'),lctx=lens.getContext('2d');const srcSpan=Math.max(8,Math.round(36*source.width/r.width));lctx.clearRect(0,0,72,72);lctx.imageSmoothingEnabled=true;lctx.drawImage(source,Math.max(0,x-srcSpan/2),Math.max(0,y-srcSpan/2),Math.min(srcSpan,source.width),Math.min(srcSpan,source.height),0,0,72,72);
+            marker.style.display='block';marker.style.left=ev.clientX+'px';marker.style.top=Math.max(42,ev.clientY-78)+'px';
+            if(current)current.style.background=hex;const live=document.getElementById('browCurrentSample');if(live)live.style.background=hex;
             if(commit)applyPaletteColor(hex)
           }catch(_){}
         };
@@ -120,6 +121,7 @@
   function initPanelFlow(){
     const sheet=document.getElementById('sheet'),color=document.getElementById('colorbar'),layers=document.getElementById('layers'),edit=document.getElementById('editbar'),colorBtn=document.getElementById('colorbtn'),layerBtn=document.getElementById('layerbtn'),browTab=document.getElementById('browTab'),design=document.getElementById('designRail'),rail=document.getElementById('rail');
     if(!sheet||!layers||!edit)return;
+    let live=document.getElementById('browCurrentSample');if(!live){const right=edit.querySelector('[data-n="1,0"]');if(right){live=document.createElement('span');live.id='browCurrentSample';live.setAttribute('aria-label','현재 선택 색상');live.style.cssText='width:38px;height:38px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #c8c8cc;background:#5b3b2e;display:block;justify-self:center;grid-column:3;grid-row:3;margin-top:3px';right.parentElement.appendChild(live);right.parentElement.style.gridTemplateRows='30px 30px 41px'}}
     restorePalette();
     if(color){color.classList.remove('show');color.style.setProperty('display','none','important')}
     const hideBrowSheet=()=>{sheet.className='sheet level1';sheet.style.setProperty('height','0','important');if(design)design.style.display='none';if(rail)rail.style.display='none'};
