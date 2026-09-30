@@ -48,6 +48,22 @@
         stage.style.cursor='crosshair';
         stage.style.touchAction='none';
 
+        let live=document.getElementById('browCurrentSample');
+        const rightArrow=document.querySelector('#editbar [data-n="1,0"]');
+        if(!live){
+          live=document.createElement('span');
+          live.id='browCurrentSample';
+          live.setAttribute('aria-label','현재 스포이드 색상');
+          live.style.cssText='position:fixed;width:38px;height:38px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #c8c8cc;background:#5b3b2e;z-index:2147482998;pointer-events:none;display:none;transform:translateX(-50%)';
+          document.body.appendChild(live)
+        }
+        if(rightArrow){
+          const ar=rightArrow.getBoundingClientRect();
+          live.style.left=(ar.left+ar.width/2)+'px';
+          live.style.top=(ar.bottom+20)+'px';
+          live.style.display='block'
+        }
+
         let marker=document.getElementById('browEyedropLens');
         if(!marker){
           marker=document.createElement('div');marker.id='browEyedropLens';
@@ -76,7 +92,7 @@
             const lens=marker.querySelector('canvas'),lctx=lens.getContext('2d');const srcSpan=Math.max(8,Math.round(36*source.width/r.width));lctx.clearRect(0,0,72,72);lctx.imageSmoothingEnabled=true;lctx.drawImage(source,Math.max(0,x-srcSpan/2),Math.max(0,y-srcSpan/2),Math.min(srcSpan,source.width),Math.min(srcSpan,source.height),0,0,72,72);
             const LENS_OFFSET_Y=38; /* 기준 위치보다 정확히 20px 아래 */
             marker.style.display='block';marker.style.left=ev.clientX+'px';marker.style.top=Math.max(42,ev.clientY-LENS_OFFSET_Y)+'px';
-            if(current)current.style.background=hex;const live=document.getElementById('browCurrentSample');if(live)live.style.background=hex;
+            if(current)current.style.background=hex;if(live)live.style.background=hex;
             if(commit)applyPaletteColor(hex)
           }catch(_){}
         };
@@ -106,7 +122,7 @@
           stage.removeEventListener('pointermove',move,true);
           stage.removeEventListener('pointerup',up,true);
           stage.removeEventListener('pointercancel',cancel,true);
-          marker.style.display='none';stage.style.cursor='';delete stage.dataset.eyedropActive;eyedrop.style.background='#fff';
+          marker.style.display='none';if(live)live.style.display='none';stage.style.cursor='';delete stage.dataset.eyedropActive;eyedrop.style.background='#fff';
           activePointer=null
         }
         stage.addEventListener('pointerdown',down,true);
