@@ -44,7 +44,7 @@
         const photo=document.getElementById('photo'),stage=document.getElementById('stage');
         if(!photo||!stage||!photo.src)return;
         eyedrop.style.background='#fff1f5';
-        stage.dataset.eyedropActive='1';const live=document.getElementById('browCurrentSample');if(live){const er=edit.getBoundingClientRect();live.style.left=(er.left+er.width/2-19)+'px';live.style.top=(er.bottom+6)+'px';live.style.display='block';}
+        stage.dataset.eyedropActive='1';const live=document.getElementById('browCurrentSample');if(live){const er=edit.getBoundingClientRect();live.style.left=(er.right+10)+'px';live.style.top=(er.bottom+16)+'px';live.style.display='block';}
         stage.style.cursor='crosshair';
         stage.style.touchAction='none';
 
