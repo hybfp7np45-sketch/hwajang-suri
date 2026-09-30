@@ -33,7 +33,7 @@
     let eyedrop=color.querySelector('.brow-eyedrop');
     if(!eyedrop&&head){
       eyedrop=document.createElement('button');eyedrop.type='button';eyedrop.className='brow-eyedrop';eyedrop.setAttribute('aria-label','스포이드');
-      eyedrop.innerHTML='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"><path d="M15.9 2.8c1.25-1.25 3.28-1.25 4.53 0s1.25 3.28 0 4.53l-2.05 2.05-4.53-4.53 2.05-2.05Z"/><path d="m15.55 6.55-1.45 1.45 1.25 1.25-8.65 8.65-3.25 1.05 1.05-3.25 8.65-8.65 1.25 1.25 1.45-1.45"/><path d="M4.55 15.65 6.75 17.85"/></g></svg>';
+      eyedrop.innerHTML='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" transform="rotate(-45 12 12)"><path d="M9.6 3.2h4.8v3.2l-1.05 1.05v8.85l-1.35 3.1-1.35-3.1V7.45L9.6 6.4V3.2Z"/><path d="M9.6 6.4h4.8"/></g></svg>';
       eyedrop.style.cssText='width:32px;height:32px;border:1px solid #d8cbd0;border-radius:50%;background:#fff;color:#444;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 32px;margin-left:auto';
       head.appendChild(eyedrop)
     }
@@ -51,7 +51,7 @@
         let marker=document.getElementById('browEyedropLens');
         if(!marker){
           marker=document.createElement('div');marker.id='browEyedropLens';
-          marker.style.cssText='position:fixed;width:42px;height:42px;border-radius:50%;border:1.5px solid rgba(255,255,255,.95);box-shadow:0 1px 5px #0004;z-index:2147482999;pointer-events:none;display:none;background:rgba(30,30,30,.16);transform:translate(-50%,-50%)';
+          marker.style.cssText='position:fixed;width:54px;height:54px;border-radius:50%;border:1.5px solid rgba(255,255,255,.95);box-shadow:0 1px 5px #0004;z-index:2147482999;pointer-events:none;display:none;background:rgba(30,30,30,.16);transform:translate(-50%,-50%)';
           marker.innerHTML='<i style="position:absolute;left:50%;top:50%;width:12px;height:1.5px;background:#fff;transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 1px #0008"></i><i style="position:absolute;left:50%;top:50%;width:1.5px;height:12px;background:#fff;transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 1px #0008"></i>';
           document.body.appendChild(marker)
         }
@@ -73,7 +73,7 @@
           try{
             const p=sourceCtx.getImageData(x,y,1,1).data;
             const hex='#'+[p[0],p[1],p[2]].map(n=>n.toString(16).padStart(2,'0')).join('');
-            marker.style.display='block';marker.style.left=ev.clientX+'px';marker.style.top=ev.clientY+'px';marker.style.background=hex;
+            marker.style.display='block';marker.style.left=ev.clientX+'px';marker.style.top=Math.max(34,ev.clientY-64)+'px';marker.style.background=hex;
             if(current)current.style.background=hex;
             if(commit)applyPaletteColor(hex)
           }catch(_){}
