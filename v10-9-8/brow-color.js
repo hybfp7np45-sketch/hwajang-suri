@@ -75,7 +75,7 @@
             const p=sourceCtx.getImageData(x,y,1,1).data;
             const hex='#'+[p[0],p[1],p[2]].map(n=>n.toString(16).padStart(2,'0')).join('');
             const lens=marker.querySelector('canvas'),lctx=lens.getContext('2d');const srcSpan=Math.max(8,Math.round(36*source.width/r.width));lctx.clearRect(0,0,72,72);lctx.imageSmoothingEnabled=true;lctx.drawImage(source,Math.max(0,x-srcSpan/2),Math.max(0,y-srcSpan/2),Math.min(srcSpan,source.width),Math.min(srcSpan,source.height),0,0,72,72);
-            marker.style.display='block';marker.style.left=ev.clientX+'px';marker.style.top=Math.max(42,ev.clientY-39)+'px';
+            marker.style.display='block';marker.style.left=ev.clientX+'px';marker.style.top=Math.max(42,ev.clientY-19.5)+'px;
             if(current)current.style.background=hex;const live=document.getElementById('browCurrentSample');if(live)live.style.background=hex;
             if(commit)applyPaletteColor(hex)
           }catch(_){}
