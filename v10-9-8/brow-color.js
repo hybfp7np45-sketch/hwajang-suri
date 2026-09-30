@@ -44,6 +44,7 @@
         const photo=document.getElementById('photo'),stage=document.getElementById('stage');
         if(!photo||!stage||!photo.src)return;
         eyedrop.style.background='#fff1f5';
+        const panelCurrent=document.getElementById('browCurrentSample');if(panelCurrent)panelCurrent.style.display='block';
         stage.dataset.eyedropActive='1';
         stage.style.cursor='crosshair';
         stage.style.touchAction='none';
@@ -105,7 +106,7 @@
           stage.removeEventListener('pointermove',move,true);
           stage.removeEventListener('pointerup',up,true);
           stage.removeEventListener('pointercancel',cancel,true);
-          marker.style.display='none';stage.style.cursor='';delete stage.dataset.eyedropActive;eyedrop.style.background='#fff';
+          marker.style.display='none';stage.style.cursor='';delete stage.dataset.eyedropActive;eyedrop.style.background='#fff';const panelCurrent=document.getElementById('browCurrentSample');if(panelCurrent)panelCurrent.style.display='none';
           activePointer=null
         }
         stage.addEventListener('pointerdown',down,true);
@@ -121,7 +122,7 @@
   function initPanelFlow(){
     const sheet=document.getElementById('sheet'),color=document.getElementById('colorbar'),layers=document.getElementById('layers'),edit=document.getElementById('editbar'),colorBtn=document.getElementById('colorbtn'),layerBtn=document.getElementById('layerbtn'),browTab=document.getElementById('browTab'),design=document.getElementById('designRail'),rail=document.getElementById('rail');
     if(!sheet||!layers||!edit)return;
-    let live=document.getElementById('browCurrentSample');if(!live){const right=edit.querySelector('[data-n="1,0"]');if(right){live=document.createElement('span');live.id='browCurrentSample';live.setAttribute('aria-label','현재 선택 색상');live.style.cssText='width:38px;height:38px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #c8c8cc;background:#5b3b2e;display:block;justify-self:center;grid-column:3;grid-row:3;margin-top:3px';right.parentElement.appendChild(live);right.parentElement.style.gridTemplateRows='30px 30px 41px'}}
+    let live=document.getElementById('browCurrentSample');if(!live){const right=edit.querySelector('[data-n="1,0"]');if(right){live=document.createElement('span');live.id='browCurrentSample';live.setAttribute('aria-label','현재 선택 색상');live.style.cssText='width:38px;height:38px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #c8c8cc;background:#5b3b2e;display:none;justify-self:center;grid-column:3;grid-row:3;margin-top:3px';right.parentElement.appendChild(live);right.parentElement.style.gridTemplateRows='30px 30px 41px'}}
     restorePalette();
     if(color){color.classList.remove('show');color.style.setProperty('display','none','important')}
     const hideBrowSheet=()=>{sheet.className='sheet level1';sheet.style.setProperty('height','0','important');if(design)design.style.display='none';if(rail)rail.style.display='none'};
