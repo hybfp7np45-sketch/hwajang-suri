@@ -21,9 +21,9 @@
     const old=[...colors.querySelectorAll('.swatch')];
     old.forEach(x=>x.style.display='none');
     const fixed=['#2b211f','#4a332b','#68483a','#211b1a','#8b4f12','#a76500','#9a7200','#55362d','#b07942'];
-    const key='hwajang-brow-custom-8-v1';let custom;
+    const key='hwajang-brow-custom-9-v2';let custom;
     try{custom=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}
-    if(!Array.isArray(custom)||custom.length!==8)custom=Array(8).fill('');
+    if(!Array.isArray(custom)||custom.length!==9)custom=Array(9).fill('');
     const grid=document.createElement('div');grid.className='brow-restored-grid';
     grid.style.cssText='display:grid;grid-template-columns:repeat(9,28px);grid-auto-rows:28px;gap:6px 8px;width:max-content;flex:0 0 auto';
     [...fixed,...custom].forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.className='swatch '+(i<9?'brow-fixed':'brow-custom');b.dataset.browColor=c||'';if(i>=9)b.dataset.slot=String(i-9);b.style.cssText='display:block;width:28px;height:28px;border-radius:50%;border:1px solid #d8cbd0;padding:0;background:'+(c||'#fff')+';position:relative';if(i>=9&&!c){b.textContent='+';b.style.fontSize='16px';b.style.lineHeight='1';b.style.color='#aaa';b.style.display='flex';b.style.alignItems='center';b.style.justifyContent='center'}grid.appendChild(b)});
