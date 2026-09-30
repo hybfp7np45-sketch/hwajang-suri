@@ -140,16 +140,30 @@
     const paintCustomSelection=()=>grid.querySelectorAll('.brow-custom').forEach(x=>{x.style.border=selectedCustom===x?'2px solid #72c7f2':'1px solid #d8cbd0'});
     const saveSelectedCustom=hex=>{if(!selectedCustom||!hex)return;const slot=+selectedCustom.dataset.slot;custom[slot]=hex;localStorage.setItem(key,JSON.stringify(custom));selectedCustom.dataset.browColor=hex;selectedCustom.textContent='';selectedCustom.style.background=hex;selectedCustom.style.color='transparent';paintCustomSelection()};
     grid.addEventListener('click',e=>{const sw=e.target.closest('.swatch');if(!sw)return;e.preventDefault();e.stopPropagation();if(sw.classList.contains('brow-custom')){selectedCustom=sw;paintCustomSelection();if(sw.dataset.browColor)applyPaletteColor(sw.dataset.browColor);return}if(sw.dataset.browColor)applyPaletteColor(sw.dataset.browColor)},true);
-    let holdTimer=null,holdTarget=null,deleteTip=null;
+    let holdTimer=null,holdTarget=null,deleteTip=null,holdStartX=0,holdStartY=0,longPressFired=false;
     const hideDeleteTip=()=>{if(deleteTip){deleteTip.remove();deleteTip=null}};
     const clearHold=()=>{if(holdTimer)clearTimeout(holdTimer);holdTimer=null;holdTarget=null};
-    const showDeleteTip=target=>{hideDeleteTip();const r=target.getBoundingClientRect();const tip=document.createElement('button');deleteTip=tip;tip.type='button';tip.textContent='삭제하기';tip.style.cssText='position:fixed;z-index:99999;padding:7px 11px;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:rgba(32,32,34,.96);color:#ff5a52;font-size:13px;font-weight:500;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.22);white-space:nowrap;';document.body.appendChild(tip);const tr=tip.getBoundingClientRect();tip.style.left=Math.max(8,Math.min(innerWidth-tr.width-8,r.left+r.width/2-tr.width/2))+'px';tip.style.top=Math.max(8,r.top-tr.height-7)+'px';tip.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();const slot=+target.dataset.slot;custom[slot]='';localStorage.setItem(key,JSON.stringify(custom));target.dataset.browColor='';target.textContent='+';target.style.background='#fff';target.style.color='#aaa';target.style.fontSize='12px';target.style.fontWeight='100';target.style.fontFamily='Arial, sans-serif';target.style.lineHeight='1';target.style.display='flex';target.style.alignItems='center';target.style.justifyContent='center';target.style.textAlign='center';target.style.padding='0';if(selectedCustom===target)selectedCustom=null;paintCustomSelection();hideDeleteTip()},{once:true})};
-    grid.addEventListener('pointerdown',e=>{hideDeleteTip();const sw=e.target.closest('.brow-custom');if(!sw||!sw.dataset.browColor)return;holdTarget=sw;holdTimer=setTimeout(()=>{const target=holdTarget;if(target)showDeleteTip(target);clearHold()},650)},true);
-    grid.addEventListener('pointerup',clearHold,true);
+    const showDeleteTip=target=>{
+      hideDeleteTip();
+      const r=target.getBoundingClientRect(),tip=document.createElement('button');deleteTip=tip;tip.type='button';tip.textContent='삭제하기';
+      tip.style.cssText='position:fixed;z-index:2147483647;padding:7px 11px;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:rgba(32,32,34,.96);color:#ff5a52;font-size:13px;font-weight:500;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.22);white-space:nowrap;touch-action:manipulation;-webkit-user-select:none;user-select:none';
+      document.body.appendChild(tip);const tr=tip.getBoundingClientRect();
+      tip.style.left=Math.max(8,Math.min(innerWidth-tr.width-8,r.left+r.width/2-tr.width/2))+'px';
+      tip.style.top=Math.max(8,r.top-tr.height-7)+'px';
+      const remove=ev=>{ev.preventDefault();ev.stopPropagation();const slot=+target.dataset.slot;custom[slot]='';localStorage.setItem(key,JSON.stringify(custom));target.dataset.browColor='';target.textContent='+';target.style.background='#fff';target.style.color='#aaa';target.style.fontSize='12px';target.style.fontWeight='100';target.style.fontFamily='Arial, sans-serif';target.style.lineHeight='1';target.style.display='flex';target.style.alignItems='center';target.style.justifyContent='center';target.style.textAlign='center';target.style.padding='0';if(selectedCustom===target)selectedCustom=null;paintCustomSelection();hideDeleteTip()};
+      tip.addEventListener('pointerup',remove,{once:true});tip.addEventListener('click',remove,{once:true})
+    };
+    const beginHold=e=>{
+      hideDeleteTip();const sw=e.target.closest('.brow-custom');if(!sw||!sw.dataset.browColor)return;
+      e.preventDefault();holdTarget=sw;holdStartX=e.clientX;holdStartY=e.clientY;longPressFired=false;
+      if(holdTimer)clearTimeout(holdTimer);
+      holdTimer=setTimeout(()=>{const target=holdTarget;if(target){longPressFired=true;showDeleteTip(target)}holdTimer=null;holdTarget=null},550)
+    };
+    grid.addEventListener('pointerdown',beginHold,true);
+    grid.addEventListener('pointermove',e=>{if(holdTimer&&Math.hypot(e.clientX-holdStartX,e.clientY-holdStartY)>12)clearHold()},true);
+    grid.addEventListener('pointerup',e=>{if(holdTimer)clearHold();if(longPressFired){e.preventDefault();e.stopImmediatePropagation();longPressFired=false}},true);
     grid.addEventListener('pointercancel',clearHold,true);
-    let holdStartX=0,holdStartY=0;
-    grid.addEventListener('pointerdown',e=>{holdStartX=e.clientX;holdStartY=e.clientY},true);
-    grid.addEventListener('pointermove',e=>{if(Math.hypot(e.clientX-holdStartX,e.clientY-holdStartY)>10)clearHold()},true);
+    grid.addEventListener('contextmenu',e=>{const sw=e.target.closest('.brow-custom');if(sw&&sw.dataset.browColor){e.preventDefault();e.stopPropagation()}},true);
     window.addEventListener('suri-brow-color-picked',e=>saveSelectedCustom(e.detail&&e.detail.hex));
     window.__suriSaveSelectedCustomColor=saveSelectedCustom;
   }
