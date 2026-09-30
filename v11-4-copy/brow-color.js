@@ -44,6 +44,8 @@
         const photo=document.getElementById('photo'),stage=document.getElementById('stage');
         if(!photo||!stage||!photo.src)return;
         eyedrop.style.background='#fff1f5';
+        const colorPanel=document.getElementById('colorbar');
+        if(colorPanel){colorPanel.classList.remove('show');colorPanel.style.setProperty('display','none','important')}
         stage.dataset.eyedropActive='1';
         stage.style.cursor='crosshair';
         stage.style.touchAction='none';
@@ -123,7 +125,8 @@
           stage.removeEventListener('pointerup',up,true);
           stage.removeEventListener('pointercancel',cancel,true);
           marker.style.display='none';if(live)live.style.display='none';stage.style.cursor='';delete stage.dataset.eyedropActive;eyedrop.style.background='#fff';
-          activePointer=null
+          activePointer=null;
+          if(colorPanel){colorPanel.style.removeProperty('display');colorPanel.classList.add('show')}
         }
         stage.addEventListener('pointerdown',down,true);
         stage.addEventListener('pointermove',move,true);
