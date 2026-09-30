@@ -33,7 +33,7 @@
     let eyedrop=color.querySelector('.brow-eyedrop');
     if(!eyedrop&&head){
       eyedrop=document.createElement('button');eyedrop.type='button';eyedrop.className='brow-eyedrop';eyedrop.setAttribute('aria-label','스포이드');
-      eyedrop.innerHTML='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" transform="rotate(-45 12 12)"><path d="M9.6 3.2h4.8v3.2l-1.05 1.05v8.85l-1.35 3.1-1.35-3.1V7.45L9.6 6.4V3.2Z"/><path d="M9.6 6.4h4.8"/></g></svg>';
+      eyedrop.innerHTML='';
       eyedrop.style.cssText='width:32px;height:32px;border:1px solid #d8cbd0;border-radius:50%;background:#fff;color:#444;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 32px;margin-left:auto';
       head.appendChild(eyedrop)
     }
