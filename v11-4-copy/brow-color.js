@@ -145,7 +145,11 @@
     const clearHold=()=>{if(holdTimer)clearTimeout(holdTimer);holdTimer=null;holdTarget=null};
     const showDeleteTip=target=>{hideDeleteTip();const r=target.getBoundingClientRect();const tip=document.createElement('button');deleteTip=tip;tip.type='button';tip.textContent='삭제하기';tip.style.cssText='position:fixed;z-index:99999;padding:7px 11px;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:rgba(32,32,34,.96);color:#ff5a52;font-size:13px;font-weight:500;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.22);white-space:nowrap;';document.body.appendChild(tip);const tr=tip.getBoundingClientRect();tip.style.left=Math.max(8,Math.min(innerWidth-tr.width-8,r.left+r.width/2-tr.width/2))+'px';tip.style.top=Math.max(8,r.top-tr.height-7)+'px';tip.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();const slot=+target.dataset.slot;custom[slot]='';localStorage.setItem(key,JSON.stringify(custom));target.dataset.browColor='';target.textContent='+';target.style.background='#fff';target.style.color='#aaa';target.style.fontSize='12px';target.style.fontWeight='100';target.style.fontFamily='Arial, sans-serif';target.style.lineHeight='1';target.style.display='flex';target.style.alignItems='center';target.style.justifyContent='center';target.style.textAlign='center';target.style.padding='0';if(selectedCustom===target)selectedCustom=null;paintCustomSelection();hideDeleteTip()},{once:true})};
     grid.addEventListener('pointerdown',e=>{hideDeleteTip();const sw=e.target.closest('.brow-custom');if(!sw||!sw.dataset.browColor)return;holdTarget=sw;holdTimer=setTimeout(()=>{const target=holdTarget;if(target)showDeleteTip(target);clearHold()},650)},true);
-    ['pointerup','pointercancel','pointermove'].forEach(n=>grid.addEventListener(n,clearHold,true));
+    grid.addEventListener('pointerup',clearHold,true);
+    grid.addEventListener('pointercancel',clearHold,true);
+    let holdStartX=0,holdStartY=0;
+    grid.addEventListener('pointerdown',e=>{holdStartX=e.clientX;holdStartY=e.clientY},true);
+    grid.addEventListener('pointermove',e=>{if(Math.hypot(e.clientX-holdStartX,e.clientY-holdStartY)>10)clearHold()},true);
     window.addEventListener('suri-brow-color-picked',e=>saveSelectedCustom(e.detail&&e.detail.hex));
     window.__suriSaveSelectedCustomColor=saveSelectedCustom;
   }
