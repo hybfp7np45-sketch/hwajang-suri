@@ -21,12 +21,12 @@
     const old=[...colors.querySelectorAll('.swatch')];
     old.forEach(x=>x.style.display='none');
     const fixed=['#2b211f','#4a332b','#68483a','#211b1a','#8b4f12','#a76500','#9a7200','#55362d','#b07942'];
-    const key='hwajang-brow-custom-9-v1';let custom;
+    const key='hwajang-brow-custom-8-v1';let custom;
     try{custom=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}
-    if(!Array.isArray(custom)||custom.length!==9)custom=Array(9).fill('');
+    if(!Array.isArray(custom)||custom.length!==8)custom=Array(8).fill('');
     const grid=document.createElement('div');grid.className='brow-restored-grid';
-    grid.style.cssText='display:grid;grid-template-columns:repeat(9,28px);grid-template-rows:repeat(2,28px);gap:6px 8px;width:max-content;flex:0 0 auto';
-    [...fixed,...custom].forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.className='swatch '+(i<9?'brow-fixed':'brow-custom');b.dataset.browColor=c||'';if(i>=9)b.dataset.slot=String(i-9);b.style.cssText='display:block;width:28px;height:28px;border-radius:50%;border:1px solid #d8cbd0;padding:0;background:'+(c||'#fff');grid.appendChild(b)});
+    grid.style.cssText='display:grid;grid-template-columns:repeat(9,28px);grid-auto-rows:28px;gap:6px 8px;width:max-content;flex:0 0 auto';
+    [...fixed,...custom].forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.className='swatch '+(i<9?'brow-fixed':'brow-custom');b.dataset.browColor=c||'';if(i>=9)b.dataset.slot=String(i-9);b.style.cssText='display:block;width:28px;height:28px;border-radius:50%;border:1px solid #d8cbd0;padding:0;background:'+(c||'#fff')+';position:relative';if(i>=9&&!c){b.textContent='+';b.style.fontSize='20px';b.style.lineHeight='24px';b.style.color='#777'}grid.appendChild(b)});
     colors.insertBefore(grid,colors.firstChild);
     const head=color.querySelector('.colorhead');
     let current=color.querySelector('.brow-current-color');if(!current&&head){current=document.createElement('span');current.className='brow-current-color';current.style.cssText='display:inline-block;width:28px;height:28px;border-radius:7px;border:1px solid #c8c8cc;box-shadow:inset 0 0 0 1px #fff;background:#5b3b2e;margin-left:8px;vertical-align:middle;flex:0 0 28px';head.querySelector('b')?.after(current)}
@@ -93,7 +93,7 @@
             const LENS_OFFSET_Y=38; /* 기준 위치보다 정확히 20px 아래 */
             marker.style.display='block';marker.style.left=ev.clientX+'px';marker.style.top=Math.max(42,ev.clientY-LENS_OFFSET_Y)+'px';
             if(current)current.style.background=hex;if(live)live.style.background=hex;
-            if(commit)applyPaletteColor(hex)
+            if(commit){applyPaletteColor(hex);if(window.__suriSaveSelectedCustomColor)window.__suriSaveSelectedCustomColor(hex)}
           }catch(_){}
         };
         const down=ev=>{
@@ -133,7 +133,16 @@
     }
     const hex2rgb=x=>{x=(x||'#735b54').replace('#','');return [parseInt(x.slice(0,2),16),parseInt(x.slice(2,4),16),parseInt(x.slice(4,6),16)]};
     function applyPaletteColor(hex){if(current)current.style.background=hex;const brow=document.querySelector('.brow.selected');if(!brow||!hex)return;brow.dataset.color=hex;brow.dataset.browColor=hex;const img=brow.querySelector('img');if(!img)return;if(!img.dataset.originalSrc)img.dataset.originalSrc=img.src;const source=img.dataset.originalSrc,[tr,tg,tb]=hex2rgb(hex),src=new Image();src.onload=()=>{const cv=document.createElement('canvas');cv.width=src.naturalWidth;cv.height=src.naturalHeight;const ctx=cv.getContext('2d',{willReadFrequently:true});ctx.drawImage(src,0,0);const data=ctx.getImageData(0,0,cv.width,cv.height),p=data.data;for(let i=0;i<p.length;i+=4){if(!p[i+3])continue;const lum=(.299*p[i]+.587*p[i+1]+.114*p[i+2])/255,detail=.72+.28*lum;p[i]=Math.min(255,tr*detail);p[i+1]=Math.min(255,tg*detail);p[i+2]=Math.min(255,tb*detail)}ctx.putImageData(data,0,0);img.src=cv.toDataURL('image/png')};src.src=source}
-    grid.addEventListener('click',e=>{const sw=e.target.closest('.swatch');if(!sw||!sw.dataset.browColor)return;e.preventDefault();e.stopPropagation();applyPaletteColor(sw.dataset.browColor)},true);
+    let selectedCustom=null;
+    const paintCustomSelection=()=>grid.querySelectorAll('.brow-custom').forEach(x=>{x.style.border=selectedCustom===x?'2px solid #ff4f87':'1px solid #d8cbd0'});
+    const saveSelectedCustom=hex=>{if(!selectedCustom||!hex)return;const slot=+selectedCustom.dataset.slot;custom[slot]=hex;localStorage.setItem(key,JSON.stringify(custom));selectedCustom.dataset.browColor=hex;selectedCustom.textContent='';selectedCustom.style.background=hex;selectedCustom.style.color='transparent';paintCustomSelection()};
+    grid.addEventListener('click',e=>{const sw=e.target.closest('.swatch');if(!sw)return;e.preventDefault();e.stopPropagation();if(sw.classList.contains('brow-custom')){selectedCustom=sw;paintCustomSelection();if(sw.dataset.browColor)applyPaletteColor(sw.dataset.browColor);return}if(sw.dataset.browColor)applyPaletteColor(sw.dataset.browColor)},true);
+    let holdTimer=null,holdTarget=null;
+    const clearHold=()=>{if(holdTimer)clearTimeout(holdTimer);holdTimer=null;holdTarget=null};
+    grid.addEventListener('pointerdown',e=>{const sw=e.target.closest('.brow-custom');if(!sw||!sw.dataset.browColor)return;holdTarget=sw;holdTimer=setTimeout(()=>{const target=holdTarget;if(!target)return;const slot=+target.dataset.slot;if(confirm('삭제하기')){custom[slot]='';localStorage.setItem(key,JSON.stringify(custom));target.dataset.browColor='';target.textContent='+';target.style.background='#fff';target.style.color='#777';target.style.fontSize='20px';target.style.lineHeight='24px';if(selectedCustom===target)selectedCustom=null;paintCustomSelection()}clearHold()},650)},true);
+    ['pointerup','pointercancel','pointermove'].forEach(n=>grid.addEventListener(n,clearHold,true));
+    window.addEventListener('suri-brow-color-picked',e=>saveSelectedCustom(e.detail&&e.detail.hex));
+    window.__suriSaveSelectedCustomColor=saveSelectedCustom;
   }
   function initPanelFlow(){
     const sheet=document.getElementById('sheet'),color=document.getElementById('colorbar'),layers=document.getElementById('layers'),edit=document.getElementById('editbar'),colorBtn=document.getElementById('colorbtn'),layerBtn=document.getElementById('layerbtn'),browTab=document.getElementById('browTab'),design=document.getElementById('designRail'),rail=document.getElementById('rail');
