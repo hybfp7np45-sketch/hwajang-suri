@@ -44,7 +44,7 @@
         const photo=document.getElementById('photo'),stage=document.getElementById('stage');
         if(!photo||!stage||!photo.src)return;
         eyedrop.style.background='#fff1f5';
-        stage.dataset.eyedropActive='1';const live=document.getElementById('browCurrentSample');if(live){const er=edit.getBoundingClientRect();live.style.left=(er.left+er.width/2-19)+'px';live.style.top=(er.bottom+6)+'px';live.style.display='block';}
+        stage.dataset.eyedropActive='1';const live=document.getElementById('browCurrentSample');if(live){const er=edit.getBoundingClientRect();live.style.left=(er.left+er.width/2-19)+'px';live.style.top=(er.bottom+26)+'px';live.style.display='block';}
         stage.style.cursor='crosshair';
         stage.style.touchAction='none';
 
@@ -126,9 +126,9 @@
     if(color){color.classList.remove('show');color.style.setProperty('display','none','important')}
     const hideBrowSheet=()=>{sheet.className='sheet level1';sheet.style.setProperty('height','0','important');if(design)design.style.display='none';if(rail)rail.style.display='none'};
     const pinEditTop=()=>requestAnimationFrame(()=>{const st=document.getElementById('stage');if(!st)return;const r=st.getBoundingClientRect();edit.style.setProperty('position','fixed','important');edit.style.setProperty('top',(r.top+6)+'px','important');edit.style.setProperty('bottom','auto','important');edit.style.setProperty('align-items','center','important')});
-    const openBrow=()=>{if(color)color.classList.remove('show');layers.classList.remove('show');sheet.style.removeProperty('height');if(design)design.style.display='flex';if(rail)rail.style.display='none';sheet.className='sheet level2';pinEditTop()};
-    const openColor=e=>{if(e){e.preventDefault();e.stopImmediatePropagation()}if(!document.querySelector('.brow.selected'))return;hideBrowSheet();layers.classList.remove('show');if(color){color.style.removeProperty('display');color.classList.add('show')}pinEditTop()};
-    const openLayer=e=>{if(e){e.preventDefault();e.stopImmediatePropagation()}hideBrowSheet();const wasOpen=layers.classList.contains('show');if(color){color.classList.remove('show');color.style.setProperty('display','none','important')}layers.classList.toggle('show',!wasOpen);pinEditTop()};
+    const openBrow=()=>{if(live)live.style.display='none';if(color)color.classList.remove('show');layers.classList.remove('show');sheet.style.removeProperty('height');if(design)design.style.display='flex';if(rail)rail.style.display='none';sheet.className='sheet level2';pinEditTop()};
+    const openColor=e=>{if(live)live.style.display='none';if(e){e.preventDefault();e.stopImmediatePropagation()}if(!document.querySelector('.brow.selected'))return;hideBrowSheet();layers.classList.remove('show');if(color){color.style.removeProperty('display');color.classList.add('show')}pinEditTop()};
+    const openLayer=e=>{if(live)live.style.display='none';if(e){e.preventDefault();e.stopImmediatePropagation()}hideBrowSheet();const wasOpen=layers.classList.contains('show');if(color){color.classList.remove('show');color.style.setProperty('display','none','important')}layers.classList.toggle('show',!wasOpen);pinEditTop()};
     if(colorBtn)colorBtn.addEventListener('click',openColor,true);
     if(color){color.addEventListener('click',e=>{const rainbow=e.target.closest('.pickerwrap,.brow-rainbow');if(!rainbow)return;e.preventDefault();e.stopImmediatePropagation();openIosPicker()},true)}
     if(layerBtn)layerBtn.addEventListener('click',openLayer,true);if(browTab){browTab.addEventListener('pointerup',openBrow,true);browTab.addEventListener('click',openBrow,true)}window.addEventListener('resize',pinEditTop,{passive:true});pinEditTop();
