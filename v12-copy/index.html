@@ -80,8 +80,16 @@ function drawExistingBrowLayer(){
  c.putImageData(im,0,0);out.drawImage(tmp,0,0,w,h);
 }
 function showBlob(blob){P.src=URL.createObjectURL(blob);P.onload=()=>{P.style.display='block';$('#empty').style.display='none';brows.forEach(x=>x.remove());brows=[];nextId=3;layerOrder=['existing'];zoom=1;panX=panY=0;world.style.transform='translate(0px,0px) scale(1)';select(null);drawExistingBrowLayer();syncZ()}}
-function load(f){if(f)showBlob(f)}
-$('#gallery').onclick=()=>{const i=$('#galIn');i.value='';i.click()};
+async function load(f){
+ if(!f)return;
+ try{
+  if(f.type&&f.type.startsWith('image/')){showBlob(f);return}
+  const ext=(f.name||'').split('.').pop().toLowerCase();
+  if(['jpg','jpeg','png','webp','heic','heif','gif','bmp','avif'].includes(ext)){showBlob(f);return}
+  showBlob(f)
+ }catch(e){alert('사진을 불러오지 못했어요. 사진 앱에서 다른 사진을 선택해 다시 시도해 주세요.')}
+}
+$('#gallery').onclick=()=>{const i=$('#galIn');i.value='';try{if(typeof i.showPicker==='function'){i.showPicker();return}}catch(_){}i.click()};
 $('#pickPhotos').onclick=async()=>{$('#pickmenu').style.display='none';
  try{
   if(window.showOpenFilePicker){
@@ -90,7 +98,7 @@ $('#pickPhotos').onclick=async()=>{$('#pickmenu').style.display='none';
   }else{$('#galIn').click()}
  }catch(e){if(e&&e.name!=='AbortError')$('#galIn').click()}
 };
-$('#pickFiles').onclick=()=>{$('#pickmenu').style.display='none';$('#fileIn').click()};
+$('#pickFiles').onclick=()=>{$('#pickmenu').style.display='none';const i=$('#fileIn');i.value='';try{if(typeof i.showPicker==='function'){i.showPicker();return}}catch(_){}i.click()};
 $('#pickCancel').onclick=()=>{$('#pickmenu').style.display='none'};$('#galIn').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)load(f);e.target.value=''};$('#fileIn').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)load(f);e.target.value=''};$('#browTab').onclick=()=>S.classList.toggle('open');
 function sizeHandles(el){const w=el.offsetWidth,h=el.offsetHeight,s=Math.max(5,Math.min(8,Math.min(w/12,h/5)));el.style.setProperty('--hs',s+'px');el.style.setProperty('--hit',Math.max(14,Math.min(20,Math.min(w/4,h*.7)))+'px')}
 function editor(el){let st=null;
