@@ -401,4 +401,41 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  },true);
  var oldRender=renderLayers;renderLayers=function(){oldRender();var row=layers.querySelector('.layerrow[data-fixed="existing"]');if(row)row.textContent='레이어 2 · 기존 눈썹 '+(EB.style.display==='none'?'OFF':'ON')};
 })();
+</script><script id="face-anchored-brow-v2">
+(function(){
+ var oldDraw=drawExistingBrowLayer;
+ drawExistingBrowLayer=function(){
+  oldDraw();
+  if(!P.naturalWidth||!P.naturalHeight)return;
+  var W=EB.width,H=EB.height,d=window.devicePixelRatio||1,w=stage.clientWidth,h=stage.clientHeight;
+  var ctx=EB.getContext('2d'),im=ctx.getImageData(0,0,W,H),a=im.data;
+  // Face-anchored eyebrow bands: use the central face geometry, not full-frame dark pixels.
+  // Keep only two narrow, separate brow bands; explicitly exclude eyes/hairline.
+  var left={cx:.34,cy:.315,rx:.19,ry:.055},right={cx:.66,cy:.315,rx:.19,ry:.055};
+  for(var y=0;y<H;y++)for(var x=0;x<W;x++){
+   var nx=x/W,ny=y/H,i=(y*W+x)*4;
+   var dl=Math.pow((nx-left.cx)/left.rx,2)+Math.pow((ny-left.cy)/left.ry,2);
+   var dr=Math.pow((nx-right.cx)/right.rx,2)+Math.pow((ny-right.cy)/right.ry,2);
+   var inBrow=(dl<=1||dr<=1);
+   if(!inBrow)a[i+3]=0;
+  }
+  ctx.putImageData(im,0,0);
+  // Rebuild cleaned skin only from the newly constrained eyebrow mask.
+  var skin=document.getElementById('skinBase');if(!skin)return;
+  skin.width=W;skin.height=H;skin.style.width=w+'px';skin.style.height=h+'px';
+  var sc=skin.getContext('2d');sc.setTransform(d,0,0,d,0,0);
+  var iw=P.naturalWidth,ih=P.naturalHeight,scale=Math.max(w/iw,h/ih),rw=iw*scale,rh=ih*scale,ox=(w-rw)/2,oy=(h-rh)/2;
+  sc.drawImage(P,ox,oy,rw,rh);
+  try{
+   var base=sc.getImageData(0,0,W,H),bd=base.data,mask=a,src=new Uint8ClampedArray(bd),R=Math.max(4,Math.round(W*.01));
+   for(var yy=R*3;yy<H-R*3;yy++)for(var xx=R*3;xx<W-R*3;xx++){var ii=(yy*W+xx)*4;if(mask[ii+3]<30)continue;var rr=0,gg=0,bb=0,n=0;
+    var pts=[[xx,yy-R*3],[xx,yy+R*3],[xx-R*2,yy],[xx+R*2,yy],[xx-R,yy-R*2],[xx+R,yy-R*2]];
+    for(var p=0;p<pts.length;p++){var px=pts[p][0],py=pts[p][1],j=(py*W+px)*4;if(mask[j+3]>30)continue;rr+=src[j];gg+=src[j+1];bb+=src[j+2];n++}
+    if(n){var aa=Math.min(.96,mask[ii+3]/120);bd[ii]=src[ii]*(1-aa)+(rr/n)*aa;bd[ii+1]=src[ii+1]*(1-aa)+(gg/n)*aa;bd[ii+2]=src[ii+2]*(1-aa)+(bb/n)*aa}
+   }
+   sc.setTransform(1,0,0,1,0,0);sc.putImageData(base,0,0);
+  }catch(e){}
+  skin.style.display='block';P.style.opacity='0';EB.style.display='block';
+ };
+})();
 </script></body></html>
