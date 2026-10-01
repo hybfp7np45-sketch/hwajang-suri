@@ -364,4 +364,31 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  stage.addEventListener('touchstart',start,{passive:false});stage.addEventListener('touchmove',move,{passive:false});stage.addEventListener('touchend',end,{passive:false});
  stage.addEventListener('pointerdown',start);stage.addEventListener('pointermove',move);stage.addEventListener('pointerup',end);close();
 })();
+</script><style id="existing-brow-separation-css">
+#skinBase{position:absolute;inset:0;width:100%;height:100%;display:none;pointer-events:none;z-index:1}
+</style>
+<script id="existing-brow-separation-v1">
+(function(){
+ var skin=document.createElement('canvas');skin.id='skinBase';world.insertBefore(skin,EB);
+ var originalDraw=drawExistingBrowLayer;
+ drawExistingBrowLayer=function(){
+  P.style.opacity='1';originalDraw();
+  var w=stage.clientWidth,h=stage.clientHeight,d=window.devicePixelRatio||1,W=EB.width,H=EB.height;
+  skin.width=W;skin.height=H;skin.style.width=w+'px';skin.style.height=h+'px';
+  var sc=skin.getContext('2d');sc.setTransform(d,0,0,d,0,0);
+  var iw=P.naturalWidth,ih=P.naturalHeight,scale=Math.max(w/iw,h/ih),rw=iw*scale,rh=ih*scale,ox=(w-rw)/2,oy=(h-rh)/2;
+  sc.drawImage(P,ox,oy,rw,rh);
+  try{
+   var base=sc.getImageData(0,0,W,H),bd=base.data,mask=EB.getContext('2d').getImageData(0,0,W,H).data,src=new Uint8ClampedArray(bd),R=Math.max(5,Math.round(W*.012));
+   for(var y=R*2;y<H-R*2;y++)for(var x=R*2;x<W-R*2;x++){var i=(y*W+x)*4;if(mask[i+3]<28)continue;var rr=0,gg=0,bb=0,n=0;
+    var pts=[[x,y-R*2],[x,y+R*2],[x-R*2,y],[x+R*2,y],[x-R,y-R*2],[x+R,y-R*2],[x-R,y+R*2],[x+R,y+R*2]];
+    for(var p=0;p<pts.length;p++){var xx=pts[p][0],yy=pts[p][1],j=(yy*W+xx)*4;if(mask[j+3]>28)continue;rr+=src[j];gg+=src[j+1];bb+=src[j+2];n++}
+    if(n){var a=Math.min(1,mask[i+3]/110);bd[i]=src[i]*(1-a)+(rr/n)*a;bd[i+1]=src[i+1]*(1-a)+(gg/n)*a;bd[i+2]=src[i+2]*(1-a)+(bb/n)*a}
+   }
+   sc.setTransform(1,0,0,1,0,0);sc.putImageData(base,0,0);
+  }catch(e){}
+  skin.style.display='block';P.style.opacity='0';skin.style.zIndex='1';EB.style.zIndex='100';
+ };
+ var oldSync=syncZ;syncZ=function(){oldSync();skin.style.zIndex='1';P.style.zIndex='0';EB.style.zIndex='100'};
+})();
 </script></body></html>
