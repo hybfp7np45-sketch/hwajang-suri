@@ -281,33 +281,22 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
 #browErasePanel{display:none;position:absolute!important;left:8px!important;right:8px!important;bottom:8px!important;z-index:2147483000!important;background:#fffffff8;border:1px solid #ead8de;border-radius:14px;padding:9px;box-shadow:0 5px 18px #0002;pointer-events:auto!important}
 #browErasePanel.show{display:block}.be-row{display:grid;grid-template-columns:54px 1fr 42px;gap:8px;align-items:center;font-size:11px;margin:5px 0}.be-actions{display:flex;gap:6px;margin-top:7px}.be-actions button{flex:1;height:31px;border:1px solid #ead8de;background:#fff;border-radius:9px;font-size:11px}
 </style>
-<script>
-(()=>{const stage=document.getElementById('stage'),world=document.getElementById('world'),P=document.getElementById('photo'),bar=document.querySelector('.edit-guidebar');if(!stage||!world||!bar)return;
- const ec=document.createElement('canvas');ec.id='browEraseCanvas';world.insertBefore(ec,document.getElementById('existingBrow'));window.browEraseCanvas=ec;
- const btn=document.getElementById('browEraseBtn');if(!btn)return;
- const panel=document.createElement('div');panel.id='browErasePanel';panel.innerHTML='<div class="be-row"><span>브러시</span><input id="beSize" type="range" min="8" max="64" value="26"><b id="beSizeV">26</b></div><div class="be-row"><span>투명도</span><input id="beAlpha" type="range" min="5" max="100" value="55"><b id="beAlphaV">55%</b></div><div class="be-actions"><button id="beUndo">되돌리기</button><button id="beClear">전체취소</button><button id="beDone">완료</button></div>';stage.appendChild(panel);
- let active=false,drawing=false,hist=[],last=null;
- const size=()=>+document.getElementById('beSize').value,alpha=()=>+document.getElementById('beAlpha').value/100;
- function fit(){const d=devicePixelRatio||1,w=stage.clientWidth,h=stage.clientHeight;if(ec.width!==Math.round(w*d)||ec.height!==Math.round(h*d)){const old=document.createElement('canvas');old.width=ec.width;old.height=ec.height;if(ec.width)old.getContext('2d').drawImage(ec,0,0);ec.width=Math.round(w*d);ec.height=Math.round(h*d);const c=ec.getContext('2d');c.setTransform(d,0,0,d,0,0);if(old.width)c.drawImage(old,0,0,old.width,old.height,0,0,w,h)}}}
- function snap(){fit();hist.push(ec.toDataURL());if(hist.length>20)hist.shift()}
- function restore(url){fit();const c=ec.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);if(!url)return;const im=new Image();im.onload=()=>c.drawImage(im,0,0,stage.clientWidth,stage.clientHeight);im.src=url}
- function photoGeom(){const w=stage.clientWidth,h=stage.clientHeight,iw=P.naturalWidth,ih=P.naturalHeight,sc=Math.max(w/iw,h/ih);return{w,h,iw,ih,sc,ox:(w-iw*sc)/2,oy:(h-ih*sc)/2}}
- function skinPatch(x,y,r,ang,dist){const g=photoGeom(),N=Math.max(20,Math.round(r*2)),tc=document.createElement('canvas');tc.width=tc.height=N;const c=tc.getContext('2d'),sx=(x-g.ox)/g.sc,sy=(y-g.oy)/g.sc,rr=r/g.sc,px=sx+Math.cos(ang)*rr*dist,py=sy+Math.sin(ang)*rr*dist;try{c.drawImage(P,px-rr,py-rr,rr*2,rr*2,0,0,N,N);return tc}catch(_){return null}}
- function dot(x,y){fit();const r=size()/2,c=ec.getContext('2d'),sources=[[Math.PI/2,2.2],[Math.PI*.72,2.05],[Math.PI*.28,2.05],[Math.PI,2.15],[0,2.15]],patches=sources.map(q=>skinPatch(x,y,r,q[0],q[1])).filter(Boolean);if(!patches.length)return;
-   const mix=document.createElement('canvas'),N=Math.max(20,Math.round(r*2));mix.width=mix.height=N;const m=mix.getContext('2d');patches.forEach((p,i)=>{m.globalAlpha=1/(i+1);m.drawImage(p,0,0,N,N)});m.globalAlpha=1;
-   c.save();c.globalAlpha=alpha();c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.clip();c.filter='blur(.35px)';c.drawImage(mix,x-r,y-r,r*2,r*2);c.restore();
-   // Feather only this dab's perimeter; do not globally blur/multiply the whole correction layer.
-   c.save();c.globalCompositeOperation='destination-out';const g=c.createRadialGradient(x,y,r*.78,x,y,r);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.20)');c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();c.restore()}
- function pt(e){const r=stage.getBoundingClientRect();return{x:(e.clientX-r.left-panX)/zoom,y:(e.clientY-r.top-panY)/zoom}}
- function toggleEraser(e){e?.preventDefault();e?.stopPropagation();active=!active;panel.classList.toggle('show',active);btn.classList.toggle('on',active);if(active){panel.style.display='block';panel.style.visibility='visible';panel.style.opacity='1'}else{panel.style.display='none'}fit()}
- btn.onclick=function(e){e.preventDefault();e.stopPropagation();toggleEraser(e)};
- document.getElementById('beSize').oninput=e=>document.getElementById('beSizeV').textContent=e.target.value;
- document.getElementById('beAlpha').oninput=e=>document.getElementById('beAlphaV').textContent=e.target.value+'%';
- document.getElementById('beUndo').onclick=()=>{if(hist.length)restore(hist.pop())};document.getElementById('beClear').onclick=()=>{snap();restore(null)};
- document.getElementById('beDone').onclick=()=>{active=false;drawing=false;panel.classList.remove('show');panel.style.display='none';btn.classList.remove('on')};
- stage.addEventListener('pointerdown',e=>{if(!active||e.target.closest('#browErasePanel,#browEraseBtn'))return;e.preventDefault();e.stopImmediatePropagation();snap();drawing=true;last=pt(e);dot(last.x,last.y);stage.setPointerCapture?.(e.pointerId)},true);
- stage.addEventListener('pointermove',e=>{if(!active||!drawing)return;e.preventDefault();e.stopImmediatePropagation();const p=pt(e),dx=p.x-last.x,dy=p.y-last.y,d=Math.hypot(dx,dy),step=Math.max(2,size()/7),n=Math.max(1,Math.ceil(d/step));for(let i=1;i<=n;i++)dot(last.x+dx*i/n,last.y+dy*i/n);last=p},true);
- const up=e=>{if(active&&drawing){e.preventDefault();e.stopImmediatePropagation();drawing=false}};stage.addEventListener('pointerup',up,true);stage.addEventListener('pointercancel',up,true);
- window.addEventListener('resize',fit);setTimeout(fit,0);const mo=new MutationObserver(()=>{if(P.style.display==='block'&&P.dataset.beSrc!==P.src){P.dataset.beSrc=P.src;hist=[];fit();ec.getContext('2d').clearRect(0,0,stage.clientWidth,stage.clientHeight)}});mo.observe(P,{attributes:true,attributeFilter:['src','style']});
+<script id="brow-eraser-ui-test">
+(function(){
+  var stage=document.getElementById('stage');
+  var btn=document.getElementById('browEraseBtn');
+  if(!stage||!btn)return;
+  var old=document.getElementById('browErasePanel'); if(old) old.remove();
+  var panel=document.createElement('div');
+  panel.id='browErasePanel';
+  panel.innerHTML='<div style="font-size:12px;font-weight:700;margin-bottom:7px">눈썹 지우기</div><div class="be-row"><span>브러시</span><input id="beSize" type="range" min="8" max="64" value="26"><b id="beSizeV">26</b></div><div class="be-row"><span>투명도</span><input id="beAlpha" type="range" min="5" max="100" value="55"><b id="beAlphaV">55%</b></div><div class="be-actions"><button type="button" id="beUndo">되돌리기</button><button type="button" id="beClear">전체취소</button><button type="button" id="beDone">완료</button></div>';
+  stage.appendChild(panel);
+  function closePanel(){panel.classList.remove('show');panel.style.display='none';btn.classList.remove('on')}
+  function openPanel(){panel.classList.add('show');panel.style.display='block';btn.classList.add('on')}
+  btn.onclick=function(ev){ev.preventDefault();ev.stopPropagation();if(panel.style.display==='block')closePanel();else openPanel()};
+  document.getElementById('beDone').onclick=closePanel;
+  document.getElementById('beSize').oninput=function(){document.getElementById('beSizeV').textContent=this.value};
+  document.getElementById('beAlpha').oninput=function(){document.getElementById('beAlphaV').textContent=this.value+'%'};
+  closePanel();
 })();
 </script></body></html>
