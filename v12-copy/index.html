@@ -278,28 +278,26 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
 #browEraseCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:11;pointer-events:none}
 #browEraseBtn{width:30px!important;height:26px!important;min-width:30px!important;border:1px solid #d9eef8!important;background:#f4fbfe!important;color:#72c7f2!important;border-radius:13px!important;padding:0!important;display:grid!important;place-items:center!important}
 #browEraseBtn.on{background:#e8f7fd!important;border-color:#72c7f2!important}
-#browErasePanel{display:none;position:fixed;left:10px;right:10px;bottom:calc(78px + env(safe-area-inset-bottom));z-index:1000002;background:#fffffff5;border:1px solid #ead8de;border-radius:14px;padding:9px;box-shadow:0 5px 18px #0002}
+#browErasePanel{display:none;position:absolute;left:8px;right:8px;bottom:4px;z-index:1000002;background:#fffffff5;border:1px solid #ead8de;border-radius:14px;padding:9px;box-shadow:0 5px 18px #0002}
 #browErasePanel.show{display:block}.be-row{display:grid;grid-template-columns:54px 1fr 42px;gap:8px;align-items:center;font-size:11px;margin:5px 0}.be-actions{display:flex;gap:6px;margin-top:7px}.be-actions button{flex:1;height:31px;border:1px solid #ead8de;background:#fff;border-radius:9px;font-size:11px}
 </style>
 <script>
 (()=>{const stage=document.getElementById('stage'),world=document.getElementById('world'),P=document.getElementById('photo'),bar=document.querySelector('.edit-guidebar');if(!stage||!world||!bar)return;
  const ec=document.createElement('canvas');ec.id='browEraseCanvas';world.insertBefore(ec,document.getElementById('existingBrow'));window.browEraseCanvas=ec;
  const btn=document.createElement('button');btn.id='browEraseBtn';btn.setAttribute('aria-label','눈썹 보정');btn.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7.2 17.8 3.8 14.4a2 2 0 0 1 0-2.8l7.8-7.8a2 2 0 0 1 2.8 0l5.8 5.8a2 2 0 0 1 0 2.8l-5.4 5.4H7.2Z"/><path d="m9.1 6.3 8.6 8.6"/><path d="M7.2 17.8h7.6"/></svg>';bar.prepend(btn);
- const panel=document.createElement('div');panel.id='browErasePanel';panel.innerHTML='<div class="be-row"><span>브러시</span><input id="beSize" type="range" min="8" max="64" value="26"><b id="beSizeV">26</b></div><div class="be-row"><span>투명도</span><input id="beAlpha" type="range" min="5" max="100" value="55"><b id="beAlphaV">55%</b></div><div class="be-actions"><button id="beUndo">되돌리기</button><button id="beClear">전체취소</button><button id="beDone">완료</button></div>';document.body.appendChild(panel);
+ const panel=document.createElement('div');panel.id='browErasePanel';panel.innerHTML='<div class="be-row"><span>브러시</span><input id="beSize" type="range" min="8" max="64" value="26"><b id="beSizeV">26</b></div><div class="be-row"><span>투명도</span><input id="beAlpha" type="range" min="5" max="100" value="55"><b id="beAlphaV">55%</b></div><div class="be-actions"><button id="beUndo">되돌리기</button><button id="beClear">전체취소</button><button id="beDone">완료</button></div>';stage.appendChild(panel);
  let active=false,drawing=false,hist=[],last=null;
  const size=()=>+document.getElementById('beSize').value,alpha=()=>+document.getElementById('beAlpha').value/100;
  function fit(){const d=devicePixelRatio||1,w=stage.clientWidth,h=stage.clientHeight;if(ec.width!==Math.round(w*d)||ec.height!==Math.round(h*d)){const old=document.createElement('canvas');old.width=ec.width;old.height=ec.height;if(ec.width)old.getContext('2d').drawImage(ec,0,0);ec.width=Math.round(w*d);ec.height=Math.round(h*d);const c=ec.getContext('2d');c.setTransform(d,0,0,d,0,0);if(old.width)c.drawImage(old,0,0,old.width,old.height,0,0,w,h)}}}
  function snap(){fit();hist.push(ec.toDataURL());if(hist.length>20)hist.shift()}
  function restore(url){fit();const c=ec.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);if(!url)return;const im=new Image();im.onload=()=>c.drawImage(im,0,0,stage.clientWidth,stage.clientHeight);im.src=url}
  function photoGeom(){const w=stage.clientWidth,h=stage.clientHeight,iw=P.naturalWidth,ih=P.naturalHeight,sc=Math.max(w/iw,h/ih);return{w,h,iw,ih,sc,ox:(w-iw*sc)/2,oy:(h-ih*sc)/2}}
- function patch(x,y,r){const g=photoGeom(),pr=Math.max(4,Math.round(r*1.35)),sx=(x-g.ox)/g.sc,sy=(y-g.oy)/g.sc,rr=pr/g.sc;
-   const tc=document.createElement('canvas'),N=Math.max(16,Math.round(pr*2));tc.width=tc.height=N;const c=tc.getContext('2d');
-   // blemish-heal style: sample clean skin from several offsets around the stroke, never from the center hair itself
-   const offs=[[0,1.65],[-1.45,.8],[1.45,.8],[0,-1.55]], pick=offs[Math.floor((x+y)%offs.length)],px=sx+pick[0]*rr,py=sy+pick[1]*rr;
-   try{c.drawImage(P,px-rr,py-rr,rr*2,rr*2,0,0,N,N)}catch(_){return null}
-   return tc}
- function dot(x,y){fit();const r=size()/2,src=patch(x,y,r);if(!src)return;const c=ec.getContext('2d');c.save();c.globalAlpha=alpha();c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.clip();c.filter='blur(.7px)';c.drawImage(src,x-r,y-r,r*2,r*2);c.restore();
-   c.save();c.globalCompositeOperation='destination-in';const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.72,'rgba(0,0,0,.94)');g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);c.restore()}
+ function skinPatch(x,y,r,ang,dist){const g=photoGeom(),N=Math.max(20,Math.round(r*2)),tc=document.createElement('canvas');tc.width=tc.height=N;const c=tc.getContext('2d'),sx=(x-g.ox)/g.sc,sy=(y-g.oy)/g.sc,rr=r/g.sc,px=sx+Math.cos(ang)*rr*dist,py=sy+Math.sin(ang)*rr*dist;try{c.drawImage(P,px-rr,py-rr,rr*2,rr*2,0,0,N,N);return tc}catch(_){return null}}
+ function dot(x,y){fit();const r=size()/2,c=ec.getContext('2d'),sources=[[Math.PI/2,2.2],[Math.PI*.72,2.05],[Math.PI*.28,2.05],[Math.PI,2.15],[0,2.15]],patches=sources.map(q=>skinPatch(x,y,r,q[0],q[1])).filter(Boolean);if(!patches.length)return;
+   const mix=document.createElement('canvas'),N=Math.max(20,Math.round(r*2));mix.width=mix.height=N;const m=mix.getContext('2d');patches.forEach((p,i)=>{m.globalAlpha=1/(i+1);m.drawImage(p,0,0,N,N)});m.globalAlpha=1;
+   c.save();c.globalAlpha=alpha();c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.clip();c.filter='blur(.35px)';c.drawImage(mix,x-r,y-r,r*2,r*2);c.restore();
+   // Feather only this dab's perimeter; do not globally blur/multiply the whole correction layer.
+   c.save();c.globalCompositeOperation='destination-out';const g=c.createRadialGradient(x,y,r*.78,x,y,r);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.20)');c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();c.restore()}
  function pt(e){const r=stage.getBoundingClientRect();return{x:(e.clientX-r.left-panX)/zoom,y:(e.clientY-r.top-panY)/zoom}}
  btn.onclick=e=>{e.preventDefault();e.stopPropagation();active=!active;panel.classList.toggle('show',active);btn.classList.toggle('on',active);fit()};
  document.getElementById('beSize').oninput=e=>document.getElementById('beSizeV').textContent=e.target.value;
