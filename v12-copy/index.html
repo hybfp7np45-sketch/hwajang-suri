@@ -391,4 +391,14 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  };
  var oldSync=syncZ;syncZ=function(){oldSync();skin.style.zIndex='1';P.style.zIndex='0';EB.style.zIndex='100'};
 })();
+</script><script id="existing-brow-layer-toggle-v1">
+(function(){
+ layers.addEventListener('click',function(e){
+  var row=e.target.closest('.layerrow[data-fixed="existing"]');if(!row)return;
+  e.preventDefault();e.stopImmediatePropagation();
+  EB.style.display=EB.style.display==='none'?'block':'none';
+  row.textContent='레이어 2 · 기존 눈썹 '+(EB.style.display==='none'?'OFF':'ON');
+ },true);
+ var oldRender=renderLayers;renderLayers=function(){oldRender();var row=layers.querySelector('.layerrow[data-fixed="existing"]');if(row)row.textContent='레이어 2 · 기존 눈썹 '+(EB.style.display==='none'?'OFF':'ON')};
+})();
 </script></body></html>
