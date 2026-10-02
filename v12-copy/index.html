@@ -21,7 +21,7 @@ nav{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid #f0e6e
 #colorbar .brow-color-grid .swatch{width:28px!important;height:28px!important;flex-basis:28px!important}
 #colorbar .pickerwrap{width:32px!important;height:32px!important;flex-basis:32px!important;padding:3px!important}
 #colorbar .intensity{margin:6px 0 0!important}
-</style><style id="drag-performance-v12copy">.brow{will-change:transform;contain:layout paint;backface-visibility:hidden;-webkit-backface-visibility:hidden}.brow img{backface-visibility:hidden;-webkit-backface-visibility:hidden}</style><style id="brow-eraser-layout-v2">
+</style><style id="drag-performance-v12copy">.brow{will-change:transform}</style><style id="brow-eraser-layout-v2">
 .edit-guidebar{justify-content:space-between!important;padding:0 12px!important}
 #browEraseBtn{position:static!important;left:auto!important;top:auto!important;width:auto!important;min-width:72px!important;height:26px!important;padding:0 10px!important;background:#f4fbfe!important;border:1px solid #d9eef8!important;color:#4caedc!important;border-radius:13px!important;font-size:11px!important;font-weight:700!important}
 #editGuideToggle{margin-left:auto!important}
@@ -261,15 +261,13 @@ stage.addEventListener('pointermove',e=>{
   const cx=(p[0].x+p[1].x)/2,cy=(p[0].y+p[1].y)/2;zoom=Math.max(1,Math.min(4,pinch.zoom*dist/pinch.dist));panX=pinch.panX+(cx-pinch.cx);panY=pinch.panY+(cy-pinch.cy);setWorld();e.preventDefault();return
  }
  if(moved&&stageDrag&&stageDrag.id===e.pointerId&&selected===stageDrag.el){
-  stageDrag.moveX=(e.clientX-stageDrag.x)/zoom;stageDrag.moveY=(e.clientY-stageDrag.y)/zoom;
-  if(!stageDrag.raf)stageDrag.raf=requestAnimationFrame(()=>{if(!stageDrag)return;stageDrag.raf=0;const el=stageDrag.el;el.style.transform='translate3d('+stageDrag.moveX+'px,'+stageDrag.moveY+'px,0) rotate('+(+el.dataset.rot||0)+'deg) scaleX('+(el.dataset.flip==='1'?-1:1)+')'});
-  e.preventDefault()
+  stageDrag.el.style.left=(stageDrag.left+(e.clientX-stageDrag.x)/zoom)+'px';stageDrag.el.style.top=(stageDrag.top+(e.clientY-stageDrag.y)/zoom)+'px';e.preventDefault()
  }
 });
 function endPointer(e){
  const wasTwo=!!pinch||touches.size>1,moved=gestureMoved.get(e.pointerId);
  touches.delete(e.pointerId);gestureMoved.delete(e.pointerId);if(touches.size<2)pinch=null;
- if(stageDrag&&stageDrag.id===e.pointerId){const d=stageDrag;if(d.raf)cancelAnimationFrame(d.raf);d.el.style.transform='';d.el.style.left=(d.left+(d.moveX||0))+'px';d.el.style.top=(d.top+(d.moveY||0))+'px';apply(d.el);stageDrag=null;}
+ if(stageDrag&&stageDrag.id===e.pointerId)stageDrag=null;
  if(!wasTwo&&!moved&&!e.target.closest('.brow')&&!e.target.closest('.edit-guide-line')){
   const now=Date.now();if(now-lastTap<330){select(null);lastTap=0}else lastTap=now
  }else if(wasTwo||moved)lastTap=0
