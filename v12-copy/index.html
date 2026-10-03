@@ -118,13 +118,25 @@ const browAssets={
  '세미아치 · 엠보1':'assets/세미아치-엠보1 p.png',
  '세미아치 · 헤스1':'assets/세미아치-헤스1 p .png',
  '세미아치 · 섀도우1':'assets/세미아치-섀도우1 p.png',
+ '아치형 · 헤스2':'assets/아치-헤스2.png',
+ '아치형 · 헤스3':'assets/아치-헤스3.png',
+ '아치형 · 헤스4':'assets/아치-헤스4.png',
+ '아치형 · 헤스5':'assets/아치-헤스5.png',
+ '아치형 · 헤스6':'assets/아치-헤스6.png',
+ '아치형 · 야생눈썹1':'assets/아치-야생눈썹1.png',
+ '각진아치 · 헤스1':'assets/각진아치-헤스1.png',
+ '각진아치 · 헤스2':'assets/각진아치-헤스2.png',
+ '각진아치 · 헤스3':'assets/각진아치-헤스3.png',
+ '각진아치 · 헤스4':'assets/각진아치-헤스4.png',
+ '각진아치 · 헤스5':'assets/각진아치-헤스5.png',
+ '각진아치 · 야생눈썹1':'assets/각진아치-야생눈썹1.png',
  '남자 결눈썹 · 헤스1':'assets/남자헤스1.png',
  '남자 결눈썹 · 헤스2':'assets/남자헤스2.png',
  '남자 결눈썹 · 헤스3':'assets/남자헤스3.png',
  '남자 결눈썹 · 헤스4':'assets/남자헤스4.png'
 };
 ['시그니처','기본형','일자형','세미아치','아치형','각진아치'].forEach(n=>designRail.insertAdjacentHTML('beforeend','<button class="design-card" data-design="'+n+'">'+n+'</button>'));
-function showTech(design){rail.innerHTML='';const techs=design==='시그니처'?['시그니처 · 엠보1','시그니처 · 섀도우1','시그니처 · 헤스1']:design==='기본형'?['기본형 · 엠보1','기본형 · 섀도우1','기본형 · 헤스1']:design==='일자형'?['일자형 · 엠보1','일자형 · 섀도우1','일자형 · 헤스1']:design==='세미아치'?['세미아치 · 엠보1','세미아치 · 섀도우1','세미아치 · 헤스1']:design==='아치형'?['아치형 · 엠보1','아치형 · 섀도우1','아치형 · 헤스1']:[];if(!techs.length){rail.style.display='none';S.className='sheet level2';return}rail.style.display='flex';S.className='sheet level3';techs.forEach(n=>{const btn=document.createElement('button');btn.className='card tech-card';btn.dataset.name=n;const mini=document.createElement('div');mini.className='mini';const im=document.createElement('img');im.style.cssText='width:100%;height:100%;object-fit:contain;';im.src=browAssets[n];mini.appendChild(im);const sm=document.createElement('small');sm.textContent=n.split(' · ')[1];btn.append(mini,sm);rail.appendChild(btn)})}
+function showTech(design){rail.innerHTML='';const techs=design==='시그니처'?['시그니처 · 엠보1','시그니처 · 섀도우1','시그니처 · 헤스1']:design==='기본형'?['기본형 · 엠보1','기본형 · 섀도우1','기본형 · 헤스1']:design==='일자형'?['일자형 · 엠보1','일자형 · 섀도우1','일자형 · 헤스1']:design==='세미아치'?['세미아치 · 엠보1','세미아치 · 섀도우1','세미아치 · 헤스1']:design==='아치형'?['아치형 · 엠보1','아치형 · 섀도우1','아치형 · 헤스1','아치형 · 헤스2','아치형 · 헤스3','아치형 · 헤스4','아치형 · 헤스5','아치형 · 헤스6','아치형 · 야생눈썹1']:design==='각진아치'?['각진아치 · 헤스1','각진아치 · 헤스2','각진아치 · 헤스3','각진아치 · 헤스4','각진아치 · 헤스5','각진아치 · 야생눈썹1']:[];if(!techs.length){rail.style.display='none';S.className='sheet level2';return}rail.style.display='flex';S.className='sheet level3';techs.forEach(n=>{const btn=document.createElement('button');btn.className='card tech-card';btn.dataset.name=n;const mini=document.createElement('div');mini.className='mini';const im=document.createElement('img');im.style.cssText='width:100%;height:100%;object-fit:contain;';im.src=browAssets[n];mini.appendChild(im);const sm=document.createElement('small');sm.textContent=n.split(' · ')[1];btn.append(mini,sm);rail.appendChild(btn)})}
 function showMaleTech(type){rail.innerHTML='';const techs=type==='결눈썹'?['남자 결눈썹 · 헤스1','남자 결눈썹 · 헤스2','남자 결눈썹 · 헤스3','남자 결눈썹 · 헤스4']:[];if(!techs.length){rail.style.display='none';S.className='sheet level2';return}rail.style.display='flex';S.className='sheet level3';techs.forEach((n,i)=>{const btn=document.createElement('button');btn.className='card tech-card';btn.dataset.name=n;const mini=document.createElement('div');mini.className='mini';const im=document.createElement('img');im.style.cssText='width:100%;height:100%;object-fit:contain;';im.src=browAssets[n];mini.appendChild(im);const sm=document.createElement('small');sm.textContent='헤스'+(i+1);btn.append(mini,sm);rail.appendChild(btn)})}
 designRail.onclick=e=>{const x=e.target.closest('.design-card');if(!x)return;[...designRail.children].forEach(y=>y.classList.remove('sel'));x.classList.add('sel');if(x.dataset.male)showMaleTech(x.dataset.male);else showTech(x.dataset.design)};function openBrowDesigns(){designRail.style.display='flex';rail.style.display='none';S.className='sheet level2'};$('#browTab').addEventListener('pointerup',openBrowDesigns);$('#browTab').addEventListener('click',openBrowDesigns);$('#maleBrowTab').addEventListener('click',()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));$('#maleBrowTab').classList.add('active');rail.style.display='none';designRail.innerHTML='<button class="design-card male-type" data-male="결눈썹">결눈썹</button><button class="design-card male-type" data-male="화장눈썹">화장눈썹</button>';designRail.style.display='flex';S.className='sheet level2'});$('#browTab').addEventListener('click',()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));$('#browTab').classList.add('active');designRail.innerHTML='';['시그니처','기본형','일자형','세미아치','아치형','각진아치'].forEach(n=>designRail.insertAdjacentHTML('beforeend','<button class="design-card" data-design="'+n+'">'+n+'</button>'));openBrowDesigns()});
 let selected=null,brows=[],nextId=3,faceAxisX=null,zoom=1,panX=0,panY=0,touches=new Map(),pinch=null;
