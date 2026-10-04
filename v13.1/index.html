@@ -152,18 +152,18 @@ let personalNameHold=null;
 function personalBrowMenu(btn){
  const id=btn.dataset.personalId;if(!id)return;
  const all=personalBrows(),list=all[currentBrowDesign]||[],item=list.find(x=>x.id===id);if(!item)return;
- const action=prompt('내 결 관리\n1 = 이름 변경\n2 = 삭제','1');
- if(action===null)return;
- if(action.trim()==='1'){
-  const next=prompt('내 결 이름 바꾸기',item.name);if(next===null)return;
-  const name=next.trim();if(!name)return;
-  item.name=name;all[currentBrowDesign]=list;if(savePersonalBrows(all))showTech(currentBrowDesign);return
- }
- if(action.trim()==='2'){
-  if(!confirm('“'+item.name+'”을 삭제할까요?'))return;
-  all[currentBrowDesign]=list.filter(x=>x.id!==id);
-  if(savePersonalBrows(all))showTech(currentBrowDesign)
- }
+ const oldMenu=document.getElementById('personalBrowActionMenu');if(oldMenu)oldMenu.remove();
+ const menu=document.createElement('div');menu.id='personalBrowActionMenu';
+ menu.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:2147483600;display:flex;align-items:flex-end;padding:0 12px calc(12px + env(safe-area-inset-bottom));';
+ const box=document.createElement('div');box.style.cssText='width:100%;background:#fff;border-radius:18px;padding:12px;display:grid;gap:8px;box-shadow:0 -8px 30px #0002;';
+ const rename=document.createElement('button');rename.type='button';rename.textContent='이름 변경';rename.style.cssText='height:48px;border:1px solid #d9eef8;background:#e8f7fd;color:#4caedc;border-radius:13px;font-weight:700;';
+ const del=document.createElement('button');del.type='button';del.textContent='삭제';del.style.cssText='height:48px;border:1px solid #d9eef8;background:#e8f7fd;color:#4caedc;border-radius:13px;font-weight:700;';
+ box.append(rename,del);menu.appendChild(box);document.body.appendChild(menu);
+ const close=()=>menu.remove();
+ menu.addEventListener('pointerdown',e=>{if(e.target===menu)close()});
+ box.addEventListener('pointerdown',e=>e.stopPropagation());
+ rename.onclick=()=>{close();const next=prompt('내 결 이름 바꾸기',item.name);if(next===null)return;const name=next.trim();if(!name)return;item.name=name;all[currentBrowDesign]=list;if(savePersonalBrows(all))showTech(currentBrowDesign)};
+ del.onclick=()=>{close();if(!confirm('“'+item.name+'”을 삭제할까요?'))return;all[currentBrowDesign]=list.filter(x=>x.id!==id);if(savePersonalBrows(all))showTech(currentBrowDesign)};
 }
 rail.addEventListener('pointerdown',e=>{const btn=e.target.closest('.personal-tech');if(!btn)return;personalNameHold=setTimeout(()=>{personalNameHold=null;personalBrowMenu(btn)},650)});
 ['pointerup','pointercancel','pointerleave'].forEach(ev=>rail.addEventListener(ev,()=>{if(personalNameHold){clearTimeout(personalNameHold);personalNameHold=null}}));
