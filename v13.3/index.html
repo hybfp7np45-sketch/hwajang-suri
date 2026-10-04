@@ -511,10 +511,10 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
    if(layers)layers.classList.remove('show');
    if(colorbar){colorbar.classList.remove('show');colorbar.style.setProperty('display','none','important')}
  }
- function edgeValue(){var h=Math.max(0,Math.min(1,+hard.value/100));return .04+h*.86}
+ function edgeValue(){return Math.max(0,Math.min(1,+hard.value/100))}
  function gradStops(alpha){
-   var e=edgeValue(),s0=Math.max(0,e-.28),s1=Math.min(.995,e+.18);
-   return{e:e,s0:s0,s1:s1,a:alpha}
+   var h=edgeValue(),soft=.08+(1-h)*.72,s0=Math.max(.02,1-soft),s1=.995;
+   return{s0:s0,s1:s1,a:alpha}
  }
  function gradientCSS(alpha){
    var g=gradStops(alpha),p0=Math.round(g.s0*100),p1=Math.round(g.s1*100);
