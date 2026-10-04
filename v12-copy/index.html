@@ -149,7 +149,6 @@ function syncZ(){P.style.zIndex=1;let z=10;brows.forEach(el=>el.style.zIndex=z++
 const personalBrowInput=document.createElement('input');personalBrowInput.type='file';personalBrowInput.accept='image/png';personalBrowInput.style.display='none';document.body.appendChild(personalBrowInput);let personalTargetDesign='';
 rail.onclick=e=>{const add=e.target.closest('.personal-add');if(add){personalTargetDesign=add.dataset.design||currentBrowDesign;personalBrowInput.value='';personalBrowInput.click();return}const c=e.target.closest('.tech-card');if(!c)return;if(!P.src)return alert('먼저 사진을 불러와 주세요.');const n=c.dataset.name,src=c.dataset.src||browAssets[n];addBrow({name:n,src,flip:false,ratio:null,imgScale:n.includes('섀도우')?.88:1})};
 let personalNameHold=null;
-let personalNameHold=null;
 let personalMenuItem=null;
 function personalBrowMenu(btn){
  const id=btn.dataset.personalId;if(!id)return;
