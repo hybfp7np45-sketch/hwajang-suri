@@ -155,11 +155,13 @@ function personalBrowMenu(btn){
  const all=personalBrows(),list=all[currentBrowDesign]||[],item=list.find(x=>x.id===id);if(!item)return;
  personalMenuItem={id,design:currentBrowDesign};document.querySelector('#personalMenu').classList.add('show')
 }
-const personalMenu=document.querySelector('#personalMenu');
+const personalMenu=document.getElementById('personalMenu');
+if(personalMenu){
 personalMenu.querySelector('.pm-cancel').onclick=()=>{personalMenu.classList.remove('show');personalMenuItem=null};
 personalMenu.addEventListener('click',e=>{if(e.target===personalMenu){personalMenu.classList.remove('show');personalMenuItem=null}});
 personalMenu.querySelector('.pm-rename').onclick=()=>{if(!personalMenuItem)return;const all=personalBrows(),list=all[personalMenuItem.design]||[],item=list.find(x=>x.id===personalMenuItem.id);if(!item)return;personalMenu.classList.remove('show');const next=prompt('내 결 이름 바꾸기',item.name);if(next===null)return;const name=next.trim();if(!name)return;item.name=name;all[personalMenuItem.design]=list;if(savePersonalBrows(all))showTech(personalMenuItem.design);personalMenuItem=null};
 personalMenu.querySelector('.pm-delete').onclick=()=>{if(!personalMenuItem)return;const all=personalBrows(),list=all[personalMenuItem.design]||[],item=list.find(x=>x.id===personalMenuItem.id);if(!item)return;if(!confirm('“'+item.name+'”을 삭제할까요?'))return;all[personalMenuItem.design]=list.filter(x=>x.id!==personalMenuItem.id);const d=personalMenuItem.design;personalMenu.classList.remove('show');personalMenuItem=null;if(savePersonalBrows(all))showTech(d)};
+}
 rail.addEventListener('pointerdown',e=>{const btn=e.target.closest('.personal-tech');if(!btn)return;personalNameHold=setTimeout(()=>{personalNameHold=null;personalBrowMenu(btn)},650)});
 ['pointerup','pointercancel','pointerleave'].forEach(ev=>rail.addEventListener(ev,()=>{if(personalNameHold){clearTimeout(personalNameHold);personalNameHold=null}}));
 rail.addEventListener('contextmenu',e=>{const btn=e.target.closest('.personal-tech');if(btn)e.preventDefault()});
