@@ -488,7 +488,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
 #browEraseLensV133:before,#browEraseLensV133:after{content:'';position:absolute;left:50%;top:50%;background:#fff;transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 2px #000}
 #browEraseLensV133:before{width:16px;height:1.5px}#browEraseLensV133:after{width:1.5px;height:16px}
 </style>
-<style id="v133-eraser-touch-fix">body.v133-erasing .brow.selected .rh{pointer-events:none!important}body.v133-erasing .brow.selected{touch-action:none!important}body.v133-erasing .brow.selected{pointer-events:none!important}body.v133-erasing .brow.selected img,body.v133-erasing .brow.selected svg,body.v133-erasing .brow.selected canvas{pointer-events:none!important}</style><script id="v133-selected-brow-eraser-script">
+<style id="v133-eraser-touch-fix">body.v133-erasing .brow.selected .rh{pointer-events:none!important}body.v133-erasing .brow.selected{touch-action:none!important}body.v133-erasing .brow.selected{pointer-events:none!important}body.v133-erasing .brow.selected img,body.v133-erasing .brow.selected svg,body.v133-erasing .brow.selected canvas{pointer-events:none!important}.brow.selected .rh{z-index:20!important}</style><script id="v133-selected-brow-eraser-script">
 (function(){
  var editbar=document.getElementById('editbar'),oldBtn=document.getElementById('magicEraseToggle'),slot=document.getElementById('eraserPanelSlot'),layers=document.getElementById('layers'),colorbar=document.getElementById('colorbar');
  if(!editbar||!slot)return;if(oldBtn)oldBtn.style.display='none';
@@ -538,8 +538,8 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
    else if(svg){
      try{var xml=new XMLSerializer().serializeToString(svg),blob=new Blob([xml],{type:'image/svg+xml'}),url=URL.createObjectURL(blob),tmp=new Image();tmp.onload=function(){ctx.clearRect(0,0,work.width,work.height);ctx.drawImage(tmp,0,0,work.width,work.height);URL.revokeObjectURL(url)};tmp.src=url;var xml64='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml);var syncImg=new Image();syncImg.src=xml64;src=svg}catch(_){return false}
    } else return false;
-   overlay=work;overlay.className='brow-erase-live-v133';overlay.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;transform-origin:center;z-index:1;';
-   overlay.style.transform='scaleX('+(b.dataset.flip==='1'?-1:1)+')';overlay.style.opacity=(img&&img.style.opacity)||'1';b.insertBefore(overlay,b.firstChild);if(img)img.style.visibility='hidden';if(svg)svg.style.visibility='hidden';
+   overlay=work;overlay.className='brow-erase-live-v133';overlay.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;transform-origin:center;z-index:18;';
+   overlay.style.transform='scaleX('+(b.dataset.flip==='1'?-1:1)+')';overlay.style.opacity=(img&&img.style.opacity)||'1';b.appendChild(overlay);if(img)img.style.visibility='hidden';if(svg)svg.style.visibility='hidden';
    if(svg){var xml2=new XMLSerializer().serializeToString(svg),tmp2=new Image();tmp2.onload=function(){ctx.clearRect(0,0,work.width,work.height);ctx.drawImage(tmp2,0,0,work.width,work.height);ready=true};tmp2.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml2)}
    return true
  }
