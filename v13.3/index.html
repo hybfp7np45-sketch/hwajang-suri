@@ -488,7 +488,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
 #browEraseLensV133:before,#browEraseLensV133:after{content:'';position:absolute;left:50%;top:50%;background:#fff;transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 2px #000}
 #browEraseLensV133:before{width:16px;height:1.5px}#browEraseLensV133:after{width:1.5px;height:16px}
 </style>
-<style id="v133-eraser-touch-fix">body.v133-erasing .brow.selected .rh{pointer-events:none!important}body.v133-erasing .brow.selected{touch-action:none!important}body.v133-erasing .brow.selected{pointer-events:none!important}body.v133-erasing .brow.selected img,body.v133-erasing .brow.selected svg,body.v133-erasing .brow.selected canvas{pointer-events:none!important}.brow.selected .rh{z-index:20!important}</style><script id="v133-selected-brow-eraser-script">
+<style id="v133-eraser-touch-fix">body.v133-erasing .brow.selected .rh{pointer-events:none!important}body.v133-erasing .brow.selected{touch-action:none!important}body.v133-erasing .brow.selected{pointer-events:none!important}body.v133-erasing .brow.selected img,body.v133-erasing .brow.selected svg,body.v133-erasing .brow.selected canvas{pointer-events:none!important}.brow.selected .rh{z-index:20!important}</style><style id="v133-eraser-alpha-fix">#beCursorV133{border:0!important;outline:0!important;box-shadow:none!important}</style><script id="v133-selected-brow-eraser-script">
 (function(){
  var editbar=document.getElementById('editbar'),oldBtn=document.getElementById('magicEraseToggle'),slot=document.getElementById('eraserPanelSlot'),layers=document.getElementById('layers'),colorbar=document.getElementById('colorbar');
  if(!editbar||!slot)return;if(oldBtn)oldBtn.style.display='none';
@@ -566,9 +566,12 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
 
  function localPoint(e){var b=sel();if(!b||!work)return null,r=b.getBoundingClientRect();if(!r.width||!r.height)return null;var x=(e.clientX-r.left)/r.width*work.width,y=(e.clientY-r.top)/r.height*work.height;if(b.dataset.flip==='1')x=work.width-x;return{x:x,y:y,cx:e.clientX,cy:e.clientY}}
  function oneDab(x,y){
-   var b=sel(),scale=work.width/Math.max(1,b.getBoundingClientRect().width),rad=(+size.value/2)*scale,alpha=+opacity.value/100,gp=gradStops(alpha),g=ctx.createRadialGradient(x,y,0,x,y,rad);
-   g.addColorStop(0,'rgba(0,0,0,'+alpha+')');if(gp.s0>0)g.addColorStop(gp.s0,'rgba(0,0,0,'+alpha+')');g.addColorStop((gp.s0+1)/2,'rgba(0,0,0,'+(alpha*.5)+')');g.addColorStop(1,'rgba(0,0,0,0)');
-   ctx.save();ctx.globalCompositeOperation='destination-out';ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rad,0,Math.PI*2);ctx.fill();ctx.restore()
+   var b=sel(),scale=work.width/Math.max(1,b.getBoundingClientRect().width),rad=(+size.value/2)*scale,alpha=+opacity.value/100,gp=gradStops(alpha);
+   var left=Math.max(0,Math.floor(x-rad-2)),top=Math.max(0,Math.floor(y-rad-2)),right=Math.min(work.width,Math.ceil(x+rad+2)),bottom=Math.min(work.height,Math.ceil(y+rad+2)),w=right-left,h=bottom-top;
+   if(w<=0||h<=0)return;
+   var im=ctx.getImageData(left,top,w,h),d=im.data,cx=x-left,cy=y-top,inner=rad*gp.s0,span=Math.max(.001,rad-inner);
+   for(var py=0;py<h;py++){for(var px=0;px<w;px++){var dx=px-cx,dy=py-cy,dist=Math.sqrt(dx*dx+dy*dy);if(dist>=rad)continue;var strength=dist<=inner?1:1-(dist-inner)/span;strength=Math.max(0,Math.min(1,strength))*alpha;var ai=(py*w+px)*4+3;d[ai]=Math.round(d[ai]*(1-strength))}}
+   ctx.putImageData(im,left,top)
  }
  function dab(p,q){if(!ctx||!p)return;var b=sel(),scale=work.width/Math.max(1,b.getBoundingClientRect().width),rad=(+size.value/2)*scale;if(q){var dx=p.x-q.x,dy=p.y-q.y,dist=Math.hypot(dx,dy),step=Math.max(1,rad*.20),n=Math.max(1,Math.ceil(dist/step));for(var i=1;i<=n;i++)oneDab(q.x+dx*i/n,q.y+dy*i/n)}else oneDab(p.x,p.y)}
  function showLens(p){
