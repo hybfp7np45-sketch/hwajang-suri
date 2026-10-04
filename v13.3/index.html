@@ -487,7 +487,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
 #browEraseLensV133:before,#browEraseLensV133:after{content:'';position:absolute;left:50%;top:50%;background:#fff;transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 2px #000}
 #browEraseLensV133:before{width:16px;height:1.5px}#browEraseLensV133:after{width:1.5px;height:16px}
 </style>
-<script id="v133-selected-brow-eraser-script">
+<style id="v133-eraser-touch-fix">body.v133-erasing .brow.selected .rh{pointer-events:none!important}body.v133-erasing .brow.selected{touch-action:none!important}</style><script id="v133-selected-brow-eraser-script">
 (function(){
  var editbar=document.getElementById('editbar'),oldBtn=document.getElementById('magicEraseToggle'),slot=document.getElementById('eraserPanelSlot'),layers=document.getElementById('layers'),colorbar=document.getElementById('colorbar');
  if(!editbar||!slot)return;if(oldBtn)oldBtn.style.display='none';
@@ -513,12 +513,12 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  }
  function edgeValue(){return Math.max(0,Math.min(1,+hard.value/100))}
  function gradStops(alpha){
-   var h=edgeValue(),soft=.08+(1-h)*.72,s0=Math.max(.02,1-soft),s1=.995;
+   var h=edgeValue(),s0=Math.pow(h,1.55)*.82,s1=1;
    return{s0:s0,s1:s1,a:alpha}
  }
  function gradientCSS(alpha){
    var g=gradStops(alpha),p0=Math.round(g.s0*100),p1=Math.round(g.s1*100);
-   return 'radial-gradient(circle,rgba(76,174,220,'+(0.72*alpha)+') 0%,rgba(76,174,220,'+(0.62*alpha)+') '+p0+'%,rgba(76,174,220,'+(0.30*alpha)+') '+Math.round((p0+p1)/2)+'%,rgba(76,174,220,0) '+p1+'%,rgba(76,174,220,0) 100%)'
+   return 'radial-gradient(circle,rgba(76,174,220,'+(0.72*alpha)+') 0%,rgba(76,174,220,'+(0.72*alpha)+') '+p0+'%,rgba(76,174,220,'+(0.36*alpha)+') '+Math.round((p0+p1)/2)+'%,rgba(76,174,220,0) 100%)'
  }
  function updatePreview(){
    var d=+size.value,o=+opacity.value/100;
@@ -548,8 +548,8 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
    else if(svg&&b){var ni=document.createElement('img');ni.src=data;ni.style.cssText='width:100%;height:100%;display:block;pointer-events:none';b.insertBefore(ni,svg);svg.remove();img=ni;svg=null}
    removeOverlay()
  }
- function open(){if(!sel()){alert('먼저 지울 눈썹을 선택해 주세요.');return}closeOthers();history=[];if(!prepare())return;active=true;btn.classList.add('on');panel.classList.add('show')}
- function close(commitIt){if(active&&commitIt!==false)commit();else if(active)removeOverlay();active=false;drawing=false;pointers.clear();eraserPinch=null;btn.classList.remove('on');panel.classList.remove('show');cursor.style.display='none';lens.style.display='none'}
+ function open(){if(!sel()){alert('먼저 지울 눈썹을 선택해 주세요.');return}closeOthers();history=[];if(!prepare())return;active=true;document.body.classList.add('v133-erasing');btn.classList.add('on');panel.classList.add('show')}
+ function close(commitIt){if(active&&commitIt!==false)commit();else if(active)removeOverlay();active=false;document.body.classList.remove('v133-erasing');drawing=false;pointers.clear();eraserPinch=null;btn.classList.remove('on');panel.classList.remove('show');cursor.style.display='none';lens.style.display='none'}
  window.__closeBrowEraserV133=function(){close(true)};
 
  btn.addEventListener('pointerdown',function(e){e.stopPropagation()});btn.onclick=function(e){e.preventDefault();e.stopPropagation();active?close(true):open()};
@@ -566,7 +566,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  function localPoint(e){var b=sel();if(!b||!work)return null,r=b.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*work.width,y=(e.clientY-r.top)/r.height*work.height;if(b.dataset.flip==='1')x=work.width-x;return{x:x,y:y,cx:e.clientX,cy:e.clientY}}
  function oneDab(x,y){
    var b=sel(),scale=work.width/Math.max(1,b.getBoundingClientRect().width),rad=(+size.value/2)*scale,alpha=+opacity.value/100,gp=gradStops(alpha),g=ctx.createRadialGradient(x,y,0,x,y,rad);
-   g.addColorStop(0,'rgba(0,0,0,'+alpha+')');g.addColorStop(gp.s0,'rgba(0,0,0,'+(alpha*.92)+')');g.addColorStop((gp.s0+gp.s1)/2,'rgba(0,0,0,'+(alpha*.48)+')');g.addColorStop(gp.s1,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,0)');
+   g.addColorStop(0,'rgba(0,0,0,'+alpha+')');if(gp.s0>0)g.addColorStop(gp.s0,'rgba(0,0,0,'+alpha+')');g.addColorStop((gp.s0+1)/2,'rgba(0,0,0,'+(alpha*.5)+')');g.addColorStop(1,'rgba(0,0,0,0)');
    ctx.save();ctx.globalCompositeOperation='destination-out';ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rad,0,Math.PI*2);ctx.fill();ctx.restore()
  }
  function dab(p,q){if(!ctx||!p)return;var b=sel(),scale=work.width/Math.max(1,b.getBoundingClientRect().width),rad=(+size.value/2)*scale;if(q){var dx=p.x-q.x,dy=p.y-q.y,dist=Math.hypot(dx,dy),step=Math.max(1,rad*.20),n=Math.max(1,Math.ceil(dist/step));for(var i=1;i<=n;i++)oneDab(q.x+dx*i/n,q.y+dy*i/n)}else oneDab(p.x,p.y)}
@@ -587,6 +587,9 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
    if(!drawing)return;var p=localPoint(e);if(!p)return;cursor.style.left=p.cx+'px';cursor.style.top=p.cy+'px';dab(p,last);last=p;if(!raf)raf=requestAnimationFrame(function(){raf=0;showLens(last)});e.preventDefault();e.stopPropagation()
  }
  function end(e){if(!active||!pointers.has(e.pointerId))return;pointers.delete(e.pointerId);if(pointers.size<2)eraserPinch=null;drawing=false;last=null;cursor.style.display='none';lens.style.display='none';e.preventDefault();e.stopPropagation()}
- stage.addEventListener('pointerdown',start,true);stage.addEventListener('pointermove',move,true);stage.addEventListener('pointerup',end,true);stage.addEventListener('pointercancel',end,true);
+ document.addEventListener('pointerdown',function(e){if(!active||!stage.contains(e.target))return;start(e)},true);
+ document.addEventListener('pointermove',function(e){if(!active||!pointers.has(e.pointerId))return;move(e)},true);
+ document.addEventListener('pointerup',function(e){if(!active||!pointers.has(e.pointerId))return;end(e)},true);
+ document.addEventListener('pointercancel',function(e){if(!active||!pointers.has(e.pointerId))return;end(e)},true);
 })();
 </script><script id="v133-panel-exclusive-bridge">(function(){function bind(){var lb=document.getElementById('layerbtn'),cb=document.getElementById('colorbtn');[lb,cb].forEach(function(b){if(b&&!b.dataset.v133Exclusive){b.dataset.v133Exclusive='1';b.addEventListener('click',function(){if(window.__closeBrowEraserV133)window.__closeBrowEraserV133()},true)}})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind()})();</script></body></html>
