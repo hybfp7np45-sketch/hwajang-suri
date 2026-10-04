@@ -476,108 +476,105 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
 #bePreviewDotV133,#beCursorV133{border:0!important;outline:0!important;box-shadow:none!important}
 #browErasePanelV133,#browErasePanelV133 *{touch-action:manipulation}
 </style>
+<style id="v133-refine-2">
+/* V13.3: keep the existing one-line layout, move the whole work bar to the top edge, and unify controls to the approved eraser style */
+#editbar{top:calc(env(safe-area-inset-top,0px) + 6px)!important;bottom:auto!important;align-items:center!important}
+#editbar>button,#editbar .nudge button{border:1px solid #d9eef8!important;background:#f4fbfe!important;color:#4caedc!important;border-radius:10px!important;font-size:11px!important;font-weight:700!important}
+#editbar>button:active,#editbar .nudge button:active,#editbar>button.on{background:#e8f7fd!important;border-color:#72c7f2!important}
+#bePreviewDotV133,#beCursorV133{border:0!important;outline:0!important;box-shadow:none!important}
+#browEraseLensV133{position:fixed;width:72px;height:72px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.98);box-shadow:0 2px 8px #0006;z-index:2147483647;pointer-events:none;display:none;background:#fff;transform:translate(-50%,-50%)}
+#browEraseLensV133 canvas{display:block;width:72px;height:72px}
+#browEraseLensV133:before,#browEraseLensV133:after{content:'';position:absolute;left:50%;top:50%;background:#fff;transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 2px #000}
+#browEraseLensV133:before{width:16px;height:1.5px}#browEraseLensV133:after{width:1.5px;height:16px}
+</style>
 <script id="v133-selected-brow-eraser-script">
 (function(){
- var editbar=document.getElementById('editbar'), oldBtn=document.getElementById('magicEraseToggle'), slot=document.getElementById('eraserPanelSlot');
- if(!editbar||!slot)return;
- if(oldBtn)oldBtn.style.display='none';
+ var editbar=document.getElementById('editbar'),oldBtn=document.getElementById('magicEraseToggle'),slot=document.getElementById('eraserPanelSlot'),layers=document.getElementById('layers'),colorbar=document.getElementById('colorbar');
+ if(!editbar||!slot)return;if(oldBtn)oldBtn.style.display='none';
 
  var btn=document.createElement('button');btn.id='browEraseBtnV133';btn.type='button';btn.textContent='지우기';
- var colorBtn=document.getElementById('colorbtn');
- if(colorBtn&&colorBtn.parentNode===editbar) colorBtn.insertAdjacentElement('afterend',btn); else editbar.appendChild(btn);
+ var colorBtn=document.getElementById('colorbtn'),layerBtn=document.getElementById('layerbtn');
+ if(colorBtn&&colorBtn.parentNode===editbar)colorBtn.insertAdjacentElement('afterend',btn);else editbar.appendChild(btn);
 
  var panel=document.createElement('div');panel.id='browErasePanelV133';
  panel.innerHTML='<div class="be-title">눈썹 부분 지우기</div><div id="bePreviewV133"><div id="bePreviewDotV133"></div></div><div class="be-row"><span>브러시 크기</span><input id="beSizeV133" type="range" min="6" max="80" value="28"><b id="beSizeTxtV133">28px</b></div><div class="be-row"><span>가장자리 강도</span><input id="beHardV133" type="range" min="0" max="100" value="70"><b id="beHardTxtV133">70%</b></div><div class="be-row"><span>투명도</span><input id="beOpacityV133" type="range" min="5" max="100" value="100"><b id="beOpacityTxtV133">100%</b></div><div class="be-actions"><button id="beUndoV133" type="button">되돌리기</button><button id="beDoneV133" type="button">완료</button></div>';
  slot.appendChild(panel);
 
  var cursor=document.createElement('div');cursor.id='beCursorV133';document.body.appendChild(cursor);
- var size=document.getElementById('beSizeV133'),hard=document.getElementById('beHardV133'),opacity=document.getElementById('beOpacityV133'),preview=document.getElementById('bePreviewDotV133');
- var undo=document.getElementById('beUndoV133'),done=document.getElementById('beDoneV133');
- var active=false,drawing=false,last=null,work=null,ctx=null,img=null,overlay=null,history=[],pointers=new Map(),eraserPinch=null;
+ var lens=document.createElement('div');lens.id='browEraseLensV133';lens.innerHTML='<canvas width="72" height="72"></canvas>';document.body.appendChild(lens);
+ var lensCanvas=lens.querySelector('canvas'),lensCtx=lensCanvas.getContext('2d');
+ var size=document.getElementById('beSizeV133'),hard=document.getElementById('beHardV133'),opacity=document.getElementById('beOpacityV133'),preview=document.getElementById('bePreviewDotV133'),undo=document.getElementById('beUndoV133'),done=document.getElementById('beDoneV133');
+ var active=false,drawing=false,last=null,work=null,ctx=null,img=null,overlay=null,history=[],pointers=new Map(),eraserPinch=null,raf=0;
 
  function sel(){try{return selected&&selected.classList.contains('brow')?selected:null}catch(_){return document.querySelector('.brow.selected')}}
- function edgeValue(){var h=Math.max(0,Math.min(1,+hard.value/100));return .015+Math.pow(h,2.15)*.97}
+ function closeOthers(){
+   if(layers)layers.classList.remove('show');
+   if(colorbar){colorbar.classList.remove('show');colorbar.style.setProperty('display','none','important')}
+ }
+ function edgeValue(){var h=Math.max(0,Math.min(1,+hard.value/100));return .04+h*.86}
+ function gradStops(alpha){
+   var e=edgeValue(),s0=Math.max(0,e-.28),s1=Math.min(.995,e+.18);
+   return{e:e,s0:s0,s1:s1,a:alpha}
+ }
+ function gradientCSS(alpha){
+   var g=gradStops(alpha),p0=Math.round(g.s0*100),p1=Math.round(g.s1*100);
+   return 'radial-gradient(circle,rgba(76,174,220,'+(0.72*alpha)+') 0%,rgba(76,174,220,'+(0.62*alpha)+') '+p0+'%,rgba(76,174,220,'+(0.30*alpha)+') '+Math.round((p0+p1)/2)+'%,rgba(76,174,220,0) '+p1+'%,rgba(76,174,220,0) 100%)'
+ }
  function updatePreview(){
-   var d=+size.value,o=+opacity.value/100,edge=edgeValue(),pct=Math.round(edge*100);
-   document.getElementById('beSizeTxtV133').textContent=d+'px';
-   document.getElementById('beHardTxtV133').textContent=hard.value+'%';
-   document.getElementById('beOpacityTxtV133').textContent=opacity.value+'%';
-   preview.style.width=Math.min(52,d)+'px';preview.style.height=Math.min(52,d)+'px';
-   preview.style.background='radial-gradient(circle,rgba(76,174,220,'+(0.72*o)+') 0 '+pct+'%,rgba(76,174,220,'+(0.16*o)+') '+Math.min(99,pct+1)+'%,rgba(76,174,220,0) 100%)';
-   cursor.style.width=d+'px';cursor.style.height=d+'px';
-   cursor.style.background='radial-gradient(circle,rgba(76,174,220,'+(0.18*o)+') 0 '+pct+'%,rgba(76,174,220,0) 100%)';
+   var d=+size.value,o=+opacity.value/100;
+   document.getElementById('beSizeTxtV133').textContent=d+'px';document.getElementById('beHardTxtV133').textContent=hard.value+'%';document.getElementById('beOpacityTxtV133').textContent=opacity.value+'%';
+   preview.style.width=Math.min(52,d)+'px';preview.style.height=Math.min(52,d)+'px';preview.style.background=gradientCSS(o);
+   cursor.style.width=d+'px';cursor.style.height=d+'px';cursor.style.background=gradientCSS(Math.min(.35,o))
  }
  [size,hard,opacity].forEach(function(x){x.addEventListener('input',updatePreview)});updatePreview();
 
  function removeOverlay(){if(overlay){overlay.remove();overlay=null}if(img)img.style.visibility=''}
  function prepare(){
-   var b=sel();if(!b)return false;img=b.querySelector('img');if(!img||!img.complete||!img.naturalWidth)return false;
-   removeOverlay();
-   work=document.createElement('canvas');work.width=img.naturalWidth;work.height=img.naturalHeight;ctx=work.getContext('2d',{willReadFrequently:false});ctx.drawImage(img,0,0,work.width,work.height);
+   var b=sel();if(!b)return false;img=b.querySelector('img');if(!img||!img.complete||!img.naturalWidth)return false;removeOverlay();
+   work=document.createElement('canvas');work.width=img.naturalWidth;work.height=img.naturalHeight;ctx=work.getContext('2d');ctx.drawImage(img,0,0,work.width,work.height);
    overlay=work;overlay.className='brow-erase-live-v133';overlay.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;transform-origin:center;z-index:1;';
-   overlay.style.transform='scaleX('+(b.dataset.flip==='1'?-1:1)+')';
-   overlay.style.opacity=img.style.opacity||'1';
-   b.insertBefore(overlay,b.firstChild);img.style.visibility='hidden';return true
+   overlay.style.transform='scaleX('+(b.dataset.flip==='1'?-1:1)+')';overlay.style.opacity=img.style.opacity||'1';b.insertBefore(overlay,b.firstChild);img.style.visibility='hidden';return true
  }
- function commit(){
-   if(!work||!img)return;
-   var data=work.toDataURL('image/png');img.src=data;img.dataset.originalSrc=data;removeOverlay()
- }
- function open(){if(!sel()){alert('먼저 지울 눈썹을 선택해 주세요.');return}history=[];if(!prepare())return;active=true;btn.classList.add('on');panel.classList.add('show')}
- function close(){if(active)commit();active=false;drawing=false;pointers.clear();eraserPinch=null;btn.classList.remove('on');panel.classList.remove('show');cursor.style.display='none'}
- btn.addEventListener('pointerdown',function(e){e.stopPropagation()});
- btn.onclick=function(e){e.preventDefault();e.stopPropagation();active?close():open()};
- done.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation()});
- done.onclick=function(e){e.preventDefault();e.stopPropagation();close()};
+ function commit(){if(!work||!img)return;var data=work.toDataURL('image/png');img.src=data;img.dataset.originalSrc=data;removeOverlay()}
+ function open(){if(!sel()){alert('먼저 지울 눈썹을 선택해 주세요.');return}closeOthers();history=[];if(!prepare())return;active=true;btn.classList.add('on');panel.classList.add('show')}
+ function close(commitIt){if(active&&commitIt!==false)commit();else if(active)removeOverlay();active=false;drawing=false;pointers.clear();eraserPinch=null;btn.classList.remove('on');panel.classList.remove('show');cursor.style.display='none';lens.style.display='none'}
+ window.__closeBrowEraserV133=function(){close(true)};
 
- function restoreSnapshot(src){
-   if(!src||!work)return;var snap=new Image();snap.onload=function(){ctx.clearRect(0,0,work.width,work.height);ctx.drawImage(snap,0,0,work.width,work.height)};snap.src=src
- }
+ btn.addEventListener('pointerdown',function(e){e.stopPropagation()});btn.onclick=function(e){e.preventDefault();e.stopPropagation();active?close(true):open()};
+ done.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation()});done.onclick=function(e){e.preventDefault();e.stopPropagation();close(true)};
  undo.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation()});
- undo.addEventListener('pointerup',function(e){e.preventDefault();e.stopPropagation();if(history.length)restoreSnapshot(history.pop())});
+ undo.addEventListener('pointerup',function(e){e.preventDefault();e.stopPropagation();if(!history.length||!work)return;var src=history.pop(),snap=new Image();snap.onload=function(){ctx.clearRect(0,0,work.width,work.height);ctx.drawImage(snap,0,0,work.width,work.height)};snap.src=src});
  undo.addEventListener('click',function(e){e.preventDefault();e.stopPropagation()});
- panel.addEventListener('pointerdown',function(e){e.stopPropagation()});
- panel.addEventListener('pointerup',function(e){e.stopPropagation()});
- panel.addEventListener('dblclick',function(e){e.preventDefault();e.stopPropagation()});
+ panel.addEventListener('pointerdown',function(e){e.stopPropagation()});panel.addEventListener('pointerup',function(e){e.stopPropagation()});panel.addEventListener('dblclick',function(e){e.preventDefault();e.stopPropagation()});
 
- function localPoint(e){
-   var b=sel();if(!b||!work)return null;var r=b.getBoundingClientRect();
-   var x=(e.clientX-r.left)/r.width*work.width,y=(e.clientY-r.top)/r.height*work.height;
-   if(b.dataset.flip==='1')x=work.width-x;
-   return{x:x,y:y,cx:e.clientX,cy:e.clientY}
+ // Mutual exclusivity: choosing layer/color immediately closes eraser first.
+ if(layerBtn)layerBtn.addEventListener('pointerdown',function(){if(active)close(true)},true);
+ if(colorBtn)colorBtn.addEventListener('pointerdown',function(){if(active)close(true)},true);
+
+ function localPoint(e){var b=sel();if(!b||!work)return null,r=b.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*work.width,y=(e.clientY-r.top)/r.height*work.height;if(b.dataset.flip==='1')x=work.width-x;return{x:x,y:y,cx:e.clientX,cy:e.clientY}}
+ function oneDab(x,y){
+   var b=sel(),scale=work.width/Math.max(1,b.getBoundingClientRect().width),rad=(+size.value/2)*scale,alpha=+opacity.value/100,gp=gradStops(alpha),g=ctx.createRadialGradient(x,y,0,x,y,rad);
+   g.addColorStop(0,'rgba(0,0,0,'+alpha+')');g.addColorStop(gp.s0,'rgba(0,0,0,'+(alpha*.92)+')');g.addColorStop((gp.s0+gp.s1)/2,'rgba(0,0,0,'+(alpha*.48)+')');g.addColorStop(gp.s1,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,0)');
+   ctx.save();ctx.globalCompositeOperation='destination-out';ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rad,0,Math.PI*2);ctx.fill();ctx.restore()
  }
- function dab(p,q){
-   if(!ctx||!p)return;var b=sel(),scale=work.width/Math.max(1,b.getBoundingClientRect().width),rad=(+size.value/2)*scale,alpha=+opacity.value/100,edge=edgeValue();
-   function one(x,y){var g=ctx.createRadialGradient(x,y,0,x,y,rad);g.addColorStop(0,'rgba(0,0,0,'+alpha+')');g.addColorStop(edge,'rgba(0,0,0,'+alpha+')');g.addColorStop(1,'rgba(0,0,0,0)');ctx.save();ctx.globalCompositeOperation='destination-out';ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rad,0,Math.PI*2);ctx.fill();ctx.restore()}
-   if(q){var dx=p.x-q.x,dy=p.y-q.y,dist=Math.hypot(dx,dy),step=Math.max(1,rad*.22),n=Math.max(1,Math.ceil(dist/step));for(var i=1;i<=n;i++)one(q.x+dx*i/n,q.y+dy*i/n)}else one(p.x,p.y)
+ function dab(p,q){if(!ctx||!p)return;var b=sel(),scale=work.width/Math.max(1,b.getBoundingClientRect().width),rad=(+size.value/2)*scale;if(q){var dx=p.x-q.x,dy=p.y-q.y,dist=Math.hypot(dx,dy),step=Math.max(1,rad*.20),n=Math.max(1,Math.ceil(dist/step));for(var i=1;i<=n;i++)oneDab(q.x+dx*i/n,q.y+dy*i/n)}else oneDab(p.x,p.y)}
+ function showLens(p){
+   if(!work||!p)return;var b=sel(),r=b.getBoundingClientRect(),scale=work.width/Math.max(1,r.width),span=Math.max(8,Math.round(36*scale)),sx=Math.max(0,Math.min(work.width-span,p.x-span/2)),sy=Math.max(0,Math.min(work.height-span,p.y-span/2));
+   lensCtx.clearRect(0,0,72,72);lensCtx.imageSmoothingEnabled=true;lensCtx.drawImage(work,sx,sy,Math.min(span,work.width),Math.min(span,work.height),0,0,72,72);
+   lens.style.display='block';lens.style.left=p.cx+'px';lens.style.top=Math.max(42,p.cy-38)+'px'
  }
- function beginPinch(){
-   if(pointers.size<2)return;var a=[...pointers.values()].slice(0,2),dx=a[1].x-a[0].x,dy=a[1].y-a[0].y;
-   eraserPinch={dist:Math.max(1,Math.hypot(dx,dy)),zoom:zoom,panX:panX,panY:panY,cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2};drawing=false;last=null;cursor.style.display='none'
- }
+ function beginPinch(){if(pointers.size<2)return;var a=[...pointers.values()].slice(0,2),dx=a[1].x-a[0].x,dy=a[1].y-a[0].y;eraserPinch={dist:Math.max(1,Math.hypot(dx,dy)),zoom:zoom,panX:panX,panY:panY,cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2};drawing=false;last=null;cursor.style.display='none';lens.style.display='none'}
  function start(e){
-   if(!active||panel.contains(e.target)||btn.contains(e.target)||!sel())return;
-   pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-   try{stage.setPointerCapture(e.pointerId)}catch(_){}
+   if(!active||panel.contains(e.target)||btn.contains(e.target)||!sel())return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});try{stage.setPointerCapture(e.pointerId)}catch(_){}
    if(pointers.size>=2){beginPinch();e.preventDefault();e.stopPropagation();return}
-   var p=localPoint(e);if(!p)return;
-   history.push(work.toDataURL('image/png'));if(history.length>20)history.shift();
-   drawing=true;last=p;cursor.style.display='block';cursor.style.left=p.cx+'px';cursor.style.top=p.cy+'px';dab(p,null);e.preventDefault();e.stopPropagation()
+   var p=localPoint(e);if(!p)return;history.push(work.toDataURL('image/png'));if(history.length>20)history.shift();drawing=true;last=p;cursor.style.display='block';cursor.style.left=p.cx+'px';cursor.style.top=p.cy+'px';dab(p,null);showLens(p);e.preventDefault();e.stopPropagation()
  }
  function move(e){
    if(!active||!pointers.has(e.pointerId))return;var pt=pointers.get(e.pointerId);pt.x=e.clientX;pt.y=e.clientY;
-   if(pointers.size>=2){
-     if(!eraserPinch)beginPinch();var a=[...pointers.values()].slice(0,2),dx=a[1].x-a[0].x,dy=a[1].y-a[0].y,dist=Math.max(1,Math.hypot(dx,dy)),cx=(a[0].x+a[1].x)/2,cy=(a[0].y+a[1].y)/2;
-     zoom=Math.max(1,Math.min(4,eraserPinch.zoom*dist/eraserPinch.dist));panX=eraserPinch.panX+(cx-eraserPinch.cx);panY=eraserPinch.panY+(cy-eraserPinch.cy);setWorld();cursor.style.display='none';e.preventDefault();e.stopPropagation();return
-   }
-   if(!drawing)return;var p=localPoint(e);if(!p)return;cursor.style.left=p.cx+'px';cursor.style.top=p.cy+'px';dab(p,last);last=p;e.preventDefault();e.stopPropagation()
+   if(pointers.size>=2){if(!eraserPinch)beginPinch();var a=[...pointers.values()].slice(0,2),dx=a[1].x-a[0].x,dy=a[1].y-a[0].y,dist=Math.max(1,Math.hypot(dx,dy)),cx=(a[0].x+a[1].x)/2,cy=(a[0].y+a[1].y)/2;zoom=Math.max(1,Math.min(4,eraserPinch.zoom*dist/eraserPinch.dist));panX=eraserPinch.panX+(cx-eraserPinch.cx);panY=eraserPinch.panY+(cy-eraserPinch.cy);setWorld();cursor.style.display='none';lens.style.display='none';e.preventDefault();e.stopPropagation();return}
+   if(!drawing)return;var p=localPoint(e);if(!p)return;cursor.style.left=p.cx+'px';cursor.style.top=p.cy+'px';dab(p,last);last=p;if(!raf)raf=requestAnimationFrame(function(){raf=0;showLens(last)});e.preventDefault();e.stopPropagation()
  }
- function end(e){
-   if(!active||!pointers.has(e.pointerId))return;pointers.delete(e.pointerId);
-   if(pointers.size<2)eraserPinch=null;
-   drawing=false;last=null;cursor.style.display='none';e.preventDefault();e.stopPropagation()
- }
+ function end(e){if(!active||!pointers.has(e.pointerId))return;pointers.delete(e.pointerId);if(pointers.size<2)eraserPinch=null;drawing=false;last=null;cursor.style.display='none';lens.style.display='none';e.preventDefault();e.stopPropagation()}
  stage.addEventListener('pointerdown',start,true);stage.addEventListener('pointermove',move,true);stage.addEventListener('pointerup',end,true);stage.addEventListener('pointercancel',end,true);
- document.addEventListener('click',function(){if(active&&!sel())close()},true);
 })();
-</script></body></html>
+</script><script id="v133-panel-exclusive-bridge">(function(){function bind(){var lb=document.getElementById('layerbtn'),cb=document.getElementById('colorbtn');[lb,cb].forEach(function(b){if(b&&!b.dataset.v133Exclusive){b.dataset.v133Exclusive='1';b.addEventListener('click',function(){if(window.__closeBrowEraserV133)window.__closeBrowEraserV133()},true)}})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind()})();</script></body></html>
