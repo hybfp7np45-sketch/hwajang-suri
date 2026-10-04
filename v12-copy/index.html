@@ -148,6 +148,17 @@ function renderLayers(){const prior=[...layers.querySelectorAll('.layerrow')].ma
 function syncZ(){P.style.zIndex=1;let z=10;brows.forEach(el=>el.style.zIndex=z++);EB.style.zIndex=100;renderLayers()}
 const personalBrowInput=document.createElement('input');personalBrowInput.type='file';personalBrowInput.accept='image/png';personalBrowInput.style.display='none';document.body.appendChild(personalBrowInput);let personalTargetDesign='';
 rail.onclick=e=>{const add=e.target.closest('.personal-add');if(add){personalTargetDesign=add.dataset.design||currentBrowDesign;personalBrowInput.value='';personalBrowInput.click();return}const c=e.target.closest('.tech-card');if(!c)return;if(!P.src)return alert('먼저 사진을 불러와 주세요.');const n=c.dataset.name,src=c.dataset.src||browAssets[n];addBrow({name:n,src,flip:false,ratio:null,imgScale:n.includes('섀도우')?.88:1})};
+let personalNameHold=null;
+function renamePersonalCard(btn){
+ const id=btn.dataset.personalId;if(!id)return;
+ const all=personalBrows(),list=all[currentBrowDesign]||[],item=list.find(x=>x.id===id);if(!item)return;
+ const next=prompt('내 결 이름 바꾸기',item.name);if(next===null)return;
+ const name=next.trim();if(!name)return;
+ item.name=name;all[currentBrowDesign]=list;if(savePersonalBrows(all))showTech(currentBrowDesign)
+}
+rail.addEventListener('pointerdown',e=>{const btn=e.target.closest('.personal-tech');if(!btn)return;personalNameHold=setTimeout(()=>{personalNameHold=null;renamePersonalCard(btn)},650)});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>rail.addEventListener(ev,()=>{if(personalNameHold){clearTimeout(personalNameHold);personalNameHold=null}}));
+rail.addEventListener('contextmenu',e=>{const btn=e.target.closest('.personal-tech');if(btn)e.preventDefault()});
 personalBrowInput.onchange=()=>{const file=personalBrowInput.files&&personalBrowInput.files[0];if(!file)return;if(file.type!=='image/png'&&!/\.png$/i.test(file.name))return alert('투명 배경 PNG 파일만 선택해 주세요.');const reader=new FileReader();reader.onload=()=>{const all=personalBrows(),list=all[personalTargetDesign]||[],num=list.length+1,name='내 결 '+num;list.push({id:'p'+Date.now(),name,src:reader.result});all[personalTargetDesign]=list;if(savePersonalBrows(all))showTech(personalTargetDesign)};reader.readAsDataURL(file)};
 function drawExistingBrowLayer(){
  const w=stage.clientWidth,h=stage.clientHeight,dpr=devicePixelRatio||1;EB.width=w*dpr;EB.height=h*dpr;EB.style.width=w+'px';EB.style.height=h+'px';
