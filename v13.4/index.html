@@ -531,14 +531,15 @@ const editWatch=new MutationObserver(()=>{if(document.querySelector('.brow.selec
 }
 </style>
 <style id="v134-editbar-under-header">
+/* V13.4: command bar sits on the line directly below the camera/person header */
 #editbar{
  position:fixed!important;
- top:59px!important;
+ top:58px!important;
  bottom:auto!important;
  left:4px!important;
  right:4px!important;
  margin:0!important;
- transform:none!important;
+ transform:translateY(-50%)!important;
  z-index:2147483646!important;
 }
 </style>
