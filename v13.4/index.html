@@ -511,3 +511,11 @@ const editWatch=new MutationObserver(()=>{if(document.querySelector('.brow.selec
  panel.addEventListener('dblclick',function(e){e.preventDefault();e.stopPropagation()},true);
 })();
 </script>
+<style id="v134-editbar-top">
+/* V13.4: move eyebrow edit command bar to the very top */
+#editbar{
+  top:max(4px,env(safe-area-inset-top))!important;
+  bottom:auto!important;
+  z-index:10020!important;
+}
+</style>
