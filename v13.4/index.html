@@ -487,3 +487,27 @@ stage.addEventListener('pointerdown',down,true);stage.addEventListener('pointerm
 const editWatch=new MutationObserver(()=>{if(document.querySelector('.brow.selected')&&!edit.classList.contains('show'))edit.classList.add('show')});editWatch.observe(edit,{attributes:true,attributeFilter:['class']});
 })();
 </script></body></html>
+<style id="v134-eraser-followup">
+/* V13.4: brush guide is shown only inside magnifier */
+#beCursorV133{display:none!important}
+#browErasePanelV133,#browErasePanelV133 button{touch-action:manipulation!important}
+</style>
+<script id="v134-undo-zoom-guard">
+(function(){
+ const panel=document.getElementById('browErasePanelV133');
+ const undo=document.getElementById('beu');
+ if(!panel||!undo)return;
+ ['touchstart','touchend','dblclick'].forEach(type=>{
+   undo.addEventListener(type,function(e){e.stopPropagation();if(type==='dblclick')e.preventDefault()},true);
+ });
+ undo.addEventListener('pointerdown',function(e){e.stopPropagation()},true);
+ let lastTouchEnd=0;
+ panel.addEventListener('touchend',function(e){
+   const now=Date.now();
+   if(now-lastTouchEnd<=350)e.preventDefault();
+   lastTouchEnd=now;
+   e.stopPropagation();
+ },{capture:true,passive:false});
+ panel.addEventListener('dblclick',function(e){e.preventDefault();e.stopPropagation()},true);
+})();
+</script>
