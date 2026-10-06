@@ -491,24 +491,21 @@ function stroke(p,q){
  for(let i=1;i<=n;i++){const t=i/n;dab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t,cx:q.cx+(p.cx-q.cx)*t,cy:q.cy+(p.cy-q.cy)*t})}
 }
 function mag(p){
- const cssSize=160,zoomMag=2,view=cssSize/zoomMag,dpr=Math.max(1,Math.min(3,window.devicePixelRatio||1)),out=Math.round(cssSize*dpr),px=out/cssSize;
- const lcEl=lens.querySelector('canvas');
- if(lcEl.width!==out||lcEl.height!==out){lcEl.width=out;lcEl.height=out}
+ const cssSize=160,zoomMag=2,dpr=Math.max(1,Math.min(3,window.devicePixelRatio||1)),out=Math.round(cssSize*dpr),center=out/2,k=zoomMag*dpr;
+ const lcEl=lens.querySelector('canvas');if(lcEl.width!==out||lcEl.height!==out){lcEl.width=out;lcEl.height=out}
  lc.setTransform(1,0,0,1,0,0);lc.clearRect(0,0,out,out);lc.imageSmoothingEnabled=true;lc.imageSmoothingQuality='high';
- // Lens coordinates are screen coordinates: the finger point is always the exact center.
- const screenScale=zoomMag*px,center=out/2,photo=document.getElementById('photo');
+ const sr=stage.getBoundingClientRect(),photo=document.getElementById('photo'),wr=world.getBoundingClientRect();
+ // Reproduce the visible stage in screen coordinates, including world pan/zoom.
  if(photo&&photo.complete&&photo.naturalWidth){
-  const pr=photo.getBoundingClientRect();
-  if(pr.width&&pr.height){
-   const fit=getComputedStyle(photo).objectFit||'fill';let dw=pr.width,dh=pr.height,ox=0,oy=0;
-   if(fit==='cover'||fit==='contain'){const k=fit==='cover'?Math.max(pr.width/photo.naturalWidth,pr.height/photo.naturalHeight):Math.min(pr.width/photo.naturalWidth,pr.height/photo.naturalHeight);dw=photo.naturalWidth*k;dh=photo.naturalHeight*k;ox=(pr.width-dw)/2;oy=(pr.height-dh)/2}
-   lc.drawImage(photo,0,0,photo.naturalWidth,photo.naturalHeight,center+(pr.left+ox-p.cx)*screenScale,center+(pr.top+oy-p.cy)*screenScale,dw*screenScale,dh*screenScale)
-  }
+  const pr=photo.getBoundingClientRect(),fit=getComputedStyle(photo).objectFit||'cover';
+  let dw=pr.width,dh=pr.height,ox=0,oy=0;
+  if(fit==='cover'||fit==='contain'){const q=fit==='cover'?Math.max(pr.width/photo.naturalWidth,pr.height/photo.naturalHeight):Math.min(pr.width/photo.naturalWidth,pr.height/photo.naturalHeight);dw=photo.naturalWidth*q;dh=photo.naturalHeight*q;ox=(pr.width-dw)/2;oy=(pr.height-dh)/2}
+  lc.drawImage(photo,0,0,photo.naturalWidth,photo.naturalHeight,center+(pr.left+ox-p.cx)*k,center+(pr.top+oy-p.cy)*k,dw*k,dh*k)
  }
- const rr=b.getBoundingClientRect(),rot=(+b.dataset.rot||0)*Math.PI/180,worldScale=b.offsetWidth?rr.width/b.offsetWidth:1;
- lc.save();lc.translate(center+(rr.left+rr.width/2-p.cx)*screenScale,center+(rr.top+rr.height/2-p.cy)*screenScale);lc.rotate(rot);
- const flip=b.dataset.flip==='1'?-1:1;lc.scale(flip,1);
- lc.drawImage(cv,-b.offsetWidth*worldScale*screenScale/2,-b.offsetHeight*worldScale*screenScale/2,b.offsetWidth*worldScale*screenScale,b.offsetHeight*worldScale*screenScale);lc.restore();
+ // Draw the active eraser bitmap exactly where its DOM box is currently visible.
+ const rr=b.getBoundingClientRect(),rot=(+b.dataset.rot||0)*Math.PI/180,flip=b.dataset.flip==='1'?-1:1;
+ lc.save();lc.translate(center+(rr.left+rr.width/2-p.cx)*k,center+(rr.top+rr.height/2-p.cy)*k);lc.rotate(rot);lc.scale(flip,1);
+ lc.drawImage(cv,-rr.width*k/2,-rr.height*k/2,rr.width*k,rr.height*k);lc.restore();
  const guide=(+sz.value||1)*zoomMag;
  lensCur.style.setProperty('width',guide+'px','important');lensCur.style.setProperty('height',guide+'px','important');lensCur.style.setProperty('left','50%','important');lensCur.style.setProperty('top','50%','important');lensCur.style.setProperty('transform','translate(-50%,-50%)','important');
  lens.style.setProperty('left',p.cx+'px','important');lens.style.setProperty('top',Math.max(cssSize/2+8,p.cy-132)+'px','important');lens.style.setProperty('width',cssSize+'px','important');lens.style.setProperty('height',cssSize+'px','important');lens.style.setProperty('display','block','important');
