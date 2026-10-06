@@ -508,7 +508,7 @@ function mag(p){
  lensDom.style.cssText='position:absolute;left:50%;top:50%;width:'+stageRect.width+'px;height:'+stageRect.height+'px;transform-origin:0 0;pointer-events:none;';
  clone.style.position='absolute';clone.style.left='0';clone.style.top='0';clone.style.width=stageRect.width+'px';clone.style.height=stageRect.height+'px';
  const dx=(stageRect.left-p.cx),dy=(stageRect.top-p.cy);
- lensDom.style.transform='translate('+((dx*zoomMag)-cssSize/2)+'px,'+((dy*zoomMag)-cssSize/2)+'px) scale('+zoomMag+')';
+ lensDom.style.transform='translate('+(dx*zoomMag)+'px,'+(dy*zoomMag)+'px) scale('+zoomMag+')';
  const guide=(+sz.value||1)*zoomMag;
  lensCur.style.setProperty('width',guide+'px','important');lensCur.style.setProperty('height',guide+'px','important');lensCur.style.setProperty('left','50%','important');lensCur.style.setProperty('top','50%','important');lensCur.style.setProperty('transform','translate(-50%,-50%)','important');
  lens.style.setProperty('left',p.cx+'px','important');lens.style.setProperty('top',Math.max(cssSize/2+8,p.cy-132)+'px','important');lens.style.setProperty('width',cssSize+'px','important');lens.style.setProperty('height',cssSize+'px','important');lens.style.setProperty('display','block','important')
