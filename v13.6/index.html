@@ -465,7 +465,7 @@ body.v133-erasing .brow.selected{pointer-events:none!important;touch-action:none
 const edit=document.getElementById('editbar'),slot=document.getElementById('eraserPanelSlot'),stage=document.getElementById('stage'),world=document.getElementById('world');if(!edit||!slot)return;
 const btn=document.createElement('button');btn.id='browEraseBtnV133';btn.type='button';btn.textContent='지우기';edit.insertBefore(btn,edit.querySelector('.nudge'));
 const panel=document.createElement('div');panel.id='browErasePanelV133';panel.innerHTML='<div id="bePreviewV133"><div id="bePreviewDotV133"></div></div><div class="r"><span>브러시 크기</span><input id="bes" type="range" min="8" max="80" value="40"><b id="best">40px</b></div><div class="r"><span>가장자리 강도</span><input id="beh" type="range" min="0" max="100" value="55"><b id="beht">55%</b></div><div class="r"><span>투명도</span><input id="beo" type="range" min="10" max="100" value="100"><b id="beot">100%</b></div><div class="a"><button id="beu">되돌리기</button><button id="bed">완료</button></div>';slot.appendChild(panel);
-const cur=document.createElement('div');cur.id='beCursorV133';document.body.appendChild(cur),lens=document.createElement('div');lens.id='beLensV133';lens.innerHTML='<canvas width="72" height="72"></canvas><div id="beLensCursorV134"></div>';document.body.appendChild(lens);const lc=lens.querySelector('canvas').getContext('2d'),lensCur=lens.querySelector('#beLensCursorV134'),sz=panel.querySelector('#bes'),hd=panel.querySelector('#beh'),op=panel.querySelector('#beo'),dot=panel.querySelector('#bePreviewDotV133');
+const cur=document.createElement('div');cur.id='beCursorV133';document.body.appendChild(cur),lens=document.createElement('div');lens.id='beLensV133';lens.innerHTML='<div id="beLensDomV136"></div><div id="beLensCursorV134"></div>';document.body.appendChild(lens);const lensDom=lens.querySelector('#beLensDomV136'),lensCur=lens.querySelector('#beLensCursorV134'),sz=panel.querySelector('#bes'),hd=panel.querySelector('#beh'),op=panel.querySelector('#beo'),dot=panel.querySelector('#bePreviewDotV133');
 let on=false,b=null,src=null,cv=null,cx=null,hist=[],pointers=new Map(),drawing=false,last=null,pinchState=null;
 function brushBg(a){const p=Math.round(Math.pow(+hd.value/100,1.5)*82);return 'radial-gradient(circle,rgba(76,174,220,'+(a*.7)+') 0%,rgba(76,174,220,'+(a*.7)+') '+p+'%,rgba(76,174,220,0) 100%)'}
 function ui(){const d=+sz.value,a=+op.value/100;panel.querySelector('#best').textContent=d+'px';panel.querySelector('#beht').textContent=hd.value+'%';panel.querySelector('#beot').textContent=op.value+'%';dot.style.width=Math.min(52,d)+'px';dot.style.height=Math.min(52,d)+'px';dot.style.background=brushBg(a);cur.style.width=d+'px';cur.style.height=d+'px';cur.style.background='transparent'}[sz,hd,op].forEach(x=>x.addEventListener('input',ui));ui();
@@ -491,25 +491,27 @@ function stroke(p,q){
  for(let i=1;i<=n;i++){const t=i/n;dab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t,cx:q.cx+(p.cx-q.cx)*t,cy:q.cy+(p.cy-q.cy)*t})}
 }
 function mag(p){
- const cssSize=160,zoomMag=2,dpr=Math.max(1,Math.min(3,window.devicePixelRatio||1)),out=Math.round(cssSize*dpr),center=out/2,k=zoomMag*dpr;
- const lcEl=lens.querySelector('canvas');if(lcEl.width!==out||lcEl.height!==out){lcEl.width=out;lcEl.height=out}
- lc.setTransform(1,0,0,1,0,0);lc.clearRect(0,0,out,out);lc.imageSmoothingEnabled=true;lc.imageSmoothingQuality='high';
- const sr=stage.getBoundingClientRect(),photo=document.getElementById('photo'),wr=world.getBoundingClientRect();
- // Reproduce the visible stage in screen coordinates, including world pan/zoom.
- if(photo&&photo.complete&&photo.naturalWidth){
-  const pr=photo.getBoundingClientRect(),fit=getComputedStyle(photo).objectFit||'cover';
-  let dw=pr.width,dh=pr.height,ox=0,oy=0;
-  if(fit==='cover'||fit==='contain'){const q=fit==='cover'?Math.max(pr.width/photo.naturalWidth,pr.height/photo.naturalHeight):Math.min(pr.width/photo.naturalWidth,pr.height/photo.naturalHeight);dw=photo.naturalWidth*q;dh=photo.naturalHeight*q;ox=(pr.width-dw)/2;oy=(pr.height-dh)/2}
-  lc.drawImage(photo,0,0,photo.naturalWidth,photo.naturalHeight,center+(pr.left+ox-p.cx)*k,center+(pr.top+oy-p.cy)*k,dw*k,dh*k)
+ const cssSize=160,zoomMag=2,stageRect=stage.getBoundingClientRect(),worldRect=world.getBoundingClientRect();
+ // Clone the exact visible stage/world. No separate photo/brow coordinate reconstruction.
+ lensDom.replaceChildren();
+ const clone=world.cloneNode(true);clone.removeAttribute('id');clone.querySelectorAll('[id]').forEach(x=>x.removeAttribute('id'));
+ clone.querySelectorAll('.rh').forEach(x=>x.remove());
+ clone.querySelectorAll('.brow').forEach(x=>x.classList.remove('selected'));
+ const active=[...world.children].indexOf(b),cloneActive=clone.children[active];
+ if(cloneActive&&cv){
+  const old=cloneActive.querySelector('img,svg');if(old)old.remove();
+  const copy=document.createElement('canvas');copy.width=cv.width;copy.height=cv.height;copy.getContext('2d').drawImage(cv,0,0);
+  copy.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;transform-origin:center;'+(b.dataset.flip==='1'?'transform:scaleX(-1);':'');
+  cloneActive.appendChild(copy)
  }
- // Draw the active eraser bitmap exactly where its DOM box is currently visible.
- const rr=b.getBoundingClientRect(),rot=(+b.dataset.rot||0)*Math.PI/180,flip=b.dataset.flip==='1'?-1:1;
- lc.save();lc.translate(center+(rr.left+rr.width/2-p.cx)*k,center+(rr.top+rr.height/2-p.cy)*k);lc.rotate(rot);lc.scale(flip,1);
- lc.drawImage(cv,-rr.width*k/2,-rr.height*k/2,rr.width*k,rr.height*k);lc.restore();
+ lensDom.appendChild(clone);
+ lensDom.style.cssText='position:absolute;left:50%;top:50%;width:'+stageRect.width+'px;height:'+stageRect.height+'px;transform-origin:0 0;pointer-events:none;';
+ clone.style.position='absolute';clone.style.left='0';clone.style.top='0';clone.style.width=stageRect.width+'px';clone.style.height=stageRect.height+'px';
+ const dx=(stageRect.left-p.cx),dy=(stageRect.top-p.cy);
+ lensDom.style.transform='translate('+((dx*zoomMag)-cssSize/2)+'px,'+((dy*zoomMag)-cssSize/2)+'px) scale('+zoomMag+')';
  const guide=(+sz.value||1)*zoomMag;
  lensCur.style.setProperty('width',guide+'px','important');lensCur.style.setProperty('height',guide+'px','important');lensCur.style.setProperty('left','50%','important');lensCur.style.setProperty('top','50%','important');lensCur.style.setProperty('transform','translate(-50%,-50%)','important');
- lens.style.setProperty('left',p.cx+'px','important');lens.style.setProperty('top',Math.max(cssSize/2+8,p.cy-132)+'px','important');lens.style.setProperty('width',cssSize+'px','important');lens.style.setProperty('height',cssSize+'px','important');lens.style.setProperty('display','block','important');
- lcEl.style.setProperty('width',cssSize+'px','important');lcEl.style.setProperty('height',cssSize+'px','important')
+ lens.style.setProperty('left',p.cx+'px','important');lens.style.setProperty('top',Math.max(cssSize/2+8,p.cy-132)+'px','important');lens.style.setProperty('width',cssSize+'px','important');lens.style.setProperty('height',cssSize+'px','important');lens.style.setProperty('display','block','important')
 }
 function startPinch(){if(pointers.size<2)return;const a=[...pointers.values()].slice(0,2),dx=a[1].x-a[0].x,dy=a[1].y-a[0].y;pinchState={dist:Math.max(1,Math.hypot(dx,dy)),zoom:zoom,panX:panX,panY:panY,cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2};drawing=false;last=null;cur.style.display=lens.style.display='none'}
 function down(e){if(!on||panel.contains(e.target))return;e.preventDefault();e.stopImmediatePropagation();pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2){startPinch();e.preventDefault();e.stopImmediatePropagation();return}if(pointers.size>1)return;const r=b.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)return;hist.push(cv.toDataURL());if(hist.length>20)hist.shift();const p=lp(e);drawing=true;last=p;cur.style.left=p.cx+'px';cur.style.top=p.cy+'px';cur.style.display='block';dab(p);mag(p);e.preventDefault();e.stopImmediatePropagation()}
