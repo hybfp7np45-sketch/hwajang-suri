@@ -479,27 +479,26 @@ function lp(e){const r=b.getBoundingClientRect(),rx=(e.clientX-r.left)/r.width,r
 function dab(p){const r=b.getBoundingClientRect(),sc=cv.width/r.width,R=(+sz.value/2)*sc,a=+op.value/100,inner=R*Math.pow(+hd.value/100,1.5)*.82,g=cx.createRadialGradient(p.x,p.y,0,p.x,p.y,R);g.addColorStop(0,'rgba(0,0,0,'+a+')');if(inner>0)g.addColorStop(inner/R,'rgba(0,0,0,'+a+')');g.addColorStop(1,'rgba(0,0,0,0)');cx.save();cx.globalCompositeOperation='destination-out';cx.fillStyle=g;cx.beginPath();cx.arc(p.x,p.y,R,0,Math.PI*2);cx.fill();cx.restore()}
 function stroke(p,q){if(!q){dab(p);return}const dx=p.x-q.x,dy=p.y-q.y,n=Math.max(1,Math.ceil(Math.hypot(dx,dy)/8));for(let i=1;i<=n;i++)dab({x:q.x+dx*i/n,y:q.y+dy*i/n})}
 function mag(p){
- const out=120,view=Math.max(28,Math.min(76,(+sz.value)*3)),stageR=stage.getBoundingClientRect(),worldR=world.getBoundingClientRect();
+ const out=120,brush=+sz.value||1,guide=30,zoom=guide/brush,view=out/zoom;
  if(lens.width!==out||lens.height!==out){lens.width=out;lens.height=out}
  lc.clearRect(0,0,out,out);
  const photo=document.getElementById('photo');
  if(photo&&photo.complete&&photo.naturalWidth){
-   const pr=photo.getBoundingClientRect();
-   const scale=Math.max(pr.width/photo.naturalWidth,pr.height/photo.naturalHeight);
-   const drawW=photo.naturalWidth*scale,drawH=photo.naturalHeight*scale;
-   const ox=pr.left+(pr.width-drawW)/2,oy=pr.top+(pr.height-drawH)/2;
-   const sx=(p.cx-view/2-ox)/scale,sy=(p.cy-view/2-oy)/scale,sw=view/scale,sh=view/scale;
+   const pr=photo.getBoundingClientRect(),scale=Math.max(pr.width/photo.naturalWidth,pr.height/photo.naturalHeight),
+   drawW=photo.naturalWidth*scale,drawH=photo.naturalHeight*scale,
+   ox=pr.left+(pr.width-drawW)/2,oy=pr.top+(pr.height-drawH)/2,
+   sx=(p.cx-view/2-ox)/scale,sy=(p.cy-view/2-oy)/scale,sw=view/scale,sh=view/scale;
    lc.drawImage(photo,sx,sy,sw,sh,0,0,out,out);
  }
- const br=b.getBoundingClientRect(),screenLeft=p.cx-view/2,screenTop=p.cy-view/2;
- const dx=(br.left-screenLeft)*out/view,dy=(br.top-screenTop)*out/view,dw=br.width*out/view,dh=br.height*out/view;
+ const br=b.getBoundingClientRect(),screenLeft=p.cx-view/2,screenTop=p.cy-view/2,
+ dx=(br.left-screenLeft)*zoom,dy=(br.top-screenTop)*zoom,dw=br.width*zoom,dh=br.height*zoom;
  lc.save();
  lc.translate(dx+dw/2,dy+dh/2);
  lc.rotate((+b.dataset.rot||0)*Math.PI/180);
  if(b.dataset.flip==='1')lc.scale(-1,1);
  lc.drawImage(cv,-dw/2,-dh/2,dw,dh);
  lc.restore();
- lensCur.style.setProperty('width','30px','important');lensCur.style.setProperty('height','30px','important');
+ lensCur.style.setProperty('width',guide+'px','important');lensCur.style.setProperty('height',guide+'px','important');
  lens.style.setProperty('left',p.cx+'px','important');lens.style.setProperty('top',Math.max(out/2+6,p.cy-110)+'px','important');lens.style.setProperty('width',out+'px','important');lens.style.setProperty('height',out+'px','important');lens.style.setProperty('display','block','important')
 }
 function startPinch(){if(pointers.size<2)return;const a=[...pointers.values()].slice(0,2),dx=a[1].x-a[0].x,dy=a[1].y-a[0].y;pinchState={dist:Math.max(1,Math.hypot(dx,dy)),zoom:zoom,panX:panX,panY:panY,cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2};drawing=false;last=null;cur.style.display=lens.style.display='none'}
