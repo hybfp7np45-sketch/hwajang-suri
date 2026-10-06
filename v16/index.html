@@ -489,7 +489,7 @@ function dab(p,aOverride){
 function stroke(p,q){
  if(!q){dab(p);return}
  const dist=Math.hypot(p.cx-q.cx,p.cy-q.cy),diameter=Math.max(1,+sz.value),spacing=Math.max(1,Math.min(2,diameter*.12)),n=Math.max(1,Math.ceil(dist/spacing));
- const target=+op.value/100,coverage=Math.max(1,diameter/spacing),passAlpha=target>=1?1:1-Math.pow(1-target,1/coverage);
+ const target=+op.value/100,coverage=Math.max(1,diameter/spacing),passAlpha=target>=1?1:Math.min(1,Math.max(1/255,1-Math.pow(1-target,1/coverage)));
  for(let i=1;i<=n;i++){const t=i/n;dab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t,cx:q.cx+(p.cx-q.cx)*t,cy:q.cy+(p.cy-q.cy)*t},passAlpha)}
 }
 function mag(p){
