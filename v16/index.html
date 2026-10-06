@@ -491,7 +491,8 @@ function stroke(p,q){
  const dist=Math.hypot(p.cx-q.cx,p.cy-q.cy),diameter=Math.max(1,+sz.value),spacing=Math.max(1,diameter*.18),n=Math.max(1,Math.ceil(dist/spacing));
  const target=Math.max(0,Math.min(1,+op.value/100));
  const overlap=Math.max(1,diameter/spacing);
- const passAlpha=target>=1?1:Math.max(1/255,target/overlap);
+ const effectiveOverlap=Math.max(1,overlap*1.85);
+ const passAlpha=target>=1?1:Math.max(1/255,1-Math.pow(1-target,1/effectiveOverlap));
  for(let i=1;i<=n;i++){const t=i/n;dab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t,cx:q.cx+(p.cx-q.cx)*t,cy:q.cy+(p.cy-q.cy)*t},passAlpha)}
 }
 function mag(p){
