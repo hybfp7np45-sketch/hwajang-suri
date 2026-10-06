@@ -487,7 +487,8 @@ function dab(p){
  cx.fillStyle=g;cx.beginPath();cx.arc(0,0,1,0,Math.PI*2);cx.fill();cx.restore()
 }
 function stroke(p,q){
- if(!q){dab(p);return}const n=Math.max(1,Math.ceil(Math.hypot(p.cx-q.cx,p.cy-q.cy)/4));
+ if(!q){dab(p);return}
+ const dist=Math.hypot(p.cx-q.cx,p.cy-q.cy),spacing=Math.max(1,Math.min(2,(+sz.value||8)*0.12)),n=Math.max(1,Math.ceil(dist/spacing));
  for(let i=1;i<=n;i++){const t=i/n;dab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t,cx:q.cx+(p.cx-q.cx)*t,cy:q.cy+(p.cy-q.cy)*t})}
 }
 function mag(p){
