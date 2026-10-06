@@ -479,25 +479,28 @@ function lp(e){const r=b.getBoundingClientRect(),rx=(e.clientX-r.left)/r.width,r
 function dab(p){const r=b.getBoundingClientRect(),sc=cv.width/r.width,R=(+sz.value/2)*sc,a=+op.value/100,inner=R*Math.pow(+hd.value/100,1.5)*.82,g=cx.createRadialGradient(p.x,p.y,0,p.x,p.y,R);g.addColorStop(0,'rgba(0,0,0,'+a+')');if(inner>0)g.addColorStop(inner/R,'rgba(0,0,0,'+a+')');g.addColorStop(1,'rgba(0,0,0,0)');cx.save();cx.globalCompositeOperation='destination-out';cx.fillStyle=g;cx.beginPath();cx.arc(p.x,p.y,R,0,Math.PI*2);cx.fill();cx.restore()}
 function stroke(p,q){if(!q){dab(p);return}const dx=p.x-q.x,dy=p.y-q.y,n=Math.max(1,Math.ceil(Math.hypot(dx,dy)/8));for(let i=1;i<=n;i++)dab({x:q.x+dx*i/n,y:q.y+dy*i/n})}
 function mag(p){
- const br=b.getBoundingClientRect(),photo=document.getElementById('photo'),pr=photo&&photo.getBoundingClientRect(),view=36,out=72;
+ const out=104,view=52,stageR=stage.getBoundingClientRect(),worldR=world.getBoundingClientRect();
+ if(lens.width!==out||lens.height!==out){lens.width=out;lens.height=out}
  lc.clearRect(0,0,out,out);
- // Photo: crop exactly the 36x36 CSS-pixel area centered under the finger, then enlarge 2x.
- if(photo&&photo.complete&&photo.naturalWidth&&pr&&pr.width&&pr.height){
-   const sw=view*photo.naturalWidth/pr.width,sh=view*photo.naturalHeight/pr.height;
-   const pcx=(p.cx-pr.left)*photo.naturalWidth/pr.width,pcy=(p.cy-pr.top)*photo.naturalHeight/pr.height;
-   const psx=Math.max(0,Math.min(photo.naturalWidth-sw,pcx-sw/2)),psy=Math.max(0,Math.min(photo.naturalHeight-sh,pcy-sh/2));
-   lc.drawImage(photo,psx,psy,Math.min(sw,photo.naturalWidth),Math.min(sh,photo.naturalHeight),0,0,out,out);
+ const photo=document.getElementById('photo');
+ if(photo&&photo.complete&&photo.naturalWidth){
+   const pr=photo.getBoundingClientRect();
+   const scale=Math.max(pr.width/photo.naturalWidth,pr.height/photo.naturalHeight);
+   const drawW=photo.naturalWidth*scale,drawH=photo.naturalHeight*scale;
+   const ox=pr.left+(pr.width-drawW)/2,oy=pr.top+(pr.height-drawH)/2;
+   const sx=(p.cx-view/2-ox)/scale,sy=(p.cy-view/2-oy)/scale,sw=view/scale,sh=view/scale;
+   lc.drawImage(photo,sx,sy,sw,sh,0,0,out,out);
  }
- // Brow: use independent X/Y canvas scales so its aspect ratio and screen position do not change.
- const scx=cv.width/br.width,scy=cv.height/br.height,spx=view*scx,spy=view*scy;
- const sx=Math.max(0,Math.min(cv.width-spx,p.x-spx/2)),sy=Math.max(0,Math.min(cv.height-spy,p.y-spy/2));
+ const br=b.getBoundingClientRect(),screenLeft=p.cx-view/2,screenTop=p.cy-view/2;
+ const dx=(br.left-screenLeft)*out/view,dy=(br.top-screenTop)*out/view,dw=br.width*out/view,dh=br.height*out/view;
  lc.save();
- if(b.dataset.flip==='1'){lc.translate(out,0);lc.scale(-1,1)}
- lc.drawImage(cv,sx,sy,Math.min(spx,cv.width),Math.min(spy,cv.height),0,0,out,out);
+ lc.translate(dx+dw/2,dy+dh/2);
+ lc.rotate((+b.dataset.rot||0)*Math.PI/180);
+ if(b.dataset.flip==='1')lc.scale(-1,1);
+ lc.drawImage(cv,-dw/2,-dh/2,dw,dh);
  lc.restore();
- const lensBrush=Math.max(4,(+sz.value)*2);
- lensCur.style.width=lensBrush+'px';lensCur.style.height=lensBrush+'px';
- lens.style.left=p.cx+'px';lens.style.top=Math.max(42,p.cy-64)+'px';lens.style.display='block'
+ lensCur.style.width=(+sz.value)*out/view+'px';lensCur.style.height=(+sz.value)*out/view+'px';
+ lens.style.left=p.cx+'px';lens.style.top=Math.max(out/2+6,p.cy-92)+'px';lens.style.display='block'
 }
 function startPinch(){if(pointers.size<2)return;const a=[...pointers.values()].slice(0,2),dx=a[1].x-a[0].x,dy=a[1].y-a[0].y;pinchState={dist:Math.max(1,Math.hypot(dx,dy)),zoom:zoom,panX:panX,panY:panY,cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2};drawing=false;last=null;cur.style.display=lens.style.display='none'}
 function down(e){if(!on||panel.contains(e.target))return;e.preventDefault();e.stopImmediatePropagation();pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2){startPinch();e.preventDefault();e.stopImmediatePropagation();return}if(pointers.size>1)return;const r=b.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)return;hist.push(cv.toDataURL());if(hist.length>20)hist.shift();const p=lp(e);drawing=true;last=p;cur.style.left=p.cx+'px';cur.style.top=p.cy+'px';cur.style.display='block';dab(p);mag(p);e.preventDefault();e.stopImmediatePropagation()}
@@ -562,4 +565,9 @@ const editWatch=new MutationObserver(()=>{if(document.querySelector('.brow.selec
  transform:none!important;
  z-index:2147483646!important;
 }
+</style>
+<style id="v135-magnifier-fix">
+#beLensV133{width:104px!important;height:104px!important}
+#beLensV133 canvas{width:104px!important;height:104px!important}
+#beLensCursorV134{left:50%!important;top:50%!important;border:1.8px solid rgba(255,255,255,.98)!important;box-shadow:0 0 0 1px rgba(0,0,0,.28)!important;background:transparent!important}
 </style>
