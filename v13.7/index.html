@@ -504,6 +504,29 @@ const editWatch=new MutationObserver(()=>{if(document.querySelector('.brow.selec
  const ring=document.getElementById('beLensCursorV134');
  if(ring){ring.style.width='42px';ring.style.height='42px';}
 })();
+</script><style id="v137-runtime-fix-2">
+#beCursorV133.v137-size-preview{display:block!important;visibility:visible!important;opacity:1!important;position:fixed!important;z-index:2147483647!important;border:2px solid #4caedc!important;background:rgba(76,174,220,.12)!important;pointer-events:none!important}
+</style>
+<script id="v137-runtime-fix-2-script">
+(function(){
+ const panel=document.getElementById('browErasePanelV133'),slider=document.getElementById('bes'),cur=document.getElementById('beCursorV133'),stage=document.getElementById('stage');
+ if(!panel||!slider||!cur||!stage)return;
+ function preview(){
+   const d=Number(slider.value)||40,r=stage.getBoundingClientRect();
+   cur.style.width=d+'px';cur.style.height=d+'px';
+   cur.style.left=(r.left+r.width/2)+'px';
+   cur.style.top=(r.top+r.height/2)+'px';
+   cur.classList.add('v137-size-preview');
+   cur.style.display='block';cur.style.visibility='visible';cur.style.opacity='1';
+ }
+ function hide(){cur.classList.remove('v137-size-preview');cur.style.display='none'}
+ slider.addEventListener('input',preview,true);
+ slider.addEventListener('pointerdown',preview,true);
+ slider.addEventListener('touchstart',preview,{capture:true,passive:true});
+ slider.addEventListener('change',()=>setTimeout(hide,700),true);
+ slider.addEventListener('pointerup',()=>setTimeout(hide,700),true);
+ slider.addEventListener('touchend',()=>setTimeout(hide,700),{capture:true,passive:true});
+})();
 </script></body></html>
 <style id="v134-eraser-followup">
 /* V13.6: restore brush-size preview while keeping erase cursor hidden during strokes */
