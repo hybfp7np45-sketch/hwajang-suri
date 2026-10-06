@@ -486,11 +486,21 @@ function dab(p,aOverride){
  const g=cx.createRadialGradient(0,0,0,0,0,1);g.addColorStop(0,'rgba(0,0,0,'+a+')');if(inner>0)g.addColorStop(inner,'rgba(0,0,0,'+a+')');g.addColorStop(1,'rgba(0,0,0,0)');
  cx.fillStyle=g;cx.beginPath();cx.arc(0,0,1,0,Math.PI*2);cx.fill();cx.restore()
 }
+function clearEraserResidue(p,q){
+ const sx=cv.width/b.offsetWidth,sy=cv.height/b.offsetHeight,R=+sz.value/2;
+ const x1=Math.max(0,Math.floor(Math.min(p.x,q?q.x:p.x)-R*sx)),y1=Math.max(0,Math.floor(Math.min(p.y,q?q.y:p.y)-R*sy));
+ const x2=Math.min(cv.width,Math.ceil(Math.max(p.x,q?q.x:p.x)+R*sx)),y2=Math.min(cv.height,Math.ceil(Math.max(p.y,q?q.y:p.y)+R*sy));
+ const w=x2-x1,h=y2-y1;if(w<=0||h<=0)return;
+ const im=cx.getImageData(x1,y1,w,h),d=im.data;
+ for(let i=3;i<d.length;i+=4){if(d[i]>0&&d[i]<=12)d[i]=0}
+ cx.putImageData(im,x1,y1)
+}
 function stroke(p,q){
- if(!q){dab(p);return}
+ if(!q){dab(p);clearEraserResidue(p,p);return}
  const dist=Math.hypot(p.cx-q.cx,p.cy-q.cy),diameter=Math.max(1,+sz.value),spacing=Math.max(1,Math.min(2,diameter*.12)),n=Math.max(1,Math.ceil(dist/spacing));
  const target=+op.value/100,coverage=Math.max(1,diameter/spacing),passAlpha=target>=1?1:Math.min(1,Math.max(1/255,1-Math.pow(1-target,1/coverage)));
  for(let i=1;i<=n;i++){const t=i/n;dab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t,cx:q.cx+(p.cx-q.cx)*t,cy:q.cy+(p.cy-q.cy)*t},passAlpha)}
+ clearEraserResidue(p,q)
 }
 function mag(p){
  const cssSize=160,zoomMag=2,stageRect=stage.getBoundingClientRect(),worldRect=world.getBoundingClientRect();
