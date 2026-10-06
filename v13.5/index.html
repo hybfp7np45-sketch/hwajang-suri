@@ -479,7 +479,7 @@ function lp(e){const r=b.getBoundingClientRect(),rx=(e.clientX-r.left)/r.width,r
 function dab(p){const r=b.getBoundingClientRect(),sc=cv.width/r.width,R=(+sz.value/2)*sc,a=+op.value/100,inner=R*Math.pow(+hd.value/100,1.5)*.82,g=cx.createRadialGradient(p.x,p.y,0,p.x,p.y,R);g.addColorStop(0,'rgba(0,0,0,'+a+')');if(inner>0)g.addColorStop(inner/R,'rgba(0,0,0,'+a+')');g.addColorStop(1,'rgba(0,0,0,0)');cx.save();cx.globalCompositeOperation='destination-out';cx.fillStyle=g;cx.beginPath();cx.arc(p.x,p.y,R,0,Math.PI*2);cx.fill();cx.restore()}
 function stroke(p,q){if(!q){dab(p);return}const dx=p.x-q.x,dy=p.y-q.y,n=Math.max(1,Math.ceil(Math.hypot(dx,dy)/8));for(let i=1;i<=n;i++)dab({x:q.x+dx*i/n,y:q.y+dy*i/n})}
 function mag(p){
- const out=120,view=60,stageR=stage.getBoundingClientRect(),worldR=world.getBoundingClientRect();
+ const out=120,view=Math.max(28,Math.min(76,(+sz.value)*3)),stageR=stage.getBoundingClientRect(),worldR=world.getBoundingClientRect();
  if(lens.width!==out||lens.height!==out){lens.width=out;lens.height=out}
  lc.clearRect(0,0,out,out);
  const photo=document.getElementById('photo');
@@ -499,7 +499,7 @@ function mag(p){
  if(b.dataset.flip==='1')lc.scale(-1,1);
  lc.drawImage(cv,-dw/2,-dh/2,dw,dh);
  lc.restore();
- lensCur.style.width=(+sz.value)*out/view+'px';lensCur.style.height=(+sz.value)*out/view+'px';
+ lensCur.style.setProperty('width','30px','important');lensCur.style.setProperty('height','30px','important');
  lens.style.setProperty('left',p.cx+'px','important');lens.style.setProperty('top',Math.max(out/2+6,p.cy-110)+'px','important');lens.style.setProperty('width',out+'px','important');lens.style.setProperty('height',out+'px','important');lens.style.setProperty('display','block','important')
 }
 function startPinch(){if(pointers.size<2)return;const a=[...pointers.values()].slice(0,2),dx=a[1].x-a[0].x,dy=a[1].y-a[0].y;pinchState={dist:Math.max(1,Math.hypot(dx,dy)),zoom:zoom,panX:panX,panY:panY,cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2};drawing=false;last=null;cur.style.display=lens.style.display='none'}
@@ -576,4 +576,8 @@ const editWatch=new MutationObserver(()=>{if(document.querySelector('.brow.selec
 #beLensV133{width:120px!important;height:120px!important;min-width:120px!important;min-height:120px!important;max-width:120px!important;max-height:120px!important}
 #beLensV133 canvas{width:120px!important;height:120px!important}
 #beLensCursorV134{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;border:2px solid #fff!important;box-shadow:0 0 0 1px rgba(0,0,0,.4)!important}
+</style>
+
+<style id="v135-fixed-guide-ring">
+#beLensCursorV134{width:30px!important;height:30px!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;border:2px solid #fff!important}
 </style>
