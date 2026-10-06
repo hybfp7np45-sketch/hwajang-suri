@@ -527,6 +527,20 @@ const editWatch=new MutationObserver(()=>{if(document.querySelector('.brow.selec
  slider.addEventListener('pointerup',()=>setTimeout(hide,700),true);
  slider.addEventListener('touchend',()=>setTimeout(hide,700),{capture:true,passive:true});
 })();
+</script><style id="v137-brush-preview-final">
+#beBrushPreviewFinal{position:fixed;display:none;pointer-events:none;z-index:2147483647;transform:translate(-50%,-50%);border:2px solid #4caedc;border-radius:50%;background:rgba(76,174,220,.16);box-shadow:0 0 0 1px #fff}
+</style>
+<script id="v137-brush-preview-final-script">
+(function(){
+ function init(){
+  const s=document.getElementById('bes'),stage=document.getElementById('stage'); if(!s||!stage)return;
+  let q=document.getElementById('beBrushPreviewFinal'); if(!q){q=document.createElement('div');q.id='beBrushPreviewFinal';document.body.appendChild(q)}
+  let timer=0;
+  function show(){const d=Number(s.value)||40,r=stage.getBoundingClientRect();q.style.width=d+'px';q.style.height=d+'px';q.style.left=(r.left+r.width/2)+'px';q.style.top=(r.top+r.height/2)+'px';q.style.display='block';clearTimeout(timer);timer=setTimeout(()=>q.style.display='none',900)}
+  ['input','change','pointerdown','pointermove','touchstart','touchmove'].forEach(t=>s.addEventListener(t,show,{capture:true,passive:true}));
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
 </script></body></html>
 <style id="v134-eraser-followup">
 /* V13.6: restore brush-size preview while keeping erase cursor hidden during strokes */
