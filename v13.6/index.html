@@ -491,24 +491,28 @@ function stroke(p,q){
  for(let i=1;i<=n;i++){const t=i/n;dab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t,cx:q.cx+(p.cx-q.cx)*t,cy:q.cy+(p.cy-q.cy)*t})}
 }
 function mag(p){
- const cssSize=160,zoomMag=2,view=cssSize/zoomMag,dpr=Math.max(1,Math.min(3,window.devicePixelRatio||1)),out=Math.round(cssSize*dpr),scale=out/view;
- if(lens.width!==out||lens.height!==out){lens.width=out;lens.height=out}
+ const cssSize=160,zoomMag=2,view=cssSize/zoomMag,dpr=Math.max(1,Math.min(3,window.devicePixelRatio||1)),out=Math.round(cssSize*dpr),px=out/cssSize;
+ const lcEl=lens.querySelector('canvas');
+ if(lcEl.width!==out||lcEl.height!==out){lcEl.width=out;lcEl.height=out}
  lc.setTransform(1,0,0,1,0,0);lc.clearRect(0,0,out,out);lc.imageSmoothingEnabled=true;lc.imageSmoothingQuality='high';
- const left=p.cx-view/2,top=p.cy-view/2,photo=document.getElementById('photo');
+ // Lens coordinates are screen coordinates: the finger point is always the exact center.
+ const screenScale=zoomMag*px,center=out/2,photo=document.getElementById('photo');
  if(photo&&photo.complete&&photo.naturalWidth){
-  const pr=photo.getBoundingClientRect();if(pr.width&&pr.height){
+  const pr=photo.getBoundingClientRect();
+  if(pr.width&&pr.height){
    const fit=getComputedStyle(photo).objectFit||'fill';let dw=pr.width,dh=pr.height,ox=0,oy=0;
    if(fit==='cover'||fit==='contain'){const k=fit==='cover'?Math.max(pr.width/photo.naturalWidth,pr.height/photo.naturalHeight):Math.min(pr.width/photo.naturalWidth,pr.height/photo.naturalHeight);dw=photo.naturalWidth*k;dh=photo.naturalHeight*k;ox=(pr.width-dw)/2;oy=(pr.height-dh)/2}
-   lc.drawImage(photo,0,0,photo.naturalWidth,photo.naturalHeight,(pr.left+ox-left)*scale,(pr.top+oy-top)*scale,dw*scale,dh*scale)
+   lc.drawImage(photo,0,0,photo.naturalWidth,photo.naturalHeight,center+(pr.left+ox-p.cx)*screenScale,center+(pr.top+oy-p.cy)*screenScale,dw*screenScale,dh*screenScale)
   }
  }
- const rr=b.getBoundingClientRect(),bcx=rr.left+rr.width/2,bcy=rr.top+rr.height/2;
- lc.save();lc.translate((bcx-left)*scale,(bcy-top)*scale);lc.rotate((+b.dataset.rot||0)*Math.PI/180);
- lc.drawImage(cv,-b.offsetWidth*scale/2,-b.offsetHeight*scale/2,b.offsetWidth*scale,b.offsetHeight*scale);lc.restore();
+ const rr=b.getBoundingClientRect(),rot=(+b.dataset.rot||0)*Math.PI/180,worldScale=b.offsetWidth?rr.width/b.offsetWidth:1;
+ lc.save();lc.translate(center+(rr.left+rr.width/2-p.cx)*screenScale,center+(rr.top+rr.height/2-p.cy)*screenScale);lc.rotate(rot);
+ const flip=b.dataset.flip==='1'?-1:1;lc.scale(flip,1);
+ lc.drawImage(cv,-b.offsetWidth*worldScale*screenScale/2,-b.offsetHeight*worldScale*screenScale/2,b.offsetWidth*worldScale*screenScale,b.offsetHeight*worldScale*screenScale);lc.restore();
  const guide=(+sz.value||1)*zoomMag;
  lensCur.style.setProperty('width',guide+'px','important');lensCur.style.setProperty('height',guide+'px','important');lensCur.style.setProperty('left','50%','important');lensCur.style.setProperty('top','50%','important');lensCur.style.setProperty('transform','translate(-50%,-50%)','important');
  lens.style.setProperty('left',p.cx+'px','important');lens.style.setProperty('top',Math.max(cssSize/2+8,p.cy-132)+'px','important');lens.style.setProperty('width',cssSize+'px','important');lens.style.setProperty('height',cssSize+'px','important');lens.style.setProperty('display','block','important');
- const lcEl=lens.querySelector('canvas');lcEl.style.setProperty('width',cssSize+'px','important');lcEl.style.setProperty('height',cssSize+'px','important')
+ lcEl.style.setProperty('width',cssSize+'px','important');lcEl.style.setProperty('height',cssSize+'px','important')
 }
 function startPinch(){if(pointers.size<2)return;const a=[...pointers.values()].slice(0,2),dx=a[1].x-a[0].x,dy=a[1].y-a[0].y;pinchState={dist:Math.max(1,Math.hypot(dx,dy)),zoom:zoom,panX:panX,panY:panY,cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2};drawing=false;last=null;cur.style.display=lens.style.display='none'}
 function down(e){if(!on||panel.contains(e.target))return;e.preventDefault();e.stopImmediatePropagation();pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2){startPinch();e.preventDefault();e.stopImmediatePropagation();return}if(pointers.size>1)return;const r=b.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)return;hist.push(cv.toDataURL());if(hist.length>20)hist.shift();const p=lp(e);drawing=true;last=p;cur.style.left=p.cx+'px';cur.style.top=p.cy+'px';cur.style.display='block';dab(p);mag(p);e.preventDefault();e.stopImmediatePropagation()}
