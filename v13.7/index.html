@@ -504,42 +504,25 @@ const editWatch=new MutationObserver(()=>{if(document.querySelector('.brow.selec
  const ring=document.getElementById('beLensCursorV134');
  if(ring){ring.style.width='42px';ring.style.height='42px';}
 })();
-</script><style id="v137-runtime-fix-2">
-#beCursorV133.v137-size-preview{display:block!important;visibility:visible!important;opacity:1!important;position:fixed!important;z-index:2147483647!important;border:2px solid #4caedc!important;background:rgba(76,174,220,.12)!important;pointer-events:none!important}
+</script><style id="v137-brush-preview-clean">
+#beSizePreview137{position:fixed!important;display:none;pointer-events:none!important;z-index:2147483647!important;transform:translate(-50%,-50%);border:3px solid #25a7e0!important;border-radius:50%!important;background:rgba(37,167,224,.18)!important;box-shadow:0 0 0 2px #fff!important;box-sizing:border-box!important}
 </style>
-<script id="v137-runtime-fix-2-script">
+<script id="v137-brush-preview-clean-script">
 (function(){
- const panel=document.getElementById('browErasePanelV133'),slider=document.getElementById('bes'),cur=document.getElementById('beCursorV133'),stage=document.getElementById('stage');
- if(!panel||!slider||!cur||!stage)return;
- function preview(){
-   const d=Number(slider.value)||40,r=stage.getBoundingClientRect();
-   cur.style.width=d+'px';cur.style.height=d+'px';
-   cur.style.left=(r.left+r.width/2)+'px';
-   cur.style.top=(r.top+r.height/2)+'px';
-   cur.classList.add('v137-size-preview');
-   cur.style.display='block';cur.style.visibility='visible';cur.style.opacity='1';
+ function boot(){
+  var s=document.getElementById('bes'),stage=document.getElementById('stage'); if(!s||!stage)return;
+  var p=document.getElementById('beSizePreview137'); if(!p){p=document.createElement('div');p.id='beSizePreview137';document.body.appendChild(p)}
+  var timer;
+  function show(){
+   var d=Math.max(4,Number(s.value)||4),r=stage.getBoundingClientRect();
+   p.style.width=d+'px';p.style.height=d+'px';p.style.left=(r.left+r.width/2)+'px';p.style.top=(r.top+r.height*.42)+'px';p.style.display='block';
+   clearTimeout(timer);timer=setTimeout(function(){p.style.display='none'},1200);
+  }
+  s.oninput=show;s.onchange=show;
+  s.addEventListener('pointerdown',show,true);s.addEventListener('pointermove',show,true);
+  s.addEventListener('touchstart',show,{capture:true,passive:true});s.addEventListener('touchmove',show,{capture:true,passive:true});
  }
- function hide(){cur.classList.remove('v137-size-preview');cur.style.display='none'}
- slider.addEventListener('input',preview,true);
- slider.addEventListener('pointerdown',preview,true);
- slider.addEventListener('touchstart',preview,{capture:true,passive:true});
- slider.addEventListener('change',()=>setTimeout(hide,700),true);
- slider.addEventListener('pointerup',()=>setTimeout(hide,700),true);
- slider.addEventListener('touchend',()=>setTimeout(hide,700),{capture:true,passive:true});
-})();
-</script><style id="v137-brush-preview-final">
-#beBrushPreviewFinal{position:fixed;display:none;pointer-events:none;z-index:2147483647;transform:translate(-50%,-50%);border:2px solid #4caedc;border-radius:50%;background:rgba(76,174,220,.16);box-shadow:0 0 0 1px #fff}
-</style>
-<script id="v137-brush-preview-final-script">
-(function(){
- function init(){
-  const s=document.getElementById('bes'),stage=document.getElementById('stage'); if(!s||!stage)return;
-  let q=document.getElementById('beBrushPreviewFinal'); if(!q){q=document.createElement('div');q.id='beBrushPreviewFinal';document.body.appendChild(q)}
-  let timer=0;
-  function show(){const d=Number(s.value)||40,r=stage.getBoundingClientRect();q.style.width=d+'px';q.style.height=d+'px';q.style.left=(r.left+r.width/2)+'px';q.style.top=(r.top+r.height/2)+'px';q.style.display='block';clearTimeout(timer);timer=setTimeout(()=>q.style.display='none',900)}
-  ['input','change','pointerdown','pointermove','touchstart','touchmove'].forEach(t=>s.addEventListener(t,show,{capture:true,passive:true}));
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script></body></html>
 <style id="v134-eraser-followup">
