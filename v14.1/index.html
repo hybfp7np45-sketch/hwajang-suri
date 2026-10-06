@@ -481,22 +481,19 @@ function lp(e){
  return{x:(fl?1-rx:rx)*cv.width,y:ry*cv.height,cx:e.clientX,cy:e.clientY}
 }
 function beginStroke(){
- strokeBase=document.createElement('canvas');strokeBase.width=cv.width;strokeBase.height=cv.height;strokeBase.getContext('2d').drawImage(cv,0,0);
- strokeMask=document.createElement('canvas');strokeMask.width=cv.width;strokeMask.height=cv.height;strokeMaskCtx=strokeMask.getContext('2d')
+ strokeBase=null;strokeMask=null;strokeMaskCtx=null
 }
-function dab(p){
- if(!strokeMaskCtx)beginStroke();
- const sx=cv.width/b.offsetWidth,sy=cv.height/b.offsetHeight,R=+sz.value/2,inner=Math.pow(+hd.value/100,1.5)*.82;
- strokeMaskCtx.save();strokeMaskCtx.globalCompositeOperation='source-over';strokeMaskCtx.translate(p.x,p.y);strokeMaskCtx.scale(R*sx,R*sy);
- const g=strokeMaskCtx.createRadialGradient(0,0,0,0,0,1);g.addColorStop(0,'rgba(0,0,0,1)');if(inner>0)g.addColorStop(inner,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');
- strokeMaskCtx.fillStyle=g;strokeMaskCtx.beginPath();strokeMaskCtx.arc(0,0,1,0,Math.PI*2);strokeMaskCtx.fill();strokeMaskCtx.restore();
- cx.clearRect(0,0,cv.width,cv.height);cx.drawImage(strokeBase,0,0);
- cx.save();cx.globalCompositeOperation='destination-out';cx.globalAlpha=+op.value/100;cx.drawImage(strokeMask,0,0);cx.restore()
+function dab(p,aOverride){
+ const sx=cv.width/b.offsetWidth,sy=cv.height/b.offsetHeight,R=+sz.value/2,a=aOverride==null?+op.value/100:aOverride,inner=Math.pow(+hd.value/100,1.5)*.82;
+ cx.save();cx.globalCompositeOperation='destination-out';cx.translate(p.x,p.y);cx.scale(R*sx,R*sy);
+ const g=cx.createRadialGradient(0,0,0,0,0,1);g.addColorStop(0,'rgba(0,0,0,'+a+')');if(inner>0)g.addColorStop(inner,'rgba(0,0,0,'+a+')');g.addColorStop(1,'rgba(0,0,0,0)');
+ cx.fillStyle=g;cx.beginPath();cx.arc(0,0,1,0,Math.PI*2);cx.fill();cx.restore()
 }
 function stroke(p,q){
  if(!q){dab(p);return}
- const dist=Math.hypot(p.cx-q.cx,p.cy-q.cy),spacing=Math.max(1,Math.min(2,(+sz.value||8)*0.12)),n=Math.max(1,Math.ceil(dist/spacing));
- for(let i=1;i<=n;i++){const t=i/n;dab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t,cx:q.cx+(p.cx-q.cx)*t,cy:q.cy+(p.cy-q.cy)*t})}
+ const dist=Math.hypot(p.cx-q.cx,p.cy-q.cy),diameter=Math.max(1,+sz.value),spacing=Math.max(1,Math.min(2,diameter*.12)),n=Math.max(1,Math.ceil(dist/spacing));
+ const target=+op.value/100,coverage=Math.max(1,diameter/spacing),passAlpha=target>=1?1:1-Math.pow(1-target,1/coverage);
+ for(let i=1;i<=n;i++){const t=i/n;dab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t,cx:q.cx+(p.cx-q.cx)*t,cy:q.cy+(p.cy-q.cy)*t},passAlpha)}
 }
 function mag(p){
  const cssSize=160,zoomMag=2,stageRect=stage.getBoundingClientRect(),worldRect=world.getBoundingClientRect();
