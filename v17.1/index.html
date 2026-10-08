@@ -496,39 +496,33 @@ function lp(e){
  return{x:(fl?1-rx:rx)*cv.width,y:ry*cv.height,cx:e.clientX,cy:e.clientY}
 }
 let eraseStartPixels=null;
-function dab(p,aOverride){
- const sx=cv.width/b.offsetWidth,sy=cv.height/b.offsetHeight,R=+sz.value/2,a=aOverride==null?+op.value/100:aOverride;
- cx.save();cx.globalCompositeOperation='destination-out';cx.translate(p.x,p.y);cx.scale(R*sx,R*sy);
- const g=cx.createRadialGradient(0,0,0,0,0,1);for(let i=0;i<=100;i+=2){g.addColorStop(i/100,'rgba(0,0,0,'+(a*edgeProfile(i/100)).toFixed(5)+')')}cx.fillStyle=g;cx.beginPath();cx.arc(0,0,1,0,Math.PI*2);cx.fill();cx.restore();
- // Keep a single finger gesture within the requested erasing percentage.
- // Repeated separate gestures can erase further.
- if(eraseStartPixels){
-  const radiusX=Math.ceil(R*sx)+2,radiusY=Math.ceil(R*sy)+2;
-  const x0=Math.max(0,Math.floor(p.x-radiusX)),y0=Math.max(0,Math.floor(p.y-radiusY));
-  const x1=Math.min(cv.width,Math.ceil(p.x+radiusX)),y1=Math.min(cv.height,Math.ceil(p.y+radiusY));
-  if(x1>x0&&y1>y0){
-   const part=cx.getImageData(x0,y0,x1-x0,y1-y0),data=part.data,base=eraseStartPixels.data;
-   const target=Math.max(0,Math.min(1,+op.value/100));
-   // A softer edge produces less overall erasing at the same opacity.
-   const softness=.65+.35*(+hd.value/100);
-   const floor=1-target*softness;
-   for(let yy=0;yy<y1-y0;yy++)for(let xx=0;xx<x1-x0;xx++){
-    const i=(yy*(x1-x0)+xx)*4,bi=((y0+yy)*cv.width+x0+xx)*4;
-    const minAlpha=Math.round(base[bi+3]*floor);
-    if(data[i+3]<minAlpha)data[i+3]=minAlpha;
-   }
-   cx.putImageData(part,x0,y0)
+// Keep the maximum erased fraction per pixel within one finger gesture.
+// Starting a new gesture takes a new snapshot, so repeated passes accumulate.
+function dab(p){
+ if(!eraseStartPixels||!cv||!cx)return;
+ const sx=cv.width/b.offsetWidth,sy=cv.height/b.offsetHeight;
+ const rx=Math.max(.01,(+sz.value/2)*sx),ry=Math.max(.01,(+sz.value/2)*sy);
+ const x0=Math.max(0,Math.floor(p.x-rx)),y0=Math.max(0,Math.floor(p.y-ry));
+ const x1=Math.min(cv.width,Math.ceil(p.x+rx)),y1=Math.min(cv.height,Math.ceil(p.y+ry));
+ if(x1<=x0||y1<=y0)return;
+ const region=cx.getImageData(x0,y0,x1-x0,y1-y0),data=region.data,base=eraseStartPixels.data;
+ const target=Math.max(0,Math.min(1,+op.value/100)),w=cv.width,rw=x1-x0;
+ for(let y=0;y<y1-y0;y++){
+  const dy=(y0+y+.5-p.y)/ry;
+  for(let x=0;x<rw;x++){
+   const dx=(x0+x+.5-p.x)/rx,r=Math.hypot(dx,dy);
+   if(r>=1)continue;
+   const idx=(y*rw+x)*4,baseIdx=((y0+y)*w+x0+x)*4;
+   const alpha=Math.round(base[baseIdx+3]*(1-target*edgeProfile(r)));
+   if(data[idx+3]>alpha)data[idx+3]=alpha;
   }
  }
+ cx.putImageData(region,x0,y0);
 }
 function stroke(p,q){
  if(!q){dab(p);return}
- const dist=Math.hypot(p.cx-q.cx,p.cy-q.cy),diameter=Math.max(1,+sz.value),spacing=Math.max(1,diameter*.18),n=Math.max(1,Math.ceil(dist/spacing));
- const target=Math.max(0,Math.min(1,+op.value/100));
- const overlap=Math.max(1,diameter/spacing);
- const effectiveOverlap=Math.max(1,overlap*1.85);
- const passAlpha=target>=1?1:Math.max(1/255,1-Math.pow(1-target,1/effectiveOverlap));
- for(let i=1;i<=n;i++){const t=i/n;dab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t,cx:q.cx+(p.cx-q.cx)*t,cy:q.cy+(p.cy-q.cy)*t},passAlpha)}
+ const dist=Math.hypot(p.cx-q.cx,p.cy-q.cy),spacing=Math.max(1,+sz.value*.18),n=Math.max(1,Math.ceil(dist/spacing));
+ for(let i=1;i<=n;i++){const t=i/n;dab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t})}
 }
 let pendingMag=null,magFrame=0;
 function scheduleMag(p){pendingMag=p;if(magFrame)return;magFrame=requestAnimationFrame(()=>{magFrame=0;if(on&&drawing&&pendingMag)mag(pendingMag)})}
