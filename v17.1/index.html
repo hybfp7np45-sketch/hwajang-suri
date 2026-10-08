@@ -495,10 +495,31 @@ function lp(e){
  const ux=dx*Math.cos(ang)-dy*Math.sin(ang),uy=dx*Math.sin(ang)+dy*Math.cos(ang),z=Math.max(1e-6,typeof zoom==='number'?zoom:1),w=b.offsetWidth*z,h=b.offsetHeight*z,fl=b.dataset.flip==='1',rx=ux/w+.5,ry=uy/h+.5;
  return{x:(fl?1-rx:rx)*cv.width,y:ry*cv.height,cx:e.clientX,cy:e.clientY}
 }
+let eraseStartPixels=null;
 function dab(p,aOverride){
  const sx=cv.width/b.offsetWidth,sy=cv.height/b.offsetHeight,R=+sz.value/2,a=aOverride==null?+op.value/100:aOverride;
  cx.save();cx.globalCompositeOperation='destination-out';cx.translate(p.x,p.y);cx.scale(R*sx,R*sy);
- const g=cx.createRadialGradient(0,0,0,0,0,1);for(let i=0;i<=100;i+=2){g.addColorStop(i/100,'rgba(0,0,0,'+(a*edgeProfile(i/100)).toFixed(5)+')')}cx.fillStyle=g;cx.beginPath();cx.arc(0,0,1,0,Math.PI*2);cx.fill();cx.restore()
+ const g=cx.createRadialGradient(0,0,0,0,0,1);for(let i=0;i<=100;i+=2){g.addColorStop(i/100,'rgba(0,0,0,'+(a*edgeProfile(i/100)).toFixed(5)+')')}cx.fillStyle=g;cx.beginPath();cx.arc(0,0,1,0,Math.PI*2);cx.fill();cx.restore();
+ // Keep a single finger gesture within the requested erasing percentage.
+ // Repeated separate gestures can erase further.
+ if(eraseStartPixels){
+  const radiusX=Math.ceil(R*sx)+2,radiusY=Math.ceil(R*sy)+2;
+  const x0=Math.max(0,Math.floor(p.x-radiusX)),y0=Math.max(0,Math.floor(p.y-radiusY));
+  const x1=Math.min(cv.width,Math.ceil(p.x+radiusX)),y1=Math.min(cv.height,Math.ceil(p.y+radiusY));
+  if(x1>x0&&y1>y0){
+   const part=cx.getImageData(x0,y0,x1-x0,y1-y0),data=part.data,base=eraseStartPixels.data;
+   const target=Math.max(0,Math.min(1,+op.value/100));
+   // A softer edge produces less overall erasing at the same opacity.
+   const softness=.65+.35*(+hd.value/100);
+   const floor=1-target*softness;
+   for(let yy=0;yy<y1-y0;yy++)for(let xx=0;xx<x1-x0;xx++){
+    const i=(yy*(x1-x0)+xx)*4,bi=((y0+yy)*cv.width+x0+xx)*4;
+    const minAlpha=Math.round(base[bi+3]*floor);
+    if(data[i+3]<minAlpha)data[i+3]=minAlpha;
+   }
+   cx.putImageData(part,x0,y0)
+  }
+ }
 }
 function stroke(p,q){
  if(!q){dab(p);return}
@@ -546,6 +567,7 @@ function down(e){
  if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)return;
  activeErasePointer=e.pointerId;
  saveUndoSnapshot();
+ eraseStartPixels=hist[hist.length-1];
  const p=lp(e);drawing=true;last=p;
  cur.style.left=p.cx+'px';cur.style.top=p.cy+'px';cur.style.display='block';
  dab(p);scheduleMag(p);
