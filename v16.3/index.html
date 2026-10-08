@@ -473,13 +473,16 @@ function mount(){b=document.querySelector('.brow.selected');if(!b)return false;s
 function close(save=true){if(!on)return;if(save&&cv){const data=cv.toDataURL('image/png');if(src.tagName==='IMG'){src.src=data;src.style.visibility=''}else{const im=new Image();im.src=data;im.style.cssText='width:100%;height:100%;display:block;pointer-events:none';b.insertBefore(im,src);src.remove()}}else if(src)src.style.visibility='';cv?.remove();cv=null;cx=null;on=false;document.body.classList.remove('v133-erasing');panel.classList.remove('show');btn.classList.remove('on');pointers.clear();drawing=false;cur.style.display=lens.style.display='none'}
 function keepEditbar(){const s=document.querySelector('.brow.selected');edit.classList.toggle('show',!!s)}function closeOthers(){document.getElementById('layers')?.classList.remove('show');const cb=document.getElementById('colorbar');if(cb){cb.classList.remove('show');cb.style.removeProperty('display')}keepEditbar()}
 function open(){if(!document.querySelector('.brow.selected')){alert('먼저 지울 눈썹을 선택해 주세요.');return}closeOthers();hist=[];if(!mount())return;on=true;document.body.classList.add('v133-erasing');panel.classList.add('show');btn.classList.add('on');keepEditbar()}
-btn.onclick=e=>{e.preventDefault();e.stopPropagation();on?close():open()};panel.querySelector('#bed').onclick=()=>close();const undoButton=panel.querySelector('#beu');let undoTimer=null,undoDelay=null,undoHeld=false,undoRepeated=false;
+btn.onclick=e=>{e.preventDefault();e.stopPropagation();on?close():open()};panel.querySelector('#bed').onclick=()=>close();const undoButton=panel.querySelector('#beu');let undoTimer=null,undoDelay=null,undoHeld=false,undoRepeated=false,undoTouch=false;
 function undoOnce(){if(!hist.length||!cx)return false;cx.putImageData(hist.pop(),0,0);return true}
 function stopUndo(){clearTimeout(undoDelay);clearInterval(undoTimer);undoDelay=undoTimer=null;undoHeld=false}
-undoButton.style.touchAction='manipulation';
+function startUndoHold(){stopUndo();undoRepeated=false;undoHeld=true;undoOnce();undoRepeated=true;undoDelay=setTimeout(()=>{if(!undoHeld)return;undoTimer=setInterval(()=>{if(!undoHeld||!undoOnce())stopUndo()},95)},280)}
+undoButton.style.touchAction='none';
+undoButton.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();undoTouch=true;startUndoHold()},{passive:false});
+['touchend','touchcancel'].forEach(t=>undoButton.addEventListener(t,e=>{e.preventDefault();e.stopPropagation();stopUndo();undoTouch=false},{passive:false}));
+undoButton.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||undoTouch)return;if(e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();e.stopPropagation();startUndoHold()});
+['pointerup','pointercancel','pointerleave','lostpointercapture'].forEach(t=>undoButton.addEventListener(t,e=>{if(e.pointerType!=='touch')stopUndo()}));
 undoButton.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(!undoRepeated)undoOnce();undoRepeated=false});
-undoButton.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;stopUndo();undoRepeated=false;undoHeld=true;undoDelay=setTimeout(()=>{if(!undoHeld)return;undoRepeated=true;undoOnce();undoTimer=setInterval(()=>{if(!undoHeld||!undoOnce())stopUndo()},100)},350)});
-['pointerup','pointercancel','pointerleave','lostpointercapture'].forEach(t=>undoButton.addEventListener(t,stopUndo));
 window.addEventListener('blur',stopUndo);
 document.getElementById('layerbtn')?.addEventListener('pointerdown',()=>{if(on)close()},true);document.getElementById('colorbtn')?.addEventListener('pointerdown',()=>{if(on)close()},true);
 function lp(e){
