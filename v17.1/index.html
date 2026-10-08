@@ -508,7 +508,7 @@ function dab(p){
  const region=cx.getImageData(x0,y0,x1-x0,y1-y0),data=region.data,base=eraseStartPixels.data;
  // Calibrate visible erase strength without changing edge profile or brush geometry.
  const sliderOpacity=Math.max(0,Math.min(1,+op.value/100));
- const target=Math.pow(sliderOpacity,1.6),w=cv.width,rw=x1-x0;
+ const target=sliderOpacity,w=cv.width,rw=x1-x0;
  for(let y=0;y<y1-y0;y++){
   const dy=(y0+y+.5-p.y)/ry;
   for(let x=0;x<rw;x++){
