@@ -474,10 +474,12 @@ function close(save=true){if(!on)return;if(save&&cv){const data=cv.toDataURL('im
 function keepEditbar(){const s=document.querySelector('.brow.selected');edit.classList.toggle('show',!!s)}function closeOthers(){document.getElementById('layers')?.classList.remove('show');const cb=document.getElementById('colorbar');if(cb){cb.classList.remove('show');cb.style.removeProperty('display')}keepEditbar()}
 function open(){if(!document.querySelector('.brow.selected')){alert('먼저 지울 눈썹을 선택해 주세요.');return}closeOthers();hist=[];if(!mount())return;on=true;document.body.classList.add('v133-erasing');panel.classList.add('show');btn.classList.add('on');keepEditbar()}
 btn.onclick=e=>{e.preventDefault();e.stopPropagation();on?close():open()};panel.querySelector('#bed').onclick=()=>close();const undoButton=panel.querySelector('#beu');let undoTimer=null,undoDelay=null,undoHeld=false;
-function undoOnce(){if(!hist.length||!cx)return;cx.putImageData(hist.pop(),0,0)}
+function undoOnce(){if(!hist.length||!cx)return false;cx.putImageData(hist.pop(),0,0);return true}
 function stopUndo(){clearTimeout(undoDelay);clearInterval(undoTimer);undoDelay=undoTimer=null;undoHeld=false}
-undoButton.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();stopUndo();undoHeld=true;undoOnce();undoDelay=setTimeout(()=>{undoTimer=setInterval(()=>{if(hist.length)undoOnce();else stopUndo()},90)},330)});
-['pointerup','pointercancel','pointerleave','lostpointercapture'].forEach(t=>undoButton.addEventListener(t,stopUndo));
+undoButton.style.touchAction='none';
+undoButton.addEventListener('pointerdown',e=>{if(e.button!==0&&e.pointerType==='mouse')return;e.preventDefault();e.stopPropagation();stopUndo();undoHeld=true;try{undoButton.setPointerCapture(e.pointerId)}catch(_){}if(!undoOnce()){stopUndo();return}undoDelay=setTimeout(()=>{if(!undoHeld)return;undoTimer=setInterval(()=>{if(!undoHeld||!undoOnce())stopUndo()},90)},330)});
+['pointerup','pointercancel','lostpointercapture'].forEach(t=>undoButton.addEventListener(t,stopUndo));
+window.addEventListener('blur',stopUndo);
 undoButton.addEventListener('click',e=>{e.preventDefault();e.stopPropagation()});
 document.getElementById('layerbtn')?.addEventListener('pointerdown',()=>{if(on)close()},true);document.getElementById('colorbtn')?.addEventListener('pointerdown',()=>{if(on)close()},true);
 function lp(e){
