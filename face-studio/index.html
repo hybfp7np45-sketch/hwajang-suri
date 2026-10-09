@@ -79,6 +79,22 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-se
 .size-group{gap:1px}.size-group button{width:24px;height:29px}.size-group .sizeval{min-width:32px;font-size:11px}
 .adjust .reset{font-size:10px;padding:7px 4px;white-space:nowrap}
 @media(max-width:375px){.move-group .arrows{grid-template-columns:repeat(3,17px)}.size-group button{width:21px}.size-group .sizeval{min-width:29px}.adjust .controls{gap:3px}}
+
+/* Reference image: title top-left, reset bottom-left, centered direction pad, scale at right */
+.photo{flex:0 0 auto;width:100%;height:auto;aspect-ratio:1/1;min-height:0;max-height:none}
+@media(max-height:700px){.photo{height:auto;aspect-ratio:1/1}}
+.adjust{height:122px;min-height:122px;max-height:122px;padding:10px 10px}
+.adjust .controls{position:relative;display:block;width:100%;height:100%;padding:0;margin:0}
+.move-group{display:contents}
+.move-group b{position:absolute;left:0;top:0;max-width:none;font-size:clamp(12px,3.4vw,15px);white-space:nowrap;line-height:1.3;font-weight:700}
+.move-group .arrows{position:absolute;left:46%;top:50%;transform:translate(-50%,-50%);display:grid;grid-template-columns:repeat(3,36px);grid-template-rows:repeat(3,29px);gap:0;align-items:center;justify-items:center}
+.move-group .arrows button{width:36px;height:29px;border-radius:8px;font-size:25px;line-height:1}
+.move-group .arrows .val{width:36px;height:29px}
+.size-group{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:2px}
+.size-group button{width:36px;height:42px;border-radius:10px;font-size:24px}
+.size-group .sizeval{min-width:48px;text-align:center;font-size:clamp(14px,4vw,18px)}
+.adjust .reset{position:absolute;left:0;bottom:0;font-size:14px;padding:5px 8px;border-radius:18px}
+@media(max-width:390px){.move-group .arrows{left:46%;grid-template-columns:repeat(3,31px);grid-template-rows:repeat(3,27px)}.move-group .arrows button{width:31px;height:27px;font-size:22px}.size-group button{width:31px;height:39px}.size-group .sizeval{min-width:44px}}
 </style></head><body><main class="app"><header><div><h1>FACE STUDIO</h1><div class="sub">시술 부위 보존 · 인물 디자인</div></div><div class="actions"><button class="small" id="camera" aria-label="촬영" title="촬영"><svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg></button><button class="small primary" id="gallery" aria-label="불러오기" title="불러오기"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="16.5" cy="8" r="1.5"/><path d="m3 17 6-6 4 4 3-3 5 5"/></svg></button><button class="small" id="saveImage" aria-label="저장" title="저장"><svg viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/></svg></button></div></header>
 <section class="photo" id="photo"><div class="photo-label" id="photoLabel">사진 미등록</div><div class="preserve-overlay"><button id="lockToggle" class="lock-toggle" aria-label="원본 보존 부위 선택" aria-expanded="false"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></button><div id="lockMenu" class="lock-menu" hidden><div class="preserve" id="preserve"></div></div></div><div class="strip" id="thumbs"><button class="thumb" id="addPhoto" aria-label="사진 추가">＋</button></div><div class="empty" id="empty"><div class="big">▧</div>시술 전·후 사진을 불러와 주세요<br>여러 장을 한 번에 선택할 수 있어요</div><img id="mainImg" hidden alt="선택된 고객 사진"></section>
 <div class="editor-menu"><span class="magic" aria-label="변경할 디자인"><svg viewBox="0 0 24 24"><path d="m4 20 13-13 3 3L7 23M14 3v3M20 2v3M21 13h-3M9 3l1 2"/></svg></span><nav class="tabs" id="tabs"></nav></div><div class="designs" id="designs"></div>
