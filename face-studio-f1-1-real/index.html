@@ -110,7 +110,7 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-se
 /* Selected four-sparkle filled wand: override legacy outline-only SVG rule */
 .magic svg{fill:#378BD0;stroke:none;width:25px;height:25px}
 .magic svg g,.magic svg path{fill:#378BD0;stroke:none}
-.photo #faceCanvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1}.photo #mainImg.face-processing{visibility:hidden}.face-status{position:absolute;right:8px;top:9px;z-index:2;background:#fffffff0;color:#276889;padding:5px 8px;border-radius:10px;font-size:10px;max-width:68%;text-align:right}.face-status[hidden]{display:none}</style><script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script></head><body><main class="app"><header><div><h1>FACE STUDIO</h1><div class="sub">시술 부위 보존 · 인물 디자인 <span style="font-size:9px;color:#9cb2c1">FS-1010</span></div></div><div class="actions"><button class="small" id="camera" aria-label="촬영" title="촬영"><svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg></button><button class="small primary" id="gallery" aria-label="불러오기" title="불러오기"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="16.5" cy="8" r="1.5"/><path d="m3 17 6-6 4 4 3-3 5 5"/></svg></button><button class="small" id="saveImage" aria-label="저장" title="저장"><svg viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/></svg></button></div></header>
+.photo #faceCanvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1}.photo #mainImg.face-processing{visibility:hidden}.face-status{position:absolute;right:8px;top:9px;z-index:2;background:#fffffff0;color:#276889;padding:5px 8px;border-radius:10px;font-size:10px;max-width:68%;text-align:right}.face-status[hidden]{display:none}</style><script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js"></script></head><body><main class="app"><header><div><h1>FACE STUDIO</h1><div class="sub">시술 부위 보존 · 인물 디자인 <span style="font-size:9px;color:#9cb2c1">FS-1010</span></div></div><div class="actions"><button class="small" id="camera" aria-label="촬영" title="촬영"><svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg></button><button class="small primary" id="gallery" aria-label="불러오기" title="불러오기"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="16.5" cy="8" r="1.5"/><path d="m3 17 6-6 4 4 3-3 5 5"/></svg></button><button class="small" id="saveImage" aria-label="저장" title="저장"><svg viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/></svg></button></div></header>
 <section class="photo" id="photo"><div class="photo-label" id="photoLabel">사진 미등록</div><div class="preserve-overlay"><button id="lockToggle" class="lock-toggle" aria-label="원본 보존 부위 선택" aria-expanded="false"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></button><div id="lockMenu" class="lock-menu" hidden><div class="preserve" id="preserve"></div></div></div><div class="strip" id="thumbs"><button class="thumb" id="addPhoto" aria-label="사진 추가">＋</button></div><div class="empty" id="empty"><div class="big">▧</div>시술 전·후 사진을 불러와 주세요<br>여러 장을 한 번에 선택할 수 있어요</div><img id="mainImg" hidden alt="선택된 고객 사진"><canvas id="faceCanvas" hidden aria-label="얼굴형 변형 결과"></canvas><div id="faceStatus" class="face-status" hidden></div></section>
 <div class="editor-menu"><span class="magic" aria-label="마술봉"><svg viewBox="0 0 32 32" aria-hidden="true" style="width:25px;height:25px;stroke:none!important;fill:#378BD0!important"><g style="stroke:none!important;fill:#378BD0!important"><path d="M3.5 28.5 17.5 14.5" fill="none" stroke="#378BD0" stroke-width="3.5" stroke-linecap="round" style="fill:none!important;stroke:#378BD0!important;stroke-width:3.5!important;stroke-linecap:round!important"/><path d="M23 1.2000000000000002 Q24.105 6.895 29.8 8 Q24.105 9.105 23 14.8 Q21.895 9.105 16.2 8 Q21.895 6.895 23 1.2000000000000002Z"/><path d="M13 4 Q13.4875 6.5125 16 7 Q13.4875 7.4875 13 10 Q12.5125 7.4875 10 7 Q12.5125 6.5125 13 4Z"/><path d="M29 14.28 Q29.442 16.558 31.72 17 Q29.442 17.442 29 19.72 Q28.558 17.442 26.28 17 Q28.558 16.558 29 14.28Z"/><path d="M22 21.8 Q22.52 24.48 25.2 25 Q22.52 25.52 22 28.2 Q21.48 25.52 18.8 25 Q21.48 24.48 22 21.8Z"/></g></svg></span><nav class="tabs" id="tabs"></nav></div><div class="designs" id="designs"></div>
 <section class="adjust" id="adjustPanel" hidden><div class="controls"><div class="move-group"><b id="adjustTitle">얼굴형 위치 · 크기</b><div class="arrows"><span></span><button data-move="up">↑</button><span></span><button data-move="left">←</button><span class="val" id="pos" aria-hidden="true"></span><button data-move="right">→</button><span></span><button data-move="down">↓</button><span></span></div></div><div class="size-group"><button id="smaller" aria-label="크기 줄이기">−</button><span class="sizeval" id="sizeval">100%</span><button id="bigger" aria-label="크기 키우기">＋</button></div><button class="reset" id="reset" aria-label="초기화" title="초기화">초기화</button></div></section>
@@ -137,8 +137,8 @@ function loadMesh(){
  if(meshPromise)return meshPromise;
  meshPromise=(async()=>{
   if(typeof FaceMesh==='undefined')throw Error('얼굴 인식 모듈을 불러오지 못했습니다. 인터넷 연결을 확인하세요.');
-  const m=new FaceMesh({locateFile:file=>'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/'+file});
-  m.setOptions({maxNumFaces:1,refineLandmarks:true,minDetectionConfidence:.5,minTrackingConfidence:.5,staticImageMode:true});
+  const m=new FaceMesh({locateFile:file=>'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/'+file});
+  m.setOptions({maxNumFaces:1,refineLandmarks:false,minDetectionConfidence:.5,minTrackingConfidence:.5});
   mesh=m;return m;
  })();return meshPromise;
 }
@@ -146,7 +146,7 @@ function loadPhoto(url){return new Promise((resolve,reject)=>{const im=new Image
 function detectFace(im){
  return new Promise(async(resolve,reject)=>{try{
   const m=await loadMesh();m.onResults(r=>resolve(r.multiFaceLandmarks?.[0]||null));
-  await m.send({image:im});
+  await m.initialize();await m.send({image:im});
  }catch(e){reject(e)}});
 }
 function queueFaceRender(){const job=++faceJob;requestAnimationFrame(()=>runFace(job))}
@@ -207,7 +207,7 @@ async function runFace(job){
   fc.width=c.width;fc.height=c.height;fc.getContext('2d').drawImage(c,0,0);
   fc.hidden=false;$('mainImg').style.visibility='hidden';renderedCanvas=c;
   faceMessage('얼굴 인식 완료 · 얼굴형 '+design+' 적용');
- }catch(e){if(job!==faceJob)return;restorePhoto();faceMessage('인식 오류: '+e.message)}
+ }catch(e){if(job!==faceJob)return;restorePhoto();faceMessage('얼굴 인식에 실패했습니다. 새로고침 후 다시 시도해 주세요.')}
 }
 function saveFaceImage(){
  if(!renderedCanvas){alert('먼저 사진을 불러오고 얼굴형 디자인을 적용해 주세요.');return}
