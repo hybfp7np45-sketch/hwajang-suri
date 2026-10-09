@@ -1,0 +1,137 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>FACE STUDIO · 시술 부위 보존</title><style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Pretendard",sans-serif;color:#243343;background:#eef6fa}*{box-sizing:border-box}body{margin:0}.app{max-width:520px;margin:auto;min-height:100dvh;background:#f8fbfd;padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom)}header{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 3px 9px}h1{font-size:18px;margin:0;letter-spacing:1px}.sub{font-size:11px;color:#7b93a4;margin-top:3px}.actions{display:flex;gap:5px;flex-shrink:0}.actions .small{padding:9px 7px;font-size:11px}button{font:inherit;cursor:pointer;border:0}button:focus-visible{outline:2px solid #4b9ed3}.small{background:#e1f0f8;border-radius:10px;padding:10px 11px;color:#286184;font-size:12px}.primary{background:#65b4e3;color:#fff}.photo{height:min(46vh,440px);min-height:250px;background:linear-gradient(140deg,#e6f2f8,#f8fbfd);border:1px solid #d6e6ee;border-radius:20px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}.photo img{max-width:100%;max-height:100%;object-fit:contain}.empty{text-align:center;color:#7b99ab;font-size:13px;line-height:2}.empty .big{font-size:36px}.photo-label{position:absolute;bottom:8px;right:10px;background:#ffffffdc;padding:6px 10px;border-radius:20px;font-size:11px}.strip{position:absolute;bottom:8px;left:8px;right:100px;display:flex;gap:5px;overflow-x:auto;padding:2px;z-index:2}.photo-label{z-index:2}.thumb{width:45px;height:45px;flex:none;border-radius:11px;border:2px solid transparent;background:#e6eff4;overflow:hidden;position:relative}.thumb.active{border-color:#56aee0}.thumb img{width:100%;height:100%;object-fit:cover}.thumb span{position:absolute;bottom:0;left:0;right:0;background:#0008;color:white;font-size:10px}.section{margin:8px 0 5px;font-weight:700;font-size:13px}.hint{font-size:11px;color:#8096a5;font-weight:400}.preserve,.tabs{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:3px 0}.chip{flex:none;border-radius:20px;padding:9px 14px;background:#e7f1f7;color:#597b8e;font-size:12px}.chip.on{background:#78bce4;color:#fff}.tabs{gap:9px}.tab{flex:none;background:transparent;border-bottom:3px solid transparent;padding:11px 5px 8px;color:#7a94a4;font-size:13px}.tab.on{border-color:#67b6e3;color:#2b7cae;font-weight:700}.designs{display:flex;gap:10px;overflow-x:auto;padding:5px 0 7px;scroll-snap-type:x mandatory}.design{flex:none;width:74px;height:72px;border:2px solid #e2ecf1;border-radius:13px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;scroll-snap-align:start}.design.on{border-color:#64b3df;background:#eff9ff}.design .shape{font-size:25px;color:#79a7c3}.design small{font-size:11px;color:#57758b}.preserve-overlay{position:absolute;z-index:3;top:8px;left:8px;right:8px;background:#f8fcffdb;border:1px solid #d9e9f2;border-radius:12px;padding:7px 9px;backdrop-filter:blur(6px)}.preserve-title{font-size:11px;font-weight:700;margin-bottom:3px}.preserve-overlay .preserve{gap:5px;padding:2px 0}.preserve-overlay .chip{font-size:11px;padding:6px 10px}.photo .strip{max-width:calc(100% - 105px)}.adjust[hidden]{display:none}.adjust{background:#edf6fb;border-radius:15px;padding:13px;position:sticky;bottom:env(safe-area-inset-bottom);z-index:4;box-shadow:0 -5px 20px #567b9524}.adjusthead{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}.adjusthead b{font-size:13px}.reset{font-size:11px;background:#fff;color:#5986a3;padding:7px 10px;border-radius:8px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}.control{background:white;border-radius:11px;padding:10px;text-align:center}.control label{font-size:11px;color:#7993a5;display:block;margin-bottom:8px}.arrows{display:grid;grid-template-columns:repeat(3,32px);justify-content:center;gap:3px}.arrows button{height:30px;border-radius:7px;background:#dceefa;color:#427b9e}.arrows .val{font-size:10px;align-content:center;color:#668397}.sizeval{font-size:17px;color:#468fbb;font-weight:700;margin:10px 0}.sizebuttons{display:flex;gap:6px;justify-content:center}.sizebuttons button{background:#dceefa;color:#427b9e;padding:8px 15px;border-radius:8px}.notice{margin:12px 0 16px;color:#7893a4;font-size:11px;line-height:1.6}.bottom{display:flex;gap:8px;padding-bottom:10px}.bottom button{flex:1;padding:13px;border-radius:12px;font-size:13px}.off{opacity:.45}input[type=file]{display:none}
+/* Compact one-screen editor */
+html,body{height:100%;overflow:hidden}.app{height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:env(safe-area-inset-top) 10px env(safe-area-inset-bottom)}
+header{flex:none;padding:5px 2px 7px}h1{font-size:15px}.sub{font-size:10px}
+.actions{gap:5px}.actions .small{width:37px;height:37px;padding:7px;display:grid;place-items:center}
+.actions svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.photo{flex:1;min-height:0;height:auto;border-radius:16px}
+.photo img{width:100%;height:100%;object-fit:contain}
+.preserve-overlay{top:8px;left:8px;right:auto;width:auto;max-width:calc(100% - 16px);padding:0;background:transparent;border:0;backdrop-filter:none}
+.lock-toggle{width:34px;height:34px;border-radius:50%;background:#fffefa;color:#1d3445;box-shadow:0 1px 6px #1232;display:grid;place-items:center}
+.lock-toggle svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.lock-menu{margin-top:5px;background:#ffffffef;border-radius:12px;padding:8px;box-shadow:0 2px 9px #1232}
+.lock-menu[hidden]{display:none}.preserve-overlay .chip{padding:7px 9px}
+.photo-label{bottom:8px;right:8px}.strip{bottom:7px;left:7px;right:88px}
+.editor-menu{flex:none;display:flex;align-items:center;gap:4px;min-height:47px;overflow:hidden}
+.magic{flex:none;width:31px;display:grid;place-items:center;color:#223f53}
+.magic svg{width:22px;height:22px;stroke:currentColor;stroke-width:1.7;fill:none}
+.tabs{flex:1;min-width:0;gap:5px;overflow-x:auto;padding:4px 0}
+.tab{width:43px;height:43px;flex:none;padding:3px;display:grid;place-items:center;border:1px solid #d9e8f0;border-radius:10px;background:#fff}
+.tab.on{background:#e0f2ff;border:1px solid #67b6e3}
+.tab svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.designs{flex:none;min-height:72px;max-height:72px;padding:3px 0 5px;gap:7px}
+.design{height:63px;width:69px;gap:4px}.design .shape{font-size:23px}.design small{font-size:10px}
+.adjust{flex:none;position:static;padding:6px 9px;border-radius:12px;box-shadow:none;margin-top:2px}
+.adjusthead{margin-bottom:3px}.adjusthead b{font-size:11px}.reset{padding:3px 7px}
+.controls{display:flex;gap:8px;align-items:center}.control{display:flex;align-items:center;gap:5px;flex:1;min-width:0;padding:3px 5px}.control label{display:none}
+.arrows{grid-template-columns:repeat(3,25px);gap:1px}.arrows button{height:23px}.arrows .val{font-size:8px}
+.sizeval{font-size:12px;margin:0}.sizebuttons button{padding:5px 9px}
+.notice{display:none}
+@media(max-height:660px){.designs{min-height:60px;max-height:60px}.design{height:53px}.editor-menu{min-height:41px}.tab{height:36px;width:39px}.adjust{padding:3px 6px}.adjusthead{margin-bottom:1px}}
+.editor-menu .tab{width:auto;min-width:0;height:36px;padding:0 6px;white-space:nowrap;font-size:12px;font-weight:500;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:#4b6474}
+.editor-menu .tab.on{color:#1678b7;border-bottom-color:#55aee3;background:transparent;font-weight:700}
+.editor-menu .tabs{gap:2px}
+.magic{width:25px}
+.lock-menu{padding:5px 7px}
+.lock-menu .preserve{gap:4px}
+.lock-menu .chip{width:37px;height:37px;border-radius:9px;display:grid;place-items:center;padding:5px;background:#fff;color:#293d4d;border:1px solid #d5e7f1}
+.lock-menu .chip.on{background:#d9efff;color:#1579b7;border-color:#66b5e1}
+.lock-menu .chip svg{width:24px;height:24px;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.adjust{padding:4px 8px}.adjusthead{margin-bottom:1px}.control{padding:1px 4px}.arrows button{height:22px}
+@media(max-width:390px){.editor-menu .tab{font-size:11px;padding:0 5px}.editor-menu .tabs{gap:0}.magic{width:22px}}
+/* Fixed photo and compact controls: layout revision */
+html,body{touch-action:manipulation;-webkit-text-size-adjust:100%;overscroll-behavior:none}
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.app{justify-content:flex-start}
+.photo{flex:0 0 auto;height:min(49dvh,390px);min-height:0}
+.preserve-overlay{display:flex;align-items:center;gap:5px;right:8px;max-width:calc(100% - 16px)}
+.lock-toggle{flex:none}
+.lock-menu{margin:0;padding:0;background:transparent;box-shadow:none;border:0;max-width:calc(100% - 40px)}
+.lock-menu .preserve{display:flex;flex-wrap:nowrap;gap:4px;overflow:visible;padding:0}
+.lock-menu .chip{width:auto;height:31px;padding:0 8px;border-radius:18px;background:#e7f1f7;color:#597b8e;font-size:11px;white-space:nowrap;border:0;display:flex;align-items:center}
+.lock-menu .chip.on{background:#78bce4;color:#fff;border:0}
+.editor-menu{height:44px;min-height:44px}
+.editor-menu .tab{font-size:12px}
+.adjust{min-height:64px;max-height:76px;padding:7px 8px}
+.adjust .controls{display:flex;align-items:center;justify-content:space-between;gap:6px;height:100%}
+.size-group{display:flex;align-items:center;gap:3px;flex:none}
+.size-group button{width:30px;height:32px;border-radius:8px;background:#dceefa;color:#427b9e;font-size:18px}
+.size-group .sizeval{font-size:12px;min-width:39px;text-align:center;margin:0}
+.move-group{display:flex;align-items:center;gap:5px;min-width:0}
+.move-group b{font-size:10px;line-height:1.2;max-width:58px;color:#3d6b86}
+.move-group .arrows{display:grid;grid-template-columns:repeat(3,24px);grid-template-rows:repeat(3,19px);gap:0}
+.move-group .arrows button{height:19px;padding:0;border-radius:4px;font-size:13px}
+.move-group .arrows .val{font-size:0}
+.adjust .reset{padding:5px;font-size:19px;flex:none}
+@media(max-width:375px){.editor-menu .tab{font-size:11px;padding:0 4px}.size-group button{width:26px}.move-group{gap:2px}.move-group b{max-width:48px;font-size:9px}}
+@media(max-height:700px){.photo{height:44dvh}}
+
+/* Restore original photo size while keeping it stable when controls open */
+.photo{flex:0 0 auto;height:min(46dvh,440px);min-height:250px}
+@media(max-height:700px){.photo{height:min(46dvh,440px)}}
+/* Adjustment order: label, direction pad, scale, reset */
+.adjust .controls{justify-content:flex-start;gap:5px;flex-wrap:nowrap}
+.move-group{flex:1 1 auto;gap:4px;min-width:0}
+.move-group b{max-width:none;white-space:nowrap;flex:none;font-size:clamp(8px,2.25vw,11px)}
+.move-group .arrows{flex:none;grid-template-columns:repeat(3,20px);grid-template-rows:repeat(3,17px)}
+.move-group .arrows button{height:17px}
+.size-group{gap:1px}.size-group button{width:24px;height:29px}.size-group .sizeval{min-width:32px;font-size:11px}
+.adjust .reset{font-size:10px;padding:7px 4px;white-space:nowrap}
+@media(max-width:375px){.move-group .arrows{grid-template-columns:repeat(3,17px)}.size-group button{width:21px}.size-group .sizeval{min-width:29px}.adjust .controls{gap:3px}}
+
+/* Reference image: title top-left, reset bottom-left, centered direction pad, scale at right */
+.photo{flex:0 0 auto;width:100%;height:auto;aspect-ratio:1/1;min-height:0;max-height:none}
+@media(max-height:700px){.photo{height:auto;aspect-ratio:1/1}}
+.adjust{height:122px;min-height:122px;max-height:122px;padding:10px 10px}
+.adjust .controls{position:relative;display:block;width:100%;height:100%;padding:0;margin:0}
+.move-group{display:contents}
+.move-group b{position:absolute;left:0;top:0;max-width:none;font-size:clamp(12px,3.4vw,15px);white-space:nowrap;line-height:1.3;font-weight:700}
+.move-group .arrows{position:absolute;left:46%;top:50%;transform:translate(-50%,-50%);display:grid;grid-template-columns:repeat(3,36px);grid-template-rows:repeat(3,29px);gap:0;align-items:center;justify-items:center}
+.move-group .arrows button{width:36px;height:29px;border-radius:8px;font-size:25px;line-height:1}
+.move-group .arrows .val{width:36px;height:29px}
+.size-group{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:2px}
+.size-group button{width:36px;height:42px;border-radius:10px;font-size:24px}
+.size-group .sizeval{min-width:48px;text-align:center;font-size:clamp(14px,4vw,18px)}
+.adjust .reset{position:absolute;left:0;bottom:0;font-size:14px;padding:5px 8px;border-radius:18px}
+@media(max-width:390px){.move-group .arrows{left:46%;grid-template-columns:repeat(3,31px);grid-template-rows:repeat(3,27px)}.move-group .arrows button{width:31px;height:27px;font-size:22px}.size-group button{width:31px;height:39px}.size-group .sizeval{min-width:44px}}
+/* FS-1010 definitive photo geometry and controls */
+.photo{width:100%;height:calc(min(520px,100vw) - 20px);min-height:0;max-height:none;flex:0 0 auto;aspect-ratio:auto}
+.adjust{flex:0 0 122px;height:122px;min-height:122px;max-height:122px}
+.adjust .controls{position:relative;display:block;height:100%}
+.move-group{display:contents}
+.move-group b{position:absolute;top:0;left:0;white-space:nowrap;font-size:13px}
+.move-group .arrows{position:absolute;top:50%;left:46%;transform:translate(-50%,-50%);display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(3,27px)}
+.move-group .arrows button{width:32px;height:27px;font-size:22px}
+.size-group{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;gap:2px}
+.adjust .reset{position:absolute;bottom:0;left:0;font-size:14px}
+.magic svg{width:25px;height:25px}
+
+/* Selected four-sparkle filled wand: override legacy outline-only SVG rule */
+.magic svg{fill:#378BD0;stroke:none;width:25px;height:25px}
+.magic svg g,.magic svg path{fill:#378BD0;stroke:none}
+
+/* F1.1 interactive protection/design preview */
+.photo .design-preview{position:absolute;z-index:1;left:50%;top:48%;width:94px;height:94px;transform:translate(-50%,-50%);pointer-events:none;display:grid;place-items:center}
+.design-preview svg{width:100%;height:100%;overflow:visible;fill:none;stroke:#40a0e1;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 1px #ffffff)}
+.preview-status{position:absolute;z-index:3;top:12px;left:68px;right:8px;display:flex;flex-wrap:wrap;gap:3px;pointer-events:none}
+.preview-status span{font-size:10px;color:#23638d;background:#e2f3ffed;border:1px solid #a8d6f0;border-radius:9px;padding:3px 6px}
+.preview-status .locked{color:#556b7a;background:#fffdf4ed;border-color:#d9d8c9}
+</style></head><body><main class="app"><header><div><h1>FACE STUDIO</h1><div class="sub">시술 부위 보존 · 인물 디자인 <span style="font-size:9px;color:#9cb2c1">FS-1010</span></div></div><div class="actions"><button class="small" id="camera" aria-label="촬영" title="촬영"><svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg></button><button class="small primary" id="gallery" aria-label="불러오기" title="불러오기"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="16.5" cy="8" r="1.5"/><path d="m3 17 6-6 4 4 3-3 5 5"/></svg></button><button class="small" id="saveImage" aria-label="저장" title="저장"><svg viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/></svg></button></div></header>
+<section class="photo" id="photo"><div class="photo-label" id="photoLabel">사진 미등록</div><div class="preserve-overlay"><button id="lockToggle" class="lock-toggle" aria-label="원본 보존 부위 선택" aria-expanded="false"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></button><div id="lockMenu" class="lock-menu" hidden><div class="preserve" id="preserve"></div></div></div><div class="design-preview" id="designPreview" hidden></div><div class="preview-status" id="previewStatus"></div><div class="strip" id="thumbs"><button class="thumb" id="addPhoto" aria-label="사진 추가">＋</button></div><div class="empty" id="empty"><div class="big">▧</div>시술 전·후 사진을 불러와 주세요<br>여러 장을 한 번에 선택할 수 있어요</div><img id="mainImg" hidden alt="선택된 고객 사진"></section>
+<div class="editor-menu"><span class="magic" aria-label="마술봉"><svg viewBox="0 0 32 32" aria-hidden="true" style="width:25px;height:25px;stroke:none!important;fill:#378BD0!important"><g style="stroke:none!important;fill:#378BD0!important"><path d="M3.5 28.5 17.5 14.5" fill="none" stroke="#378BD0" stroke-width="3.5" stroke-linecap="round" style="fill:none!important;stroke:#378BD0!important;stroke-width:3.5!important;stroke-linecap:round!important"/><path d="M23 1.2000000000000002 Q24.105 6.895 29.8 8 Q24.105 9.105 23 14.8 Q21.895 9.105 16.2 8 Q21.895 6.895 23 1.2000000000000002Z"/><path d="M13 4 Q13.4875 6.5125 16 7 Q13.4875 7.4875 13 10 Q12.5125 7.4875 10 7 Q12.5125 6.5125 13 4Z"/><path d="M29 14.28 Q29.442 16.558 31.72 17 Q29.442 17.442 29 19.72 Q28.558 17.442 26.28 17 Q28.558 16.558 29 14.28Z"/><path d="M22 21.8 Q22.52 24.48 25.2 25 Q22.52 25.52 22 28.2 Q21.48 25.52 18.8 25 Q21.48 24.48 22 21.8Z"/></g></svg></span><nav class="tabs" id="tabs"></nav></div><div class="designs" id="designs"></div>
+<section class="adjust" id="adjustPanel" hidden><div class="controls"><div class="move-group"><b id="adjustTitle">얼굴형 위치 · 크기</b><div class="arrows"><span></span><button data-move="up">↑</button><span></span><button data-move="left">←</button><span class="val" id="pos" aria-hidden="true"></span><button data-move="right">→</button><span></span><button data-move="down">↓</button><span></span></div></div><div class="size-group"><button id="smaller" aria-label="크기 줄이기">−</button><span class="sizeval" id="sizeval">100%</span><button id="bigger" aria-label="크기 키우기">＋</button></div><button class="reset" id="reset" aria-label="초기화" title="초기화">초기화</button></div></section>
+<div class="notice">F1.1: 디자인 선택·위치 조절·자물쇠 선택을 연결한 테스트입니다. 파란 윤곽선은 위치 확인용이며 실제 얼굴 인식, 자연스러운 합성, 원본 픽셀 보존 및 결과 저장은 아직 구현되지 않았습니다.</div><input type="file" id="galleryInput" accept="image/*" multiple><input type="file" id="cameraInput" accept="image/*" capture="environment"></main>
+<script>
+const categories=['얼굴형','눈','코','입술','헤어스타일','상의 옷'], protectedParts=['눈썹','눈','코','입술'];const icons={'얼굴형':'◯','눈':'◉','코':'⌁','입술':'♡','헤어스타일':'♧','상의 옷':'♧'};const paths={'얼굴형':'<ellipse cx="12" cy="11" rx="8" ry="10"/><path d="M10 17q2 2 4 0"/>','눈':'<path d="M2 12q10-11 20 0-10 11-20 0Z"/><circle cx="12" cy="12" r="3"/>','코':'<path d="M14 2q-1 7-5 13-2 4 2 5m0 0q2-3 4 0m0 0q3 1 4-2"/>','입술':'<path d="M2 12q5-6 10-3 5-3 10 3-10 11-20 0Zm0 0q10 3 20 0"/>','헤어스타일':'<path d="M4 20q-3-9 0-14Q12-2 20 6q3 5 0 14-5 3-5-2l2-9q-5 3-10 0l2 9q0 5-5 2Z"/>','상의 옷':'<path d="m8 3-6 5 3 5 3-2v10h8V11l3 2 3-5-6-5q-4 5-8 0Z"/>'};const state={photos:[],active:0,protected:new Set(['눈썹']),category:'얼굴형',designs:{},adjustments:{}};const $=id=>document.getElementById(id);
+function adj(){return state.adjustments[state.category]??(state.adjustments[state.category]={x:0,y:0,size:100})}
+function render(){ $('preserve').replaceChildren(...protectedParts.map(p=>{let b=document.createElement('button');b.className='chip'+(state.protected.has(p)?' on':'');b.textContent=(state.protected.has(p)?'✓ ':'')+p;b.title=p;b.setAttribute('aria-label','원본 보존 '+p);b.setAttribute('aria-pressed',state.protected.has(p));b.onclick=()=>{state.protected.has(p)?state.protected.delete(p):state.protected.add(p);render()};return b}));
+$('tabs').replaceChildren(...categories.map(c=>{let b=document.createElement('button');b.className='tab'+(state.category===c?' on':'');b.textContent=c;b.title=c;b.setAttribute('aria-label',c);b.onclick=()=>{state.category=c;render()};return b}));
+$('designs').replaceChildren(...Array.from({length:20},(_,i)=>{let n=i+1,b=document.createElement('button');b.className='design'+(state.designs[state.category]===n?' on':'');b.innerHTML='<span class="shape">'+icons[state.category]+'</span><small>'+state.category+' '+n+'</small>';b.onclick=()=>{state.designs[state.category]=n;render();};return b}));
+const activeDesign=state.designs[state.category];const locked=state.protected.has(state.category);const preview=$('designPreview');const status=$('previewStatus');const labels=[...state.protected].map(p=>'<span class="locked">🔒 '+p+' 원본 보존</span>').join('');const selected=activeDesign?'<span>'+state.category+' '+activeDesign+' 선택</span>':'';const blocked=activeDesign&&locked?'<span class="locked">'+state.category+' 변경 차단</span>':'';status.innerHTML=state.photos.length?labels+selected+blocked:'';preview.hidden=!(state.photos.length&&activeDesign&&!locked);if(!preview.hidden){const a=adj();preview.innerHTML='<svg viewBox="0 0 24 24" aria-label="디자인 위치 테스트 표시">'+paths[state.category]+'</svg>';preview.style.transform='translate(calc(-50% + '+(a.x*4)+'px),calc(-50% + '+(a.y*4)+'px)) scale('+(a.size/100)+')';preview.style.opacity=String(Math.min(.9,.25+activeDesign*.025));}const a=adj();$('adjustPanel').hidden=!state.designs[state.category];$('adjustTitle').textContent=state.category+' 위치 · 크기';$('pos').textContent='';$('sizeval').textContent=a.size+'%';$('mainImg').hidden=!state.photos.length;$('empty').hidden=!!state.photos.length;if(state.photos.length){$('mainImg').src=state.photos[state.active].url;$('photoLabel').textContent='사진 '+(state.active+1)+' / '+state.photos.length}else $('photoLabel').textContent='사진 미등록';
+$('thumbs').replaceChildren(...state.photos.map((p,i)=>{let b=document.createElement('button');b.className='thumb'+(i===state.active?' active':'');b.innerHTML='<img alt="사진 '+(i+1)+'"><span>'+(i+1)+'</span>';b.querySelector('img').src=p.url;b.onclick=()=>{state.active=i;render()};return b}),$('addPhoto'))}
+function add(files){for(const file of files){if(!file.type.startsWith('image/'))continue;state.photos.push({name:file.name,url:URL.createObjectURL(file)})}if(state.photos.length)state.active=state.photos.length-1;render()}
+$('gallery').onclick=()=> $('galleryInput').click();$('camera').onclick=()=> $('cameraInput').click();$('addPhoto').onclick=()=> $('galleryInput').click();for(const id of ['galleryInput','cameraInput'])$(id).onchange=e=>{add([...e.target.files]);e.target.value=''};
+document.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>{let a=adj(),d=b.dataset.move;a.x+=(d==='right'?1:d==='left'?-1:0);a.y+=(d==='down'?1:d==='up'?-1:0);render()});$('smaller').onclick=()=>{adj().size=Math.max(50,adj().size-1);render()};$('bigger').onclick=()=>{adj().size=Math.min(150,adj().size+1);render()};$('reset').onclick=()=>{state.adjustments[state.category]={x:0,y:0,size:100};render()};
+$('lockToggle').onclick=()=>{let m=$('lockMenu');m.hidden=!m.hidden;$('lockToggle').setAttribute('aria-expanded',String(!m.hidden))};$('saveImage').onclick=()=>alert('실제 얼굴 합성 및 결과 사진 저장 기능은 아직 연결되지 않았습니다. 원본 사진을 수정 결과로 잘못 저장하지 않도록 저장을 보류합니다.');render();
+</script></body></html>
