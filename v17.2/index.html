@@ -477,12 +477,13 @@ function open(){if(!document.querySelector('.brow.selected')){alert('먼저 지�
 btn.onclick=e=>{e.preventDefault();e.stopPropagation();on?close():open()};panel.querySelector('#bed').onclick=()=>close();const undoButton=panel.querySelector('#beu');
 function saveUndoSnapshot(){if(!cx||!cv)return;hist.push(cx.getImageData(0,0,cv.width,cv.height));if(hist.length>40)hist.shift()}
 function undoOnce(){if(!hist.length||!cx)return false;cx.putImageData(hist.pop(),0,0);return true}
-undoButton.style.setProperty('touch-action','manipulation','important');
-undoButton.addEventListener('pointerdown',e=>{e.stopPropagation()});
-undoButton.addEventListener('click',e=>{
- e.preventDefault();e.stopPropagation();
- undoOnce();
-});
+undoButton.style.setProperty('touch-action','none','important');
+undoButton.style.setProperty('user-select','none','important');
+undoButton.addEventListener('pointerdown',e=>{e.preventDefault();e.stopImmediatePropagation();undoOnce()});
+undoButton.addEventListener('pointerup',e=>{e.preventDefault();e.stopImmediatePropagation()});
+undoButton.addEventListener('touchstart',e=>{e.preventDefault();e.stopImmediatePropagation()},{passive:false});
+undoButton.addEventListener('touchend',e=>{e.preventDefault();e.stopImmediatePropagation()},{passive:false});
+undoButton.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation()});
 undoButton.addEventListener('dblclick',e=>{e.preventDefault();e.stopPropagation()});
 undoButton.addEventListener('contextmenu',e=>e.preventDefault());
 document.getElementById('layerbtn')?.addEventListener('pointerdown',()=>{if(on)close()},true);document.getElementById('colorbtn')?.addEventListener('pointerdown',()=>{if(on)close()},true);
