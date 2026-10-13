@@ -190,26 +190,65 @@ function drawExistingBrowLayer(){
  c.putImageData(im,0,0);out.drawImage(tmp,0,0,w,h);
 }
 function resetLoadedPhoto(){P.style.display='block';$('#empty').style.display='none';brows.forEach(x=>x.remove());brows=[];nextId=3;layerOrder=['existing'];zoom=1;panX=panY=0;world.style.transform='translate(0px,0px) scale(1)';select(null);drawExistingBrowLayer();syncZ()}
-function showBlob(blob){
- const isAndroid=/Android/i.test(navigator.userAgent);
- if(isAndroid){
-  const r=new FileReader();
-  r.onload=()=>{P.onload=()=>resetLoadedPhoto();P.onerror=()=>alert('이 사진 형식은 불러오지 못했어요. JPG 또는 PNG 사진으로 다시 시도해 주세요.');P.src=r.result};
-  r.onerror=()=>alert('사진을 읽지 못했어요. 다시 선택해 주세요.');
-  r.readAsDataURL(blob);
- }else{
-  const url=URL.createObjectURL(blob);P.onload=()=>{resetLoadedPhoto();setTimeout(()=>URL.revokeObjectURL(url),1000)};P.src=url
+// Galaxy image loading only; V18 layer/color/UI code preserved.
+let photoImportURL=null;
+function releasePreviousPhotoURL(){
+ if(photoImportURL){URL.revokeObjectURL(photoImportURL);photoImportURL=null}
+}
+function photoErrorMessage(f,detail){
+ const type=(f.type||'알 수 없음'),name=(f.name||'사진'),size=Math.round((f.size||0)/1024);
+ alert('사진을 불러오지 못했어요.\\n파일: '+name+'\\n형식: '+type+' / '+size+'KB\\n단계: '+detail+'\\n갤럭시에서 JPG 또는 PNG로 저장한 사진으로 다시 시도해 주세요.');
+}
+async function loadHEICConverter(){
+ if(typeof window.heic2any==='function')return window.heic2any;
+ if(!window._heicConverterPromise){
+  window._heicConverterPromise=new Promise((resolve,reject)=>{
+   const script=document.createElement('script');
+   script.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+   script.onload=()=>typeof window.heic2any==='function'?resolve(window.heic2any):reject(new Error('변환기 초기화 실패'));
+   script.onerror=()=>reject(new Error('변환기 다운로드 실패 (네트워크 또는 카카오톡 브라우저 차단)'));
+   document.head.appendChild(script);
+  }).catch(err=>{window._heicConverterPromise=null;throw err});
  }
+ return window._heicConverterPromise;
 }
-async function load(f){
- if(!f)return;
- try{
-  if(f.type&&f.type.startsWith('image/')){showBlob(f);return}
-  const ext=(f.name||'').split('.').pop().toLowerCase();
-  if(['jpg','jpeg','png','webp','heic','heif','gif','bmp','avif'].includes(ext)){showBlob(f);return}
-  showBlob(f)
- }catch(e){alert('사진을 불러오지 못했어요. 사진 앱에서 다른 사진을 선택해 다시 시도해 주세요.')}
+async function showBlob(f){
+ if(!f||!f.size){photoErrorMessage(f||{},'파일 데이터가 비어 있음');return}
+ const ext=(f.name||'').split('.').pop().toLowerCase();
+ if(['heic','heif'].includes(ext)||/heic|heif/i.test(f.type)){
+  try{
+   const convert=await loadHEICConverter();
+   const output=await convert({blob:f,toType:'image/jpeg',quality:0.92});
+   const jpeg=Array.isArray(output)?output[0]:output;
+   if(!jpeg||!jpeg.size)throw new Error('변환된 이미지가 비어 있음');
+   f=new File([jpeg],(f.name||'photo').replace(/\.(heic|heif)$/i,'')+'.jpg',{type:'image/jpeg'});
+  }catch(err){photoErrorMessage(f,'HEIC JPG 자동변환 실패: '+(err&&err.message||err));return}
+ }
+ const tempURL=URL.createObjectURL(f);
+ const probe=new Image();
+ probe.onload=()=>{
+  if(!probe.naturalWidth||!probe.naturalHeight){URL.revokeObjectURL(tempURL);photoErrorMessage(f,'이미지 크기 확인 실패');return}
+  const oldURL=photoImportURL;
+  P.onload=()=>{try{resetLoadedPhoto()}catch(err){alert('사진 표시 후 오류: '+(err&&err.message||err))}if(oldURL)URL.revokeObjectURL(oldURL)};
+  P.onerror=()=>{URL.revokeObjectURL(tempURL);photoErrorMessage(f,'화면 이미지 표시 실패')};
+  photoImportURL=tempURL;P.src=tempURL;
+ };
+ probe.onerror=()=>{
+  URL.revokeObjectURL(tempURL);
+  // Data URL fallback for Android in-app browsers.
+  const reader=new FileReader();
+  reader.onload=()=>{
+   const img=new Image();
+   img.onload=()=>{P.onload=()=>{try{resetLoadedPhoto()}catch(err){alert('사진 표시 후 오류: '+(err&&err.message||err))}releasePreviousPhotoURL()};P.onerror=()=>photoErrorMessage(f,'DataURL 화면 표시 실패');P.src=reader.result};
+   img.onerror=()=>photoErrorMessage(f,'Blob URL 및 DataURL 디코딩 실패');
+   img.src=reader.result;
+  };
+  reader.onerror=()=>photoErrorMessage(f,'파일 읽기 실패');
+  reader.readAsDataURL(f);
+ };
+ probe.src=tempURL;
 }
+async function load(f){if(!f)return;try{await showBlob(f)}catch(e){photoErrorMessage(f,'예외: '+(e&&e.message||e))}}
 $('#gallery').onclick=()=>{const i=$('#galIn');i.value='';try{if(typeof i.showPicker==='function'){i.showPicker();return}}catch(_){}i.click()};
 $('#pickPhotos').onclick=async()=>{$('#pickmenu').style.display='none';
  try{
