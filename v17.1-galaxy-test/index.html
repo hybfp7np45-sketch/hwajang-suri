@@ -199,11 +199,30 @@ function photoErrorMessage(f,detail){
  const type=(f.type||'알 수 없음'),name=(f.name||'사진'),size=Math.round((f.size||0)/1024);
  alert('사진을 불러오지 못했어요.\\n파일: '+name+'\\n형식: '+type+' / '+size+'KB\\n단계: '+detail+'\\n갤럭시에서 JPG 또는 PNG로 저장한 사진으로 다시 시도해 주세요.');
 }
+async function loadHEICConverter(){
+ if(typeof window.heic2any==='function')return window.heic2any;
+ if(!window._heicConverterPromise){
+  window._heicConverterPromise=new Promise((resolve,reject)=>{
+   const script=document.createElement('script');
+   script.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+   script.onload=()=>typeof window.heic2any==='function'?resolve(window.heic2any):reject(new Error('변환기 초기화 실패'));
+   script.onerror=()=>reject(new Error('변환기 다운로드 실패 (네트워크 또는 카카오톡 브라우저 차단)'));
+   document.head.appendChild(script);
+  }).catch(err=>{window._heicConverterPromise=null;throw err});
+ }
+ return window._heicConverterPromise;
+}
 async function showBlob(f){
  if(!f||!f.size){photoErrorMessage(f||{},'파일 데이터가 비어 있음');return}
  const ext=(f.name||'').split('.').pop().toLowerCase();
  if(['heic','heif'].includes(ext)||/heic|heif/i.test(f.type)){
-  photoErrorMessage(f,'HEIC/HEIF 브라우저 디코딩 미지원 가능');return;
+  try{
+   const convert=await loadHEICConverter();
+   const output=await convert({blob:f,toType:'image/jpeg',quality:0.92});
+   const jpeg=Array.isArray(output)?output[0]:output;
+   if(!jpeg||!jpeg.size)throw new Error('변환된 이미지가 비어 있음');
+   f=new File([jpeg],(f.name||'photo').replace(/\.(heic|heif)$/i,'')+'.jpg',{type:'image/jpeg'});
+  }catch(err){photoErrorMessage(f,'HEIC JPG 자동변환 실패: '+(err&&err.message||err));return}
  }
  const tempURL=URL.createObjectURL(f);
  const probe=new Image();
