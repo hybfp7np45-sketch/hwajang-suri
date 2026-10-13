@@ -644,6 +644,31 @@ function up(e){
 stage.addEventListener('pointerdown',down,true);stage.addEventListener('pointermove',move,true);stage.addEventListener('pointerup',up,true);stage.addEventListener('pointercancel',up,true);
 const editWatch=new MutationObserver(()=>{if(document.querySelector('.brow.selected')&&!edit.classList.contains('show'))edit.classList.add('show')});editWatch.observe(edit,{attributes:true,attributeFilter:['class']});
 })();
+</script><style id="galaxy-layer-color-fix">
+#editbar.show{position:fixed!important;left:8px!important;right:8px!important;bottom:calc(178px + env(safe-area-inset-bottom))!important;z-index:2147483000!important;display:flex!important;pointer-events:auto!important}
+#colorbar.show{position:fixed!important;left:8px!important;right:8px!important;bottom:calc(78px + env(safe-area-inset-bottom))!important;z-index:2147483001!important;display:block!important;max-height:42dvh!important;overflow:auto!important}
+#layers.show{position:fixed!important;left:8px!important;right:8px!important;bottom:calc(78px + env(safe-area-inset-bottom))!important;z-index:2147483001!important;display:grid!important;max-height:42dvh!important;overflow:auto!important}
+</style>
+<script id="galaxy-layer-color-fix-script">
+(function(){
+ const edit=document.getElementById('editbar'),layers=document.getElementById('layers'),colors=document.getElementById('colorbar');
+ if(!edit||!layers||!colors)return;
+ // Panels were children of overflow:hidden stage, clipping them on mobile.
+ document.body.appendChild(edit);document.body.appendChild(layers);document.body.appendChild(colors);
+ function activeBrow(){return document.querySelector('.brow.selected')}
+ document.getElementById('colorbtn').addEventListener('click',function(e){
+  e.preventDefault();e.stopImmediatePropagation();
+  if(!activeBrow()){alert('사진 위의 눈썹을 먼저 선택해 주세요.');return}
+  const opening=!colors.classList.contains('show');
+  layers.classList.remove('show');colors.classList.toggle('show',opening);
+ },true);
+ document.getElementById('layerbtn').addEventListener('click',function(e){
+  e.preventDefault();e.stopImmediatePropagation();
+  if(!activeBrow()){alert('사진 위의 눈썹을 먼저 선택해 주세요.');return}
+  const opening=!layers.classList.contains('show');
+  colors.classList.remove('show');layers.classList.toggle('show',opening);
+ },true);
+})();
 </script></body></html>
 <style id="v134-eraser-followup">
 /* V13.4: brush guide is shown only inside magnifier */
