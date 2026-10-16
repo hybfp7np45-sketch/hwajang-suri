@@ -662,21 +662,43 @@ function _browPath(c,ps,padX,padY){
  const cx=ps.reduce((s,p)=>s+p.x,0)/ps.length,cy=ps.reduce((s,p)=>s+p.y,0)/ps.length;
  c.beginPath();ps.forEach((p,i)=>{const ex=p.x+(p.x-cx)*padX,ey=p.y+(p.y-cy)*padY;if(i===0)c.moveTo(ex,ey);else c.lineTo(ex,ey)});c.closePath();
 }
-function eraseBrows(targetCtx,points,w,h){
- for(const ids of browSets){
-  const b=_bounds(points,ids,w,h),padX=.35,padY=.9;
-  const patchW=Math.ceil(b.w*(1+padX*2)),patchH=Math.ceil(b.h*(1+padY*2));
-  const sx=Math.max(0,b.x-b.w*padX),sy=Math.max(0,b.y-b.h*1.6);
-  if(!patchW||!patchH)continue;
-  const patch=document.createElement('canvas');patch.width=patchW;patch.height=patchH;
-  const pctx=patch.getContext('2d');pctx.drawImage(targetCtx.canvas,sx,sy,patchW,patchH,0,0,patchW,patchH);
-  pctx.filter='blur(3px)';pctx.drawImage(patch,0,0);pctx.filter='none';
-  const mask=document.createElement('canvas');mask.width=patchW;mask.height=patchH;
-  const mctx=mask.getContext('2d');const shifted=b.ps.map(p=>({x:p.x-sx,y:p.y-sy}));
-  mctx.filter='blur(4px)';mctx.fillStyle='#000';_browPath(mctx,shifted,padX,padY);mctx.fill();mctx.filter='none';
-  pctx.globalCompositeOperation='destination-in';pctx.drawImage(mask,0,0);
-  targetCtx.drawImage(patch,sx,sy,patchW,patchH);
- }
+function eraseBrows(targetCtx, points, w, h){
+  // 지우기 전 원본을 복사해두고, 거기서 피부를 가져옴
+  const src = document.createElement('canvas');
+  src.width = w; src.height = h;
+  src.getContext('2d').drawImage(targetCtx.canvas, 0, 0);
+
+  for(const ids of browSets){
+    const b = _bounds(points, ids, w, h);
+    const padX = 0.35, padY = 0.9;
+    const dw = Math.ceil(b.w*(1+padX*2));
+    const dh = Math.ceil(b.h*(1+padY*2));
+    const dx = b.x - b.w*padX;          // 덮을 자리 (눈썹 위치)
+    const dy = b.y - b.h*padY;
+    const sy = Math.max(0, dy - dh*1.1); // 피부를 가져올 자리 (바로 위, 눈썹과 안 겹침)
+
+    const patch = document.createElement('canvas');
+    patch.width = dw; patch.height = dh;
+    const pctx = patch.getContext('2d');
+    pctx.filter = 'blur(3px)';
+    pctx.drawImage(src, dx, sy, dw, dh, 0, 0, dw, dh);
+    pctx.filter = 'none';
+
+    // 눈썹 모양대로 가장자리를 부드럽게 오려내기
+    const mask = document.createElement('canvas');
+    mask.width = dw; mask.height = dh;
+    const mctx = mask.getContext('2d');
+    const shifted = b.ps.map(p => ({ x: p.x - dx, y: p.y - dy }));
+    mctx.filter = 'blur(4px)';
+    mctx.fillStyle = '#000';
+    _browPath(mctx, shifted, padX, padY);
+    mctx.fill();
+    mctx.filter = 'none';
+    pctx.globalCompositeOperation = 'destination-in';
+    pctx.drawImage(mask, 0, 0);
+
+    targetCtx.drawImage(patch, dx, dy, dw, dh);
+  }
 }
 let lastSource=null;
 async function processPhoto(photo){
