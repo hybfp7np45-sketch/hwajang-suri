@@ -189,7 +189,7 @@ function drawExistingBrowLayer(){
  }
  c.putImageData(im,0,0);out.drawImage(tmp,0,0,w,h);
 }
-function resetLoadedPhoto(){P.style.display='block';$('#empty').style.display='none';brows.forEach(x=>x.remove());brows=[];nextId=3;layerOrder=['existing'];zoom=1;panX=panY=0;world.style.transform='translate(0px,0px) scale(1)';select(null);drawExistingBrowLayer();syncZ()}
+function resetLoadedPhoto(){P.style.display='block';$('#empty').style.display='none';brows.forEach(x=>x.remove());brows=[];nextId=3;layerOrder=['existing'];zoom=1;panX=panY=0;world.style.transform='translate(0px,0px) scale(1)';select(null);drawExistingBrowLayer();syncZ();if(window.suriProcessLoadedPhoto)window.suriProcessLoadedPhoto(P)}
 // Galaxy image loading only; V18 layer/color/UI code preserved.
 let photoImportURL=null;
 function releasePreviousPhotoURL(){
@@ -635,7 +635,74 @@ function up(e){
 stage.addEventListener('pointerdown',down,true);stage.addEventListener('pointermove',move,true);stage.addEventListener('pointerup',up,true);stage.addEventListener('pointercancel',up,true);
 const editWatch=new MutationObserver(()=>{if(document.querySelector('.brow.selected')&&!edit.classList.contains('show'))edit.classList.add('show')});editWatch.observe(edit,{attributes:true,attributeFilter:['class']});
 })();
-</script></body></html>
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+<script>
+/* V18.1 eyebrow removal: run after a new customer photo is loaded. */
+(()=>{
+let _mesh=null,sequence=0;
+const browSets=[[70,63,105,66,107,55,65,52,53,46],[300,293,334,296,336,285,295,282,283,276]];
+async function detectFace(img){
+ if(!_mesh){
+  if(!window.FaceMesh)throw Error('얼굴 인식 라이브러리를 불러오지 못했습니다');
+  _mesh=new FaceMesh({locateFile:f=>'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/'+f});
+  _mesh.setOptions({maxNumFaces:1,refineLandmarks:true,minDetectionConfidence:.55,staticImageMode:true});
+ }
+ return new Promise(async(resolve,reject)=>{
+  let settled=false;
+  _mesh.onResults(r=>{if(!settled){settled=true;resolve(r.multiFaceLandmarks?.[0]||null)}});
+  try{await _mesh.send({image:img});if(!settled){settled=true;resolve(null)}}catch(e){reject(e)}
+ });
+}
+function _bounds(points,ids,w,h){
+ const ps=ids.map(i=>({x:points[i].x*w,y:points[i].y*h}));
+ return{x:Math.min(...ps.map(p=>p.x)),y:Math.min(...ps.map(p=>p.y)),w:Math.max(...ps.map(p=>p.x))-Math.min(...ps.map(p=>p.x)),h:Math.max(...ps.map(p=>p.y))-Math.min(...ps.map(p=>p.y)),ps};
+}
+function _browPath(c,ps,padX,padY){
+ const cx=ps.reduce((s,p)=>s+p.x,0)/ps.length,cy=ps.reduce((s,p)=>s+p.y,0)/ps.length;
+ c.beginPath();ps.forEach((p,i)=>{const ex=p.x+(p.x-cx)*padX,ey=p.y+(p.y-cy)*padY;if(i===0)c.moveTo(ex,ey);else c.lineTo(ex,ey)});c.closePath();
+}
+function eraseBrows(targetCtx,points,w,h){
+ for(const ids of browSets){
+  const b=_bounds(points,ids,w,h),padX=.35,padY=.9;
+  const patchW=Math.ceil(b.w*(1+padX*2)),patchH=Math.ceil(b.h*(1+padY*2));
+  const sx=Math.max(0,b.x-b.w*padX),sy=Math.max(0,b.y-b.h*1.6);
+  if(!patchW||!patchH)continue;
+  const patch=document.createElement('canvas');patch.width=patchW;patch.height=patchH;
+  const pctx=patch.getContext('2d');pctx.drawImage(targetCtx.canvas,sx,sy,patchW,patchH,0,0,patchW,patchH);
+  pctx.filter='blur(3px)';pctx.drawImage(patch,0,0);pctx.filter='none';
+  const mask=document.createElement('canvas');mask.width=patchW;mask.height=patchH;
+  const mctx=mask.getContext('2d');const shifted=b.ps.map(p=>({x:p.x-sx,y:p.y-sy}));
+  mctx.filter='blur(4px)';mctx.fillStyle='#000';_browPath(mctx,shifted,padX,padY);mctx.fill();mctx.filter='none';
+  pctx.globalCompositeOperation='destination-in';pctx.drawImage(mask,0,0);
+  targetCtx.drawImage(patch,sx,sy,patchW,patchH);
+ }
+}
+let lastSource=null;
+async function processPhoto(photo){
+ const id=++sequence;
+ if(!photo||!photo.naturalWidth||!photo.naturalHeight)return;
+ const source=photo.currentSrc||photo.src;
+ if(source===lastSource||source.startsWith('data:image/png;base64,'))return;
+ lastSource=source;
+ try{
+  const points=await detectFace(photo);
+  if(id!==sequence||!points||photo.src!==source)return;
+  const canvas=document.createElement('canvas');canvas.width=photo.naturalWidth;canvas.height=photo.naturalHeight;
+  const ctx=canvas.getContext('2d');ctx.drawImage(photo,0,0);
+  eraseBrows(ctx,points,canvas.width,canvas.height);
+  const processed=canvas.toDataURL('image/png');
+  if(id!==sequence||photo.src!==source)return;
+  photo.onload=null;
+  photo.src=processed;
+  const existing=document.getElementById('existingBrow');
+  if(existing)existing.getContext('2d').clearRect(0,0,existing.width,existing.height);
+ }catch(err){console.warn('눈썹 제거 처리 실패, 원본 사진 유지:',err)}
+}
+window.suriProcessLoadedPhoto=processPhoto;
+})();
+</script>
+</body></html>
 <style id="v134-eraser-followup">
 /* V13.4: brush guide is shown only inside magnifier */
 #beCursorV133{display:none!important}
