@@ -2,7 +2,7 @@
   function loadIosPicker(){
     if(document.querySelector('script[data-suri-ios-picker]')) return;
     const s=document.createElement('script');
-    s.src='./ios-color-picker.js?cb=picker0929brow7363';
+    s.src='../v18/ios-color-picker.js?cb=picker0929brow7363';
     s.dataset.suriIosPicker='1';
     document.head.appendChild(s);
   }
@@ -33,7 +33,7 @@
     let eyedrop=color.querySelector('.brow-eyedrop');
     if(!eyedrop&&head){
       eyedrop=document.createElement('button');eyedrop.type='button';eyedrop.className='brow-eyedrop';eyedrop.setAttribute('aria-label','스포이드');
-      eyedrop.innerHTML='<img alt="" src="./assets/eyedropper-5.png" style="width:24px;height:24px;object-fit:contain;display:block">';
+      eyedrop.innerHTML='<img alt="" src="../v18/assets/eyedropper-5.png" style="width:24px;height:24px;object-fit:contain;display:block">';
       eyedrop.style.cssText='width:32px;height:32px;border:1px solid #d8cbd0;border-radius:50%;background:#fff;color:#444;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 32px;margin-left:auto';
       head.appendChild(eyedrop)
     }
