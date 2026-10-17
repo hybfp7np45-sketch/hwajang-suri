@@ -489,12 +489,8 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  function restoreMask(snapshot){if(!snapshot)return;fitAll();var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);c.putImageData(snapshot,0,0)}
  var eraseModeOpen=false;
  function hideOtherPanels(){
-  // Close, rather than temporarily conceal, all editor drawers.
-  ['layers','editbar','colorbar','sheet','rail','designRail'].forEach(function(id){
-   var el=document.getElementById(id);if(!el)return;
-   el.style.setProperty('display','none');
-   el.classList.remove('show','open','active');
-  });
+  // Only CSS hides the editor while erasing. Do not mutate editor state,
+  // inline display properties or active classes.
  }
  function open(){
   hideOtherPanels();
@@ -510,7 +506,6 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
   document.body.classList.remove('suri-erase-only-v182');
   panel.style.display='none';btn.textContent='지우기 ON';
   sharpPhoto.style.display='none';drawing=false;
-  hideOtherPanels();
  }
  btn.onclick=function(e){e.preventDefault();e.stopPropagation();eraseModeOpen?close():open()};document.getElementById('beDone').onclick=close;
  function showBrushPreview(){var r=stage.getBoundingClientRect(),d=+size.value;brushPreview.style.width=d+'px';brushPreview.style.height=d+'px';brushPreview.style.left=(r.left+r.width/2)+'px';brushPreview.style.top=(r.top+Math.min(r.height*.55,r.height-80))+'px';brushPreview.style.display='block'} function hideBrushPreview(){brushPreview.style.display='none'} function syncBrushSize(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview()} size.oninput=syncBrushSize;size.onchange=function(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview();setTimeout(hideBrushPreview,650)};size.addEventListener('touchstart',showBrushPreview,{passive:true});size.addEventListener('touchend',function(){setTimeout(hideBrushPreview,650)},{passive:true});size.addEventListener('pointerdown',showBrushPreview);size.addEventListener('pointerup',function(){setTimeout(hideBrushPreview,650)});document.getElementById('beSizeV').textContent=size.value+'px';
@@ -686,7 +681,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
    clearMask();st.textContent='완료';
   }catch(err){st.textContent='지우기에 실패했어요. 다시 시도해 주세요.';console.error(err)}
  }
- document.getElementById('beRun').onclick=runAI;close();
+ document.getElementById('beRun').onclick=runAI;panel.style.display='none';btn.textContent='지우기 ON';
 })();
 </script><style id="v133-clean-ui">
 #editbar{top:calc(env(safe-area-inset-top,0px) + 6px)!important;bottom:auto!important;left:4px!important;right:4px!important;display:none;flex-wrap:nowrap!important;gap:4px!important;justify-content:center!important;align-items:center!important}
