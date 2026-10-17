@@ -449,6 +449,9 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  function fit(c){var w=stage.clientWidth,h=stage.clientHeight,nw=Math.round(w*dpr),nh=Math.round(h*dpr);if(c.width===nw&&c.height===nh)return;var o=document.createElement('canvas');o.width=c.width;o.height=c.height;if(c.width)o.getContext('2d').drawImage(c,0,0);c.width=nw;c.height=nh;c.style.width=w+'px';c.style.height=h+'px';var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);if(o.width)x.drawImage(o,0,0,o.width,o.height,0,0,w,h)}
  function fitAll(){fit(result);fit(mask)}
  function clearMask(){var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight)}
+ var maskUndo=[],editUndo=[];
+ function rememberMask(){fitAll();var c=mask.getContext('2d');maskUndo.push(c.getImageData(0,0,mask.width,mask.height));if(maskUndo.length>30)maskUndo.shift()}
+ function restoreMask(snapshot){if(!snapshot)return;fitAll();var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);c.putImageData(snapshot,0,0)}
  function open(){fitAll();panel.style.display='block';btn.textContent='지우기 OFF'}
  function close(){panel.style.display='none';btn.textContent='지우기 ON';drawing=false}
  btn.onclick=function(e){e.preventDefault();e.stopPropagation();panel.style.display==='block'?close():open()};document.getElementById('beDone').onclick=close;
@@ -456,12 +459,12 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  function setMode(m){mode=m;document.getElementById('beRemove').classList.toggle('on',m==='remove');document.getElementById('beRestore').classList.toggle('on',m==='restore')}
  document.getElementById('beRemove').onclick=function(){setMode('remove')};document.getElementById('beRestore').onclick=function(){setMode('restore')};
  function snap(){try{return result.toDataURL()}catch(e){return null}} function restoreSnap(u){fitAll();var c=result.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);if(!u)return;var im=new Image();im.onload=function(){c.drawImage(im,0,0,stage.clientWidth,stage.clientHeight)};im.src=u}
- document.getElementById('beUndo').onclick=function(){if(history.length)restoreSnap(history.pop())};
+ document.getElementById('beUndo').onclick=function(){if(maskUndo.length){restoreMask(maskUndo.pop());return}if(history.length)restoreSnap(history.pop())};
  function point(e){var r=stage.getBoundingClientRect(),t=e.touches?e.touches[0]:e,sx=t.clientX-r.left,sy=t.clientY-r.top,z=typeof zoom!=='undefined'?zoom:1,px=typeof panX!=='undefined'?panX:0,py=typeof panY!=='undefined'?panY:0,cx=stage.clientWidth/2,cy=stage.clientHeight/2;return{x:(sx-cx-px)/z+cx,y:(sy-cy-py)/z+cy}}
  function rad(){var z=typeof zoom==='number'&&zoom>0?zoom:1;return (+size.value/2)/z}
- function dot(p,q){var c=mask.getContext('2d'),r=rad();c.save();c.globalAlpha=.42;c.strokeStyle='#fff';c.fillStyle='#fff';c.lineWidth=r*2;c.lineCap='round';if(q){c.beginPath();c.moveTo(q.x,q.y);c.lineTo(p.x,p.y);c.stroke()}else{c.beginPath();c.arc(p.x,p.y,r,0,Math.PI*2);c.fill()}c.restore()}
+ function dot(p,q){var c=mask.getContext('2d'),r=rad();c.save();c.globalAlpha=mode==='restore'?1:.7;c.globalCompositeOperation=mode==='restore'?'destination-out':'source-over';c.strokeStyle='#fff';c.fillStyle='#fff';c.lineWidth=r*2;c.lineCap='round';if(q){c.beginPath();c.moveTo(q.x,q.y);c.lineTo(p.x,p.y);c.stroke()}else{c.beginPath();c.arc(p.x,p.y,r,0,Math.PI*2);c.fill()}c.restore()}
  var last=null,gestureMask=null,touchPending=null,multiTouch=false,mouseDrawing=false;
- function restoreGestureMask(){if(!gestureMask)return;var ctx=mask.getContext('2d');ctx.clearRect(0,0,mask.width/dpr,mask.height/dpr);ctx.putImageData(gestureMask,0,0)}
+ function restoreGestureMask(){if(!gestureMask)return;var ctx=mask.getContext('2d');ctx.clearRect(0,0,stage.clientWidth,stage.clientHeight);ctx.putImageData(gestureMask,0,0);if(maskUndo.length)maskUndo.pop()}
  function resetStroke(){drawing=false;last=null;touchPending=null}
  // Touch drawing is delayed until one-finger movement; a second finger cancels
  // the stroke and restores the mask before the stage's pinch/pan handler runs.
@@ -478,12 +481,12 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
   if(multiTouch||e.touches.length!==1||!touchPending)return;
   e.preventDefault();
   var p=point(e);
-  if(!drawing){drawing=true;last=touchPending;dot(last)}
+  if(!drawing){rememberMask();drawing=true;last=touchPending;dot(last)}
   dot(p,last);last=p;
  },{passive:false});
  stage.addEventListener('touchend',function(e){
   if(e.touches.length===0){
-   if(!multiTouch&&touchPending&&!drawing)dot(touchPending);
+   if(!multiTouch&&touchPending&&!drawing){rememberMask();dot(touchPending)}
    resetStroke();multiTouch=false;gestureMask=null;
   }else if(multiTouch){resetStroke()}
  },{passive:true});
@@ -491,7 +494,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  // Ignore touch-generated pointer events to avoid duplicate brush strokes.
  stage.addEventListener('pointerdown',function(e){
   if(e.pointerType==='touch'||panel.style.display!=='block'||panel.contains(e.target))return;
-  e.preventDefault();fitAll();mouseDrawing=true;last=point(e);dot(last)
+  e.preventDefault();fitAll();rememberMask();mouseDrawing=true;last=point(e);dot(last)
  });
  stage.addEventListener('pointermove',function(e){
   if(e.pointerType==='touch'||!mouseDrawing)return;
@@ -595,13 +598,13 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  }
  async function runAI(){
   var st=document.getElementById('beStatus');
-  if(mode==='restore'){history.push(snap());var rc0=result.getContext('2d');rc0.save();rc0.globalCompositeOperation='destination-out';rc0.drawImage(mask,0,0,stage.clientWidth,stage.clientHeight);rc0.restore();clearMask();return}
+  if(mode==='restore'){st.textContent='마스크 지우기는 사진 위에서 문질러 주세요.';return}
   var W=mask.width,H=mask.height;if(!W||!H)return;
   var md=mask.getContext('2d').getImageData(0,0,W,H).data,minx=W,miny=H,maxx=-1,maxy=-1;
   for(var y=0;y<H;y++)for(var x=0;x<W;x++)if(md[(y*W+x)*4+3]>20){if(x<minx)minx=x;if(x>maxx)maxx=x;if(y<miny)miny=y;if(y>maxy)maxy=y}
   if(maxx<0){st.textContent='먼저 지울 눈썹 부분을 문질러 주세요.';return}
   try{
-   history.push(snap());st.textContent='피부 결에 맞춰 채우는 중…';await new Promise(function(r){setTimeout(r,30)});
+   history.push(snap());maskUndo=[];st.textContent='피부 결에 맞춰 채우는 중…';await new Promise(function(r){setTimeout(r,30)});
    var brushPx=(+size.value)*dpr,M=Math.round(Math.max(30,brushPx*1.1));
    var bx=Math.max(0,minx-M),by=Math.max(0,miny-M),bx2=Math.min(W,maxx+M+1),by2=Math.min(H,maxy+M+1),cw=bx2-bx,ch=by2-by;
    var w=stage.clientWidth,h=stage.clientHeight,iw=photo.naturalWidth,ih=photo.naturalHeight,sc=Math.max(w/iw,h/ih),rw=iw*sc,rh=ih*sc,ox=(w-rw)/2,oy=(h-rh)/2;
