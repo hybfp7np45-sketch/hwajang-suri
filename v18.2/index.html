@@ -460,11 +460,46 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  function point(e){var r=stage.getBoundingClientRect(),t=e.touches?e.touches[0]:e,sx=t.clientX-r.left,sy=t.clientY-r.top,z=typeof zoom!=='undefined'?zoom:1,px=typeof panX!=='undefined'?panX:0,py=typeof panY!=='undefined'?panY:0,cx=stage.clientWidth/2,cy=stage.clientHeight/2;return{x:(sx-cx-px)/z+cx,y:(sy-cy-py)/z+cy}}
  function rad(){return Math.max(3,+size.value/2)}
  function dot(p,q){var c=mask.getContext('2d'),r=rad();c.save();c.globalAlpha=.42;c.strokeStyle='#fff';c.fillStyle='#fff';c.lineWidth=r*2;c.lineCap='round';if(q){c.beginPath();c.moveTo(q.x,q.y);c.lineTo(p.x,p.y);c.stroke()}else{c.beginPath();c.arc(p.x,p.y,r,0,Math.PI*2);c.fill()}c.restore()}
- var last=null;
- function start(e){if(panel.style.display!=='block'||panel.contains(e.target))return;e.preventDefault();fitAll();drawing=true;last=point(e);dot(last)}
- function move(e){if(!drawing)return;e.preventDefault();var p=point(e);dot(p,last);last=p}
- function end(){drawing=false;last=null}
- stage.addEventListener('touchstart',start,{passive:false});stage.addEventListener('touchmove',move,{passive:false});stage.addEventListener('touchend',end,{passive:false});stage.addEventListener('pointerdown',start);stage.addEventListener('pointermove',move);stage.addEventListener('pointerup',end);
+ var last=null,gestureMask=null,touchPending=null,multiTouch=false,mouseDrawing=false;
+ function restoreGestureMask(){if(!gestureMask)return;var ctx=mask.getContext('2d');ctx.clearRect(0,0,mask.width/dpr,mask.height/dpr);ctx.putImageData(gestureMask,0,0)}
+ function resetStroke(){drawing=false;last=null;touchPending=null}
+ // Touch drawing is delayed until one-finger movement; a second finger cancels
+ // the stroke and restores the mask before the stage's pinch/pan handler runs.
+ stage.addEventListener('touchstart',function(e){
+  if(panel.style.display!=='block'||panel.contains(e.target))return;
+  if(e.touches.length>=2){restoreGestureMask();resetStroke();multiTouch=true;return}
+  if(multiTouch||e.touches.length!==1)return;
+  fitAll();gestureMask=mask.getContext('2d').getImageData(0,0,mask.width,mask.height);
+  touchPending=point(e);drawing=false;last=null;
+ },{passive:true});
+ stage.addEventListener('touchmove',function(e){
+  if(panel.style.display!=='block')return;
+  if(e.touches.length>=2){restoreGestureMask();resetStroke();multiTouch=true;return}
+  if(multiTouch||e.touches.length!==1||!touchPending)return;
+  e.preventDefault();
+  var p=point(e);
+  if(!drawing){drawing=true;last=touchPending;dot(last)}
+  dot(p,last);last=p;
+ },{passive:false});
+ stage.addEventListener('touchend',function(e){
+  if(e.touches.length===0){
+   if(!multiTouch&&touchPending&&!drawing)dot(touchPending);
+   resetStroke();multiTouch=false;gestureMask=null;
+  }else if(multiTouch){resetStroke()}
+ },{passive:true});
+ stage.addEventListener('touchcancel',function(){restoreGestureMask();resetStroke();multiTouch=false;gestureMask=null},{passive:true});
+ // Ignore touch-generated pointer events to avoid duplicate brush strokes.
+ stage.addEventListener('pointerdown',function(e){
+  if(e.pointerType==='touch'||panel.style.display!=='block'||panel.contains(e.target))return;
+  e.preventDefault();fitAll();mouseDrawing=true;last=point(e);dot(last)
+ });
+ stage.addEventListener('pointermove',function(e){
+  if(e.pointerType==='touch'||!mouseDrawing)return;
+  e.preventDefault();var p=point(e);dot(p,last);last=p
+ });
+ function endPointer(e){if(e.pointerType==='touch')return;mouseDrawing=false;last=null}
+ stage.addEventListener('pointerup',endPointer);
+ stage.addEventListener('pointercancel',endPointer);
  function base512(){
   var c=document.createElement('canvas');c.width=c.height=512;var x=c.getContext('2d'),w=stage.clientWidth,h=stage.clientHeight,iw=photo.naturalWidth,ih=photo.naturalHeight,sc=Math.max(w/iw,h/ih),rw=iw*sc,rh=ih*sc,ox=(w-rw)/2,oy=(h-rh)/2;
   var logical=document.createElement('canvas');logical.width=Math.round(w*dpr);logical.height=Math.round(h*dpr);var lc=logical.getContext('2d');lc.setTransform(dpr,0,0,dpr,0,0);lc.drawImage(photo,ox,oy,rw,rh);lc.drawImage(result,0,0,w,h);
