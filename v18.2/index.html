@@ -447,7 +447,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  var panelSlot=document.getElementById('eraserPanelSlot');if(panelSlot)panelSlot.appendChild(panel);else document.body.appendChild(panel);var brushPreview=document.createElement('div');brushPreview.id='beBrushPreview';document.body.appendChild(brushPreview);
  var mode='remove',drawing=false,history=[],dpr=devicePixelRatio||1,size=document.getElementById('beSize'),session=null;
  function fit(c){var w=stage.clientWidth,h=stage.clientHeight,nw=Math.round(w*dpr),nh=Math.round(h*dpr);if(c.width===nw&&c.height===nh)return;var o=document.createElement('canvas');o.width=c.width;o.height=c.height;if(c.width)o.getContext('2d').drawImage(c,0,0);c.width=nw;c.height=nh;c.style.width=w+'px';c.style.height=h+'px';var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);if(o.width)x.drawImage(o,0,0,o.width,o.height,0,0,w,h)}
- function fitAll(){fit(result);fit(mask)}
+ function fitAll(){fit(mask)} // Opening eraser must not allocate a full-resolution result canvas.
  function clearMask(){var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight)}
  var maskUndo=[],editUndo=[];
  function rememberMask(){fitAll();var c=mask.getContext('2d');maskUndo.push(c.getImageData(0,0,mask.width,mask.height));if(maskUndo.length>30)maskUndo.shift()}
@@ -606,6 +606,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
   return{rgba:out,alpha,unknown:mask};
  }
  async function runAI(){
+  fit(result); // Allocate result canvas only when the user actually applies an erase.
   var st=document.getElementById('beStatus');
   if(mode==='restore'){st.textContent='마스크 지우기는 사진 위에서 문질러 주세요.';return}
   var W=mask.width,H=mask.height;if(!W||!H)return;
