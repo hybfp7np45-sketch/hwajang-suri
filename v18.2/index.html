@@ -481,7 +481,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
   if(panel.style.display!=='block'||panel.contains(e.target))return;
   if(e.touches.length>=2){restoreGestureMask();resetStroke();multiTouch=true;return}
   if(multiTouch||e.touches.length!==1)return;
-  fitAll();gestureMask=mask.getContext('2d').getImageData(0,0,mask.width,mask.height);
+  fitAll();gestureMask=null; // Avoid duplicating full-resolution mask pixels before any stroke.
   touchPending=point(e);drawing=false;last=null;
  },{passive:true});
  stage.addEventListener('touchmove',function(e){
@@ -490,12 +490,12 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
   if(multiTouch||e.touches.length!==1||!touchPending)return;
   e.preventDefault();
   var p=point(e);
-  if(!drawing){rememberMask();drawing=true;last=touchPending;dot(last)}
+  if(!drawing){rememberMask();gestureMask=maskUndo[maskUndo.length-1];drawing=true;last=touchPending;dot(last)}
   dot(p,last);last=p;
  },{passive:false});
  stage.addEventListener('touchend',function(e){
   if(e.touches.length===0){
-   if(!multiTouch&&touchPending&&!drawing){rememberMask();dot(touchPending)}
+   if(!multiTouch&&touchPending&&!drawing){rememberMask();gestureMask=maskUndo[maskUndo.length-1];dot(touchPending)}
    resetStroke();multiTouch=false;gestureMask=null;
   }else if(multiTouch){resetStroke()}
  },{passive:true});
