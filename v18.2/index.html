@@ -464,7 +464,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  var panelSlot=document.getElementById('eraserPanelSlot');if(panelSlot)panelSlot.appendChild(panel);else document.body.appendChild(panel);var brushPreview=document.createElement('div');brushPreview.id='beBrushPreview';document.body.appendChild(brushPreview);
  var mode='remove',drawing=false,history=[],dpr=1,size=document.getElementById('beSize'),session=null; // Mask-only resolution: keep original photo at native resolution, avoid iOS canvas texture pressure
  function fit(c){var w=stage.clientWidth,h=stage.clientHeight,nw=Math.round(w*dpr),nh=Math.round(h*dpr);if(c.width===nw&&c.height===nh)return;var o=document.createElement('canvas');o.width=c.width;o.height=c.height;if(c.width)o.getContext('2d').drawImage(c,0,0);c.width=nw;c.height=nh;c.style.width=w+'px';c.style.height=h+'px';var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);if(o.width)x.drawImage(o,0,0,o.width,o.height,0,0,w,h)}
- function fitAll(){fit(result);fit(mask);alignEraseMask()}
+ function fitAll(){fit(mask);alignEraseMask()} // Do not allocate the full result canvas during mask painting
  function clearMask(){var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);delete mask.dataset.hasPaint;mask.style.visibility='hidden'}
  var maskUndo=[],editUndo=[];
  function rememberMask(){fitAll();var c=mask.getContext('2d');maskUndo.push(c.getImageData(0,0,mask.width,mask.height));if(maskUndo.length>30)maskUndo.shift()}
@@ -475,7 +475,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  function showBrushPreview(){var r=stage.getBoundingClientRect(),d=+size.value;brushPreview.style.width=d+'px';brushPreview.style.height=d+'px';brushPreview.style.left=(r.left+r.width/2)+'px';brushPreview.style.top=(r.top+Math.min(r.height*.55,r.height-80))+'px';brushPreview.style.display='block'} function hideBrushPreview(){brushPreview.style.display='none'} function syncBrushSize(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview()} size.oninput=syncBrushSize;size.onchange=function(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview();setTimeout(hideBrushPreview,650)};size.addEventListener('touchstart',showBrushPreview,{passive:true});size.addEventListener('touchend',function(){setTimeout(hideBrushPreview,650)},{passive:true});size.addEventListener('pointerdown',showBrushPreview);size.addEventListener('pointerup',function(){setTimeout(hideBrushPreview,650)});document.getElementById('beSizeV').textContent=size.value+'px';
  function setMode(m){mode=m;document.getElementById('beRemove').classList.toggle('on',m==='remove');document.getElementById('beRestore').classList.toggle('on',m==='restore');document.getElementById('beStatus').textContent=m==='restore'?'마스크 지우기 모드: 칠한 부분을 문질러 지우세요.':'마스크 칠하기 모드'}
  document.getElementById('beRemove').onclick=function(){setMode('remove')};document.getElementById('beRestore').onclick=function(){setMode('restore')};
- function snap(){try{return result.toDataURL()}catch(e){return null}} function restoreSnap(u){fitAll();var c=result.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);if(!u)return;var im=new Image();im.onload=function(){c.drawImage(im,0,0,stage.clientWidth,stage.clientHeight)};im.src=u}
+ function snap(){try{return result.width&&result.height?result.toDataURL():null}catch(e){return null}} function restoreSnap(u){fit(result);var c=result.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);if(!u)return;var im=new Image();im.onload=function(){c.drawImage(im,0,0,stage.clientWidth,stage.clientHeight)};im.src=u}
  document.getElementById('beUndo').onclick=function(e){e.preventDefault();e.stopPropagation();if(maskUndo.length){restoreMask(maskUndo.pop());document.getElementById('beStatus').textContent='마지막 마스크 작업을 되돌렸습니다.';return}if(history.length){restoreSnap(history.pop());document.getElementById('beStatus').textContent='복원 결과를 되돌렸습니다.';return}document.getElementById('beStatus').textContent='되돌릴 작업이 없습니다.'};
  function point(e){var r=stage.getBoundingClientRect(),t=e.touches?e.touches[0]:e,sx=t.clientX-r.left,sy=t.clientY-r.top,z=typeof zoom!=='undefined'?zoom:1,px=typeof panX!=='undefined'?panX:0,py=typeof panY!=='undefined'?panY:0,cx=stage.clientWidth/2,cy=stage.clientHeight/2;return{x:(sx-cx-px)/z+cx,y:(sy-cy-py)/z+cy}}
  function rad(){var z=typeof zoom==='number'&&zoom>0?zoom:1;return (+size.value/2)/z}
@@ -624,6 +624,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
   return{rgba:out,alpha,unknown:mask};
  }
  async function runAI(){
+  fit(result); // Result canvas is needed only when actually applying skin repair.
   var st=document.getElementById('beStatus');
   if(mode==='restore'){st.textContent='마스크 지우기는 사진 위에서 문질러 주세요.';return}
   var W=mask.width,H=mask.height;if(!W||!H)return;
