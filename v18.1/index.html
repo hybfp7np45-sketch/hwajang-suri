@@ -59,7 +59,7 @@ nav{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid #f0e6e
 #editGuideToggle{position:absolute!important;right:26px!important;top:6px!important;margin:0!important}
 #addVGuide,#addHGuide{display:none!important}
 #browErasePanel{position:absolute!important;left:0!important;right:0!important;bottom:0!important;margin:0!important;border-radius:14px 14px 0 0!important}
-</style><script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.0/dist/ort.min.js"></script><style id="ai-eraser-ui-v4">#browEraseMask{opacity:.55!important}#browErasePanel .be-actions{grid-template-columns:1fr 1fr 1fr!important}#beRun{background:#e8f7fd!important;border-color:#72c7f2!important;color:#4caedc!important;font-weight:700!important}</style><style id="magic-eraser-ui-v5">
+</style></script><style id="ai-eraser-ui-v4">#browEraseMask{opacity:.55!important}#browErasePanel .be-actions{grid-template-columns:1fr 1fr 1fr!important}#beRun{background:#e8f7fd!important;border-color:#72c7f2!important;color:#4caedc!important;font-weight:700!important}</style><style id="magic-eraser-ui-v5">
 #existingBrow,#skinBase{display:none!important}
 #photo{opacity:1!important}
 #browEraseBtn{left:26px!important;width:auto!important;min-width:72px!important;padding:0 10px!important}
@@ -765,6 +765,7 @@ function eraseBrows(targetCtx, points, w, h){
 }
 let lastSource=null;
 async function processPhoto(photo){
+ if(window.SURI_AUTO_ERASE!==true)return;
  const id=++sequence;
  if(!photo||!photo.naturalWidth||!photo.naturalHeight)return;
  const source=photo.currentSrc||photo.src;
