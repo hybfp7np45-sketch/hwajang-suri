@@ -441,7 +441,18 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  var stage=document.getElementById('stage'),world=document.getElementById('world'),photo=document.getElementById('photo'),btn=document.getElementById('magicEraseToggle');if(!stage||!world||!photo||!btn)return;
  var old=document.getElementById('browEraseCanvas');if(old)old.remove();var oldm=document.getElementById('browEraseMask');if(oldm)oldm.remove();
  var result=document.createElement('canvas');result.id='browEraseCanvas';world.appendChild(result);window.browEraseCanvas=result;
- var mask=document.createElement('canvas');mask.id='browEraseMask';world.appendChild(mask);
+ var mask=document.createElement('canvas');mask.id='browEraseMask';
+ // Keep the painted overlay outside #world so iOS does not re-rasterize the photo
+ // when a canvas first becomes visible or changes during brush painting.
+ stage.appendChild(mask);
+ mask.style.zIndex='35';
+ mask.style.transformOrigin='50% 50%';
+ function alignEraseMask(){
+  mask.style.transform=world.style.transform||'none';
+ }
+ var maskAlignmentObserver=new MutationObserver(alignEraseMask);
+ maskAlignmentObserver.observe(world,{attributes:true,attributeFilter:['style']});
+ alignEraseMask();
  // Native full-resolution image avoids large canvas textures and iOS GPU downsampling on first brush stroke.
  var sharpPhoto=document.createElement('img');sharpPhoto.id='beSharpPhotoV182';sharpPhoto.alt='';
  sharpPhoto.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;pointer-events:none;display:none';
@@ -453,7 +464,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  var panelSlot=document.getElementById('eraserPanelSlot');if(panelSlot)panelSlot.appendChild(panel);else document.body.appendChild(panel);var brushPreview=document.createElement('div');brushPreview.id='beBrushPreview';document.body.appendChild(brushPreview);
  var mode='remove',drawing=false,history=[],dpr=1,size=document.getElementById('beSize'),session=null; // Mask-only resolution: keep original photo at native resolution, avoid iOS canvas texture pressure
  function fit(c){var w=stage.clientWidth,h=stage.clientHeight,nw=Math.round(w*dpr),nh=Math.round(h*dpr);if(c.width===nw&&c.height===nh)return;var o=document.createElement('canvas');o.width=c.width;o.height=c.height;if(c.width)o.getContext('2d').drawImage(c,0,0);c.width=nw;c.height=nh;c.style.width=w+'px';c.style.height=h+'px';var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);if(o.width)x.drawImage(o,0,0,o.width,o.height,0,0,w,h)}
- function fitAll(){fit(result);fit(mask)}
+ function fitAll(){fit(result);fit(mask);alignEraseMask()}
  function clearMask(){var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);delete mask.dataset.hasPaint;mask.style.visibility='hidden'}
  var maskUndo=[],editUndo=[];
  function rememberMask(){fitAll();var c=mask.getContext('2d');maskUndo.push(c.getImageData(0,0,mask.width,mask.height));if(maskUndo.length>30)maskUndo.shift()}
