@@ -442,25 +442,12 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  var old=document.getElementById('browEraseCanvas');if(old)old.remove();var oldm=document.getElementById('browEraseMask');if(oldm)oldm.remove();
  var result=document.createElement('canvas');result.id='browEraseCanvas';world.appendChild(result);window.browEraseCanvas=result;
  var mask=document.createElement('canvas');mask.id='browEraseMask';world.appendChild(mask);
- // High-resolution photo backing for erase mode; keep mask/result layers untouched.
- var sharpPhoto=document.createElement('canvas');sharpPhoto.id='beSharpPhotoV182';sharpPhoto.style.cssText='position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;display:none';world.insertBefore(sharpPhoto,result);
- var sharpQueued=false;
- function paintSharpPhoto(){
-  sharpQueued=false;
-  if(sharpPhoto.style.display==='none'||!photo.complete||!photo.naturalWidth)return;
-  var w=stage.clientWidth,h=stage.clientHeight,z=typeof zoom==='number'&&zoom>0?zoom:1;
-  var scale=Math.min(Math.max(1,devicePixelRatio||1)*z,3.5,Math.sqrt(9000000/(w*h)));
-  var pw=Math.max(1,Math.round(w*scale)),ph=Math.max(1,Math.round(h*scale));
-  if(sharpPhoto.width!==pw)sharpPhoto.width=pw;if(sharpPhoto.height!==ph)sharpPhoto.height=ph;
-  var ctx=sharpPhoto.getContext('2d');ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,w,h);
-  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-  var iw=photo.naturalWidth,ih=photo.naturalHeight,sc=Math.max(w/iw,h/ih),rw=iw*sc,rh=ih*sc;
-  ctx.drawImage(photo,(w-rw)/2,(h-rh)/2,rw,rh);
- }
- function queueSharpPhoto(){if(sharpQueued)return;sharpQueued=true;requestAnimationFrame(paintSharpPhoto)}
- var sharpObserver=new MutationObserver(function(){if(sharpPhoto.style.display!=='none')queueSharpPhoto()});
- sharpObserver.observe(world,{attributes:true,attributeFilter:['style']});
- photo.addEventListener('load',queueSharpPhoto);
+ // Native full-resolution image avoids large canvas textures and iOS GPU downsampling on first brush stroke.
+ var sharpPhoto=document.createElement('img');sharpPhoto.id='beSharpPhotoV182';sharpPhoto.alt='';
+ sharpPhoto.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;pointer-events:none;display:none';
+ world.insertBefore(sharpPhoto,result);
+ function syncSharpPhoto(){if(photo.currentSrc||photo.src){var src=photo.currentSrc||photo.src;if(sharpPhoto.src!==src)sharpPhoto.src=src}}
+ photo.addEventListener('load',syncSharpPhoto);
  var panel=document.getElementById('browErasePanel');if(panel)panel.remove();panel=document.createElement('div');panel.id='browErasePanel';
  panel.innerHTML='<div class="be-mode"><button id="beRemove" class="on">눈썹 제거</button><button id="beRestore">지우기</button></div><div class="be-row"><span>브러시</span><input id="beSize" type="range" min="6" max="70" value="22"><b id="beSizeV">22</b></div><div class="be-actions"><button id="beUndo" type="button">되돌리기</button><button id="beRun" type="button">지우기</button><button id="beDone" type="button">완료</button></div><div id="beStatus" style="font-size:10px;text-align:center;color:#777;min-height:14px"></div>';
  var panelSlot=document.getElementById('eraserPanelSlot');if(panelSlot)panelSlot.appendChild(panel);else document.body.appendChild(panel);var brushPreview=document.createElement('div');brushPreview.id='beBrushPreview';document.body.appendChild(brushPreview);
@@ -471,7 +458,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  var maskUndo=[],editUndo=[];
  function rememberMask(){fitAll();var c=mask.getContext('2d');maskUndo.push(c.getImageData(0,0,mask.width,mask.height));if(maskUndo.length>30)maskUndo.shift()}
  function restoreMask(snapshot){if(!snapshot)return;fitAll();var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);c.putImageData(snapshot,0,0)}
- function open(){panel.style.display='block';btn.textContent='지우기 OFF';sharpPhoto.style.display='block';paintSharpPhoto();if(!maskUndo.length&&!mask.dataset.hasPaint)mask.style.visibility='hidden';if(!result.dataset.hasResult)result.style.visibility='hidden'}
+ function open(){panel.style.display='block';btn.textContent='지우기 OFF';syncSharpPhoto();sharpPhoto.style.display='block';if(!maskUndo.length&&!mask.dataset.hasPaint)mask.style.visibility='hidden';if(!result.dataset.hasResult)result.style.visibility='hidden'}
  function close(){panel.style.display='none';btn.textContent='지우기 ON';sharpPhoto.style.display='none';drawing=false}
  btn.onclick=function(e){e.preventDefault();e.stopPropagation();panel.style.display==='block'?close():open()};document.getElementById('beDone').onclick=close;
  function showBrushPreview(){var r=stage.getBoundingClientRect(),d=+size.value;brushPreview.style.width=d+'px';brushPreview.style.height=d+'px';brushPreview.style.left=(r.left+r.width/2)+'px';brushPreview.style.top=(r.top+Math.min(r.height*.55,r.height-80))+'px';brushPreview.style.display='block'} function hideBrushPreview(){brushPreview.style.display='none'} function syncBrushSize(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview()} size.oninput=syncBrushSize;size.onchange=function(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview();setTimeout(hideBrushPreview,650)};size.addEventListener('touchstart',showBrushPreview,{passive:true});size.addEventListener('touchend',function(){setTimeout(hideBrushPreview,650)},{passive:true});size.addEventListener('pointerdown',showBrushPreview);size.addEventListener('pointerup',function(){setTimeout(hideBrushPreview,650)});document.getElementById('beSizeV').textContent=size.value+'px';
