@@ -458,7 +458,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  function snap(){try{return result.toDataURL()}catch(e){return null}} function restoreSnap(u){fitAll();var c=result.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);if(!u)return;var im=new Image();im.onload=function(){c.drawImage(im,0,0,stage.clientWidth,stage.clientHeight)};im.src=u}
  document.getElementById('beUndo').onclick=function(){if(history.length)restoreSnap(history.pop())};
  function point(e){var r=stage.getBoundingClientRect(),t=e.touches?e.touches[0]:e,sx=t.clientX-r.left,sy=t.clientY-r.top,z=typeof zoom!=='undefined'?zoom:1,px=typeof panX!=='undefined'?panX:0,py=typeof panY!=='undefined'?panY:0,cx=stage.clientWidth/2,cy=stage.clientHeight/2;return{x:(sx-cx-px)/z+cx,y:(sy-cy-py)/z+cy}}
- function rad(){return Math.max(3,+size.value/2)}
+ function rad(){var z=typeof zoom==='number'&&zoom>0?zoom:1;return (+size.value/2)/z}
  function dot(p,q){var c=mask.getContext('2d'),r=rad();c.save();c.globalAlpha=.42;c.strokeStyle='#fff';c.fillStyle='#fff';c.lineWidth=r*2;c.lineCap='round';if(q){c.beginPath();c.moveTo(q.x,q.y);c.lineTo(p.x,p.y);c.stroke()}else{c.beginPath();c.arc(p.x,p.y,r,0,Math.PI*2);c.fill()}c.restore()}
  var last=null,gestureMask=null,touchPending=null,multiTouch=false,mouseDrawing=false;
  function restoreGestureMask(){if(!gestureMask)return;var ctx=mask.getContext('2d');ctx.clearRect(0,0,mask.width/dpr,mask.height/dpr);ctx.putImageData(gestureMask,0,0)}
