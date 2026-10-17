@@ -681,6 +681,20 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
    clearMask();st.textContent='완료';
   }catch(err){st.textContent='지우기에 실패했어요. 다시 시도해 주세요.';console.error(err)}
  }
+ // Recover from legacy V18.2 inline display:none!important left on editor panels.
+ ['sheet','layers','editbar','colorbar','rail','designRail'].forEach(function(id){
+  var el=document.getElementById(id);if(el&&el.style.getPropertyPriority('display')==='important')el.style.removeProperty('display');
+ });
+ ['browTab','maleBrowTab'].forEach(function(id){
+  var tab=document.getElementById(id);if(!tab)return;
+  tab.addEventListener('click',function(){
+   if(eraseModeOpen)close();
+   var sheet=document.getElementById('sheet');
+   if(sheet)sheet.style.removeProperty('display');
+   var designs=document.getElementById('designRail');
+   if(designs)designs.style.removeProperty('display');
+  },true);
+ });
  document.getElementById('beRun').onclick=runAI;panel.style.display='none';btn.textContent='지우기 ON';
 })();
 </script><style id="v133-clean-ui">
