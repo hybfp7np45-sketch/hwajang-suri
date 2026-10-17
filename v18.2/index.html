@@ -487,26 +487,32 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  var maskUndo=[],editUndo=[];
  function rememberMask(){fitAll();var c=mask.getContext('2d');maskUndo.push(c.getImageData(0,0,mask.width,mask.height));if(maskUndo.length>30)maskUndo.shift()}
  function restoreMask(snapshot){if(!snapshot)return;fitAll();var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);c.putImageData(snapshot,0,0)}
- var hiddenPanels=[];
+ var eraseModeOpen=false;
  function hideOtherPanels(){
-  document.body.classList.add('suri-erase-only-v182');
-  hiddenPanels=[];
+  // Close, rather than temporarily conceal, all editor drawers.
   ['layers','editbar','colorbar','sheet','rail','designRail'].forEach(function(id){
    var el=document.getElementById(id);if(!el)return;
-   hiddenPanels.push({el:el,display:el.style.display,priority:el.style.getPropertyPriority('display')});
-   el.style.setProperty('display','none','important');
+   el.style.setProperty('display','none');
+   el.classList.remove('show','open','active');
   });
  }
- function restoreOtherPanels(){
-  document.body.classList.remove('suri-erase-only-v182');
-  hiddenPanels.forEach(function(p){
-   if(p.display)p.el.style.setProperty('display',p.display,p.priority);
-   else p.el.style.removeProperty('display');
-  });hiddenPanels=[];
+ function open(){
+  hideOtherPanels();
+  eraseModeOpen=true;
+  document.body.classList.add('suri-erase-only-v182');
+  panel.style.display='block';btn.textContent='지우기 OFF';
+  syncSharpPhoto();sharpPhoto.style.display='block';
+  if(!maskUndo.length&&!mask.dataset.hasPaint)mask.style.visibility='hidden';
+  if(!result.dataset.hasResult)result.style.visibility='hidden';
  }
- function open(){hideOtherPanels();panel.style.setProperty('display','block');btn.textContent='지우기 OFF';syncSharpPhoto();sharpPhoto.style.display='block';if(!maskUndo.length&&!mask.dataset.hasPaint)mask.style.visibility='hidden';if(!result.dataset.hasResult)result.style.visibility='hidden'}
- function close(){restoreOtherPanels();panel.style.setProperty('display','none');btn.textContent='지우기 ON';sharpPhoto.style.display='none';drawing=false}
- btn.onclick=function(e){e.preventDefault();e.stopPropagation();panel.style.display==='block'?close():open()};document.getElementById('beDone').onclick=close;
+ function close(){
+  eraseModeOpen=false;
+  document.body.classList.remove('suri-erase-only-v182');
+  panel.style.display='none';btn.textContent='지우기 ON';
+  sharpPhoto.style.display='none';drawing=false;
+  hideOtherPanels();
+ }
+ btn.onclick=function(e){e.preventDefault();e.stopPropagation();eraseModeOpen?close():open()};document.getElementById('beDone').onclick=close;
  function showBrushPreview(){var r=stage.getBoundingClientRect(),d=+size.value;brushPreview.style.width=d+'px';brushPreview.style.height=d+'px';brushPreview.style.left=(r.left+r.width/2)+'px';brushPreview.style.top=(r.top+Math.min(r.height*.55,r.height-80))+'px';brushPreview.style.display='block'} function hideBrushPreview(){brushPreview.style.display='none'} function syncBrushSize(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview()} size.oninput=syncBrushSize;size.onchange=function(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview();setTimeout(hideBrushPreview,650)};size.addEventListener('touchstart',showBrushPreview,{passive:true});size.addEventListener('touchend',function(){setTimeout(hideBrushPreview,650)},{passive:true});size.addEventListener('pointerdown',showBrushPreview);size.addEventListener('pointerup',function(){setTimeout(hideBrushPreview,650)});document.getElementById('beSizeV').textContent=size.value+'px';
  function setMode(m){mode=m;document.getElementById('beRemove').classList.toggle('on',m==='remove');document.getElementById('beRestore').classList.toggle('on',m==='restore');document.getElementById('beStatus').textContent=m==='restore'?'마스크 지우기 모드: 칠한 부분을 문질러 지우세요.':'마스크 칠하기 모드'}
  document.getElementById('beRemove').onclick=function(){setMode('remove')};document.getElementById('beRestore').onclick=function(){setMode('restore')};
