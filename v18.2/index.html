@@ -448,11 +448,11 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  var mode='remove',drawing=false,history=[],dpr=devicePixelRatio||1,size=document.getElementById('beSize'),session=null;
  function fit(c){var w=stage.clientWidth,h=stage.clientHeight,nw=Math.round(w*dpr),nh=Math.round(h*dpr);if(c.width===nw&&c.height===nh)return;var o=document.createElement('canvas');o.width=c.width;o.height=c.height;if(c.width)o.getContext('2d').drawImage(c,0,0);c.width=nw;c.height=nh;c.style.width=w+'px';c.style.height=h+'px';var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);if(o.width)x.drawImage(o,0,0,o.width,o.height,0,0,w,h)}
  function fitAll(){fit(result);fit(mask)}
- function clearMask(){var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight)}
+ function clearMask(){var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);delete mask.dataset.hasPaint;mask.style.visibility='hidden'}
  var maskUndo=[],editUndo=[];
  function rememberMask(){fitAll();var c=mask.getContext('2d');maskUndo.push(c.getImageData(0,0,mask.width,mask.height));if(maskUndo.length>30)maskUndo.shift()}
  function restoreMask(snapshot){if(!snapshot)return;fitAll();var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);c.putImageData(snapshot,0,0)}
- function open(){fitAll();panel.style.display='block';btn.textContent='지우기 OFF'}
+ function open(){panel.style.display='block';btn.textContent='지우기 OFF';if(!maskUndo.length&&!mask.dataset.hasPaint)mask.style.visibility='hidden';if(!result.dataset.hasResult)result.style.visibility='hidden'}
  function close(){panel.style.display='none';btn.textContent='지우기 ON';drawing=false}
  btn.onclick=function(e){e.preventDefault();e.stopPropagation();panel.style.display==='block'?close():open()};document.getElementById('beDone').onclick=close;
  function showBrushPreview(){var r=stage.getBoundingClientRect(),d=+size.value;brushPreview.style.width=d+'px';brushPreview.style.height=d+'px';brushPreview.style.left=(r.left+r.width/2)+'px';brushPreview.style.top=(r.top+Math.min(r.height*.55,r.height-80))+'px';brushPreview.style.display='block'} function hideBrushPreview(){brushPreview.style.display='none'} function syncBrushSize(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview()} size.oninput=syncBrushSize;size.onchange=function(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview();setTimeout(hideBrushPreview,650)};size.addEventListener('touchstart',showBrushPreview,{passive:true});size.addEventListener('touchend',function(){setTimeout(hideBrushPreview,650)},{passive:true});size.addEventListener('pointerdown',showBrushPreview);size.addEventListener('pointerup',function(){setTimeout(hideBrushPreview,650)});document.getElementById('beSizeV').textContent=size.value+'px';
@@ -463,6 +463,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  function point(e){var r=stage.getBoundingClientRect(),t=e.touches?e.touches[0]:e,sx=t.clientX-r.left,sy=t.clientY-r.top,z=typeof zoom!=='undefined'?zoom:1,px=typeof panX!=='undefined'?panX:0,py=typeof panY!=='undefined'?panY:0,cx=stage.clientWidth/2,cy=stage.clientHeight/2;return{x:(sx-cx-px)/z+cx,y:(sy-cy-py)/z+cy}}
  function rad(){var z=typeof zoom==='number'&&zoom>0?zoom:1;return (+size.value/2)/z}
  function dot(p,q){
+  mask.style.visibility='visible';mask.dataset.hasPaint='1';
   var c=mask.getContext('2d'),r=rad(),erase=mode==='restore';
   c.save();c.globalAlpha=1;c.globalCompositeOperation=erase?'destination-out':'source-over';
   c.strokeStyle='#fff';c.fillStyle='#fff';c.lineWidth=r*2;c.lineCap='round';c.lineJoin='round';
@@ -624,7 +625,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
    var od=new Uint8ClampedArray(cw*ch*4);
    for(var i=0;i<cw*ch;i++){od[i*4]=res.rgba[i*4];od[i*4+1]=res.rgba[i*4+1];od[i*4+2]=res.rgba[i*4+2];od[i*4+3]=Math.round(res.alpha[i]*255)}
    var fc=document.createElement('canvas');fc.width=cw;fc.height=ch;fc.getContext('2d').putImageData(new ImageData(od,cw,ch),0,0);
-   result.getContext('2d').drawImage(fc,bx/dpr,by/dpr,cw/dpr,ch/dpr);
+   result.style.visibility='visible';result.dataset.hasResult='1';result.getContext('2d').drawImage(fc,bx/dpr,by/dpr,cw/dpr,ch/dpr);
    clearMask();st.textContent='완료';
   }catch(err){st.textContent='지우기에 실패했어요. 다시 시도해 주세요.';console.error(err)}
  }
