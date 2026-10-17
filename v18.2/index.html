@@ -553,90 +553,88 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
   x.drawImage(logical,0,0,logical.width,logical.height,0,0,512,512);return c
  }
  function suriFillMask(rgba,hard,W,H,R){
-  // Texture-aware exemplar inpainting: copy real skin patches instead of
-  // averaging eyebrow pixels into a flat gray/beige fill.
+  // V18.2: native-resolution coherent skin-patch transfer. Never shrink to 360px.
+  // Copy only from an unmasked source region; avoid copying neighboring eyebrow hairs.
   const N=W*H,mask=new Uint8Array(N),alpha=new Float32Array(N);
-  const rr=Math.max(2,Math.min(7,Math.round(R*.5)));
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-   let hit=false;
-   for(let dy=-rr;dy<=rr&&!hit;dy++)for(let dx=-rr;dx<=rr;dx++){
-    if(dx*dx+dy*dy>rr*rr)continue;
-    const xx=x+dx,yy=y+dy;
-    if(xx>=0&&xx<W&&yy>=0&&yy<H&&hard[yy*W+xx]){hit=true;break}
-   }
-   if(hit)mask[y*W+x]=1;
+  const rr=Math.max(2,Math.min(9,Math.round(R*.5)));
+  let minX=W,minY=H,maxX=-1,maxY=-1;
+  for(let i=0;i<N;i++)if(hard[i]){
+   let x=i%W,y=(i/W)|0;
+   minX=Math.min(minX,x);maxX=Math.max(maxX,x);
+   minY=Math.min(minY,y);maxY=Math.max(maxY,y);
   }
-  // Distance to original unmasked pixels (used to feather the final edge).
-  const dist=new Uint16Array(N);dist.fill(65535);const queue=new Int32Array(N);let head=0,tail=0;
-  for(let i=0;i<N;i++)if(!mask[i]){dist[i]=0;queue[tail++]=i}
-  while(head<tail){const i=queue[head++],x=i%W,y=(i/W)|0,d=dist[i]+1;
-   for(const j of [x>0?i-1:-1,x<W-1?i+1:-1,y>0?i-W:-1,y<H-1?i+W:-1]){
-    if(j>=0&&d<dist[j]){dist[j]=d;queue[tail++]=j}
+  const out=new Uint8ClampedArray(rgba);
+  if(maxX<0)return{rgba:out,alpha,unknown:mask};
+  // Dilate to remove dark hair edges; use a separable rectangular dilation.
+  const temp=new Uint8Array(N),prefix=new Int32Array(Math.max(W,H)+1);
+  for(let y=0;y<H;y++){
+   prefix[0]=0;for(let x=0;x<W;x++)prefix[x+1]=prefix[x]+hard[y*W+x];
+   for(let x=0;x<W;x++)if(prefix[Math.min(W,x+rr+1)]-prefix[Math.max(0,x-rr)]>0)temp[y*W+x]=1;
+  }
+  for(let x=0;x<W;x++){
+   prefix[0]=0;for(let y=0;y<H;y++)prefix[y+1]=prefix[y]+temp[y*W+x];
+   for(let y=0;y<H;y++)if(prefix[Math.min(H,y+rr+1)]-prefix[Math.max(0,y-rr)]>0)mask[y*W+x]=1;
+  }
+  let x0=W,y0=H,x1=-1,y1=-1;
+  for(let i=0;i<N;i++)if(mask[i]){
+   let x=i%W,y=(i/W)|0;x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);
+  }
+  const bw=x1-x0+1,bh=y1-y0+1;
+  // Candidate patches are spatially coherent (single translation) to retain pores.
+  // Reject source patches containing masked pixels or excessive dark brow texture.
+  let best=null,bestScore=Infinity;
+  const shifts=[];
+  for(const sign of [-1,1]){
+   for(const gap of [8,16,28,44,64,90,125,165,210]){
+    shifts.push([0,sign*(bh+gap)]);
+    shifts.push([-Math.round(bw*.25),sign*(bh+gap)]);
+    shifts.push([Math.round(bw*.25),sign*(bh+gap)]);
    }
   }
-  const out=new Uint8ClampedArray(rgba),filled=new Uint8Array(N);
-  for(let i=0;i<N;i++)if(!mask[i])filled[i]=1;
-  // Patch matching is performed on an adaptive grid to keep it usable on phones.
-  const maxSide=360,scale=Math.min(1,maxSide/Math.max(W,H)),w=Math.max(1,Math.round(W*scale)),h=Math.max(1,Math.round(H*scale));
-  const src=new Uint8ClampedArray(w*h*4),hole=new Uint8Array(w*h),done=new Uint8Array(w*h),dst=new Uint8ClampedArray(w*h*4);
-  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
-   const sx=Math.min(W-1,Math.floor((x+.5)/scale)),sy=Math.min(H-1,Math.floor((y+.5)/scale)),si=sy*W+sx,di=y*w+x;
-   hole[di]=mask[si];done[di]=!hole[di]?1:0;
-   for(let c=0;c<4;c++)src[di*4+c]=dst[di*4+c]=rgba[si*4+c];
-  }
-  const patch=2,step=3,search=Math.max(18,Math.min(90,Math.round(Math.max(w,h)*.23)));
-  const isValid=(x,y)=>x>=patch&&y>=patch&&x<w-patch&&y<h-patch;
-  let remaining=hole.reduce((a,b)=>a+b,0),passes=0;
-  while(remaining>0&&passes++<Math.max(w,h)){
-   const frontier=[];
-   for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const i=y*w+x;
-    if(!hole[i]||done[i])continue;
-    if(done[i-1]||done[i+1]||done[i-w]||done[i+w])frontier.push(i);
-   }
-   if(!frontier.length)break;
-   // Fill boundary first with a matching patch of known, non-eyebrow skin.
-   for(let k=0;k<frontier.length;k+=step){
-    const i=frontier[k],x=i%w,y=(i/w)|0;
-    let best=-1,bestErr=Infinity;
-    const trials=70;
-    for(let t=0;t<trials;t++){
-     const angle=t*2.39996323,rad=6+search*Math.sqrt((t+.5)/trials),sx=Math.round(x+Math.cos(angle)*rad),sy=Math.round(y+Math.sin(angle)*rad);
-     if(!isValid(sx,sy)||hole[sy*w+sx])continue;
-     let err=0,count=0;
-     for(let dy=-patch;dy<=patch;dy++)for(let dx=-patch;dx<=patch;dx++){
-      const ax=x+dx,ay=y+dy,bx=sx+dx,by=sy+dy;
-      if(ax<0||ay<0||ax>=w||ay>=h||bx<0||by<0||bx>=w||by>=h)continue;
-      const ai=ay*w+ax,bi=by*w+bx;if(!done[ai]||hole[bi])continue;
-      const a=ai*4,b=bi*4;
-      const dr=dst[a]-src[b],dg=dst[a+1]-src[b+1],db=dst[a+2]-src[b+2];
-      err+=dr*dr+dg*dg+db*db;count++;
-     }
-     if(count<3)continue;
-     err=err/count+Math.abs(sx-x)*.025+Math.abs(sy-y)*.025;
-     if(err<bestErr){bestErr=err;best=sy*w+sx}
+  for(const shift of shifts){
+   const dx=shift[0],dy=shift[1],sx0=x0+dx,sy0=y0+dy;
+   if(sx0<0||sx0+bw>W||sy0<0||sy0+bh>H)continue;
+   let score=0,n=0,bad=false;
+   for(let yy=0;yy<bh;yy+=Math.max(1,Math.floor(bh/14)))
+    for(let xx=0;xx<bw;xx+=Math.max(1,Math.floor(bw/18))){
+     const si=(sy0+yy)*W+sx0+xx;
+     if(mask[si]){bad=true;break}
+     const p=si*4,red=rgba[p],green=rgba[p+1],blue=rgba[p+2];
+     const lum=(red*3+green*6+blue)/10;
+     score+=Math.max(0,105-lum)*3;
+     score+=Math.abs(red-green)*.04;
+     n++;
     }
-    if(best<0)continue;
-    for(let dy=-patch;dy<=patch;dy++)for(let dx=-patch;dx<=patch;dx++){
-     const xx=x+dx,yy=y+dy,bx=(best%w)+dx,by=((best/w)|0)+dy;
-     if(xx<0||yy<0||xx>=w||yy>=h||bx<0||by<0||bx>=w||by>=h)continue;
-     const di=yy*w+xx,si=by*w+bx;if(!hole[di]||done[di]||hole[si])continue;
-     for(let c=0;c<4;c++)dst[di*4+c]=src[si*4+c];
-     done[di]=1;remaining--;
-    }
-   }
-   // Sparse fallback: fill boundary pixels from their closest known skin pixel.
-   if(passes>2&&remaining>0&&frontier.every(i=>!done[i])){
-    for(const i of frontier){let j=-1;for(const n of [i-1,i+1,i-w,i+w])if(done[n]){j=n;break}if(j<0)continue;
-     for(let c=0;c<4;c++)dst[i*4+c]=dst[j*4+c];done[i]=1;remaining--}
-   }
+   if(bad||!n)continue;
+   score=score/n+Math.abs(dx)*.02+Math.abs(dy)*.015;
+   if(score<bestScore){bestScore=score;best=shift}
   }
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  if(!best){
+   // No safe clean skin patch: do not manufacture blocky eyebrow fragments.
+   throw new Error('No clean skin patch available near the selection');
+  }
+  const dx=best[0],dy=best[1];
+  // Alpha feather is computed at full source resolution.
+  const dist=new Uint8Array(N);
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
    const i=y*W+x;if(!mask[i])continue;
-   const fx=Math.min(w-1,Math.floor((x+.5)*w/W)),fy=Math.min(h-1,Math.floor((y+.5)*h/H)),j=(fy*w+fx)*4;
-   const blend=Math.min(1,dist[i]/Math.max(2,rr*.8));
-   alpha[i]=blend;
-   for(let c=0;c<3;c++)out[i*4+c]=dst[j+c];
-   out[i*4+3]=255;
+   let edge=false;
+   for(const j of [x>0?i-1:-1,x<W-1?i+1:-1,y>0?i-W:-1,y<H-1?i+W:-1])
+    if(j<0||!mask[j]){edge=true;break}
+   if(edge)dist[i]=1;
+  }
+  for(let pass=2;pass<=5;pass++)
+   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+    const i=y*W+x;if(!mask[i]||dist[i])continue;
+    if((x>0&&dist[i-1]===pass-1)||(x<W-1&&dist[i+1]===pass-1)||
+       (y>0&&dist[i-W]===pass-1)||(y<H-1&&dist[i+W]===pass-1))dist[i]=pass;
+   }
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+   const i=y*W+x;if(!mask[i])continue;
+   const si=((y+dy)*W+x+dx)*4,di=i*4;
+   for(let c=0;c<3;c++)out[di+c]=rgba[si+c];
+   out[di+3]=255;
+   alpha[i]=Math.min(1,(dist[i]||6)/5);
   }
   return{rgba:out,alpha,unknown:mask};
  }
