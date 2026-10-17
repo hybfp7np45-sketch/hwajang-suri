@@ -464,21 +464,8 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  var panelSlot=document.getElementById('eraserPanelSlot');if(panelSlot)panelSlot.appendChild(panel);else document.body.appendChild(panel);var brushPreview=document.createElement('div');brushPreview.id='beBrushPreview';document.body.appendChild(brushPreview);
  var mode='remove',drawing=false,history=[],dpr=1,size=document.getElementById('beSize'),session=null;
  // iPhone diagnostic: distinguish changed source pixels from GPU/compositor downscaling.
- var diag=document.createElement('div');diag.id='beQualityDiag';
- diag.style.cssText='position:fixed!important;top:85px!important;left:10px!important;right:auto!important;z-index:2147483647!important;background:#111!important;color:#fff!important;border:2px solid #ff3d80!important;font:12px/1.5 monospace!important;padding:8px!important;border-radius:6px!important;max-width:70vw!important;pointer-events:none!important;white-space:pre-wrap!important;display:block!important';
- document.body.appendChild(diag);diag.style.display='block';diag.textContent='진단 V2 준비됨';
- var diagBaseline=null;
- function photoFingerprint(){
-  if(!photo.complete||!photo.naturalWidth)return 'unloaded';
-  try{var c=document.createElement('canvas');c.width=64;c.height=64;var x=c.getContext('2d',{willReadFrequently:true});x.drawImage(photo,0,0,64,64);var a=x.getImageData(0,0,64,64).data,h=2166136261;for(var i=0;i<a.length;i+=8)h=Math.imul(h^a[i],16777619);return(h>>>0).toString(16)}
-  catch(e){return 'blocked'}
- }
- function qualityReport(label){
-  var fp=photoFingerprint();if(!diagBaseline)diagBaseline=fp;
-  var cs=getComputedStyle(photo),ms=getComputedStyle(mask),rect=photo.getBoundingClientRect();
-  diag.textContent=label+'\\n원본 '+photo.naturalWidth+'×'+photo.naturalHeight+' / '+(fp===diagBaseline?'동일':'변경')+'\\n확대 '+(typeof zoom==='number'?zoom.toFixed(2):'?')+' / 화면 '+Math.round(rect.width)+'×'+Math.round(rect.height)+'\\n마스크 '+mask.width+'×'+mask.height+' '+ms.visibility+'\\n사진 '+cs.imageRendering+' / '+cs.opacity;
- }
- window.suriQualityReport=qualityReport;
+ // Diagnostic overlay removed; no photo data is altered here.
+ function qualityReport(){}
  // Mask-only resolution: keep original photo at native resolution, avoid iOS canvas texture pressure
  function fit(c){var w=stage.clientWidth,h=stage.clientHeight,nw=Math.round(w*dpr),nh=Math.round(h*dpr);if(c.width===nw&&c.height===nh)return;var o=document.createElement('canvas');o.width=c.width;o.height=c.height;if(c.width)o.getContext('2d').drawImage(c,0,0);c.width=nw;c.height=nh;c.style.width=w+'px';c.style.height=h+'px';var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);if(o.width)x.drawImage(o,0,0,o.width,o.height,0,0,w,h)}
  function fitAll(){fit(mask);alignEraseMask()} // Do not allocate the full result canvas during mask painting
@@ -486,8 +473,8 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  var maskUndo=[],editUndo=[];
  function rememberMask(){fitAll();var c=mask.getContext('2d');maskUndo.push(c.getImageData(0,0,mask.width,mask.height));if(maskUndo.length>30)maskUndo.shift()}
  function restoreMask(snapshot){if(!snapshot)return;fitAll();var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);c.putImageData(snapshot,0,0)}
- function open(){diagBaseline=null;qualityReport('열기 전');panel.style.display='block';btn.textContent='지우기 OFF';syncSharpPhoto();sharpPhoto.style.display='block';if(!maskUndo.length&&!mask.dataset.hasPaint)mask.style.visibility='hidden';if(!result.dataset.hasResult)result.style.visibility='hidden'}
- function close(){qualityReport('완료');panel.style.display='none';btn.textContent='지우기 ON';sharpPhoto.style.display='none';drawing=false}
+ function open(){panel.style.display='block';btn.textContent='지우기 OFF';syncSharpPhoto();sharpPhoto.style.display='block';if(!maskUndo.length&&!mask.dataset.hasPaint)mask.style.visibility='hidden';if(!result.dataset.hasResult)result.style.visibility='hidden'}
+ function close(){panel.style.display='none';btn.textContent='지우기 ON';sharpPhoto.style.display='none';drawing=false}
  btn.onclick=function(e){e.preventDefault();e.stopPropagation();panel.style.display==='block'?close():open()};document.getElementById('beDone').onclick=close;
  function showBrushPreview(){var r=stage.getBoundingClientRect(),d=+size.value;brushPreview.style.width=d+'px';brushPreview.style.height=d+'px';brushPreview.style.left=(r.left+r.width/2)+'px';brushPreview.style.top=(r.top+Math.min(r.height*.55,r.height-80))+'px';brushPreview.style.display='block'} function hideBrushPreview(){brushPreview.style.display='none'} function syncBrushSize(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview()} size.oninput=syncBrushSize;size.onchange=function(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview();setTimeout(hideBrushPreview,650)};size.addEventListener('touchstart',showBrushPreview,{passive:true});size.addEventListener('touchend',function(){setTimeout(hideBrushPreview,650)},{passive:true});size.addEventListener('pointerdown',showBrushPreview);size.addEventListener('pointerup',function(){setTimeout(hideBrushPreview,650)});document.getElementById('beSizeV').textContent=size.value+'px';
  function setMode(m){mode=m;document.getElementById('beRemove').classList.toggle('on',m==='remove');document.getElementById('beRestore').classList.toggle('on',m==='restore');document.getElementById('beStatus').textContent=m==='restore'?'마스크 지우기 모드: 칠한 부분을 문질러 지우세요.':'마스크 칠하기 모드'}
@@ -497,7 +484,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  function point(e){var r=stage.getBoundingClientRect(),t=e.touches?e.touches[0]:e,sx=t.clientX-r.left,sy=t.clientY-r.top,z=typeof zoom!=='undefined'?zoom:1,px=typeof panX!=='undefined'?panX:0,py=typeof panY!=='undefined'?panY:0,cx=stage.clientWidth/2,cy=stage.clientHeight/2;return{x:(sx-cx-px)/z+cx,y:(sy-cy-py)/z+cy}}
  function rad(){var z=typeof zoom==='number'&&zoom>0?zoom:1;return (+size.value/2)/z}
  function dot(p,q){
-  mask.style.visibility='visible';mask.dataset.hasPaint='1';qualityReport('마스크 칠하기');
+  mask.style.visibility='visible';mask.dataset.hasPaint='1';
   var c=mask.getContext('2d'),r=rad(),erase=mode==='restore';
   c.save();c.globalAlpha=1;c.globalCompositeOperation=erase?'destination-out':'source-over';
   c.strokeStyle='#fff';c.fillStyle='#fff';c.lineWidth=r*2;c.lineCap='round';c.lineJoin='round';
