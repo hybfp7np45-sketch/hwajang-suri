@@ -107,6 +107,31 @@ const browSVG=$('#browTemplate').innerHTML;
 const handles='<i class="rh nw" data-h="nw"></i><i class="rh n" data-h="n"></i><i class="rh ne" data-h="ne"></i><i class="rh e" data-h="e"></i><i class="rh se" data-h="se"></i><i class="rh s" data-h="s"></i><i class="rh sw" data-h="sw"></i><i class="rh w" data-h="w"></i><i class="rh rot" data-h="rot"></i><button class="rh del" data-h="del">×</button>';
 
 const browAssets={
+ "각진아치 · 헤스2":"assets/각진아치-헤스2.png",
+ "각진아치 · 헤스3":"assets/각진아치-헤스3.png",
+ "각진아치 · 헤스4":"assets/각진아치-헤스4.png",
+ "각진아치 · 헤스5":"assets/각진아치-헤스5.png",
+ "각진아치 · 헤스6":"assets/각진아치-헤스6.png",
+ "기본형 · 헤스2":"assets/기본형-헤스2.png",
+ "기본형 · 헤스3":"assets/기본형-헤스3.png",
+ "기본형 · 헤스4":"assets/기본형-헤스4.png",
+ "기본형 · 헤스5":"assets/기본형-헤스5.png",
+ "기본형 · 헤스6":"assets/기본형-헤스6.png",
+ "세미아치 · 헤스2":"assets/세미아치-헤스2.png",
+ "세미아치 · 헤스3":"assets/세미아치-헤스3.png",
+ "세미아치 · 헤스4":"assets/세미아치-헤스4.png",
+ "세미아치 · 헤스5":"assets/세미아치-헤스5.png",
+ "세미아치 · 헤스6":"assets/세미아치-헤스6.png",
+ "아치형 · 헤스2":"assets/아치-헤스2.png",
+ "아치형 · 헤스3":"assets/아치-헤스3.png",
+ "아치형 · 헤스4":"assets/아치-헤스4.png",
+ "아치형 · 헤스5":"assets/아치-헤스5.png",
+ "아치형 · 헤스6":"assets/아치-헤스6.png",
+ "일자형 · 헤스2":"assets/일자형-헤스2.png",
+ "일자형 · 헤스3":"assets/일자형-헤스3.png",
+ "일자형 · 헤스4":"assets/일자형-헤스4.png",
+ "일자형 · 헤스5":"assets/일자형-헤스5.png",
+ "일자형 · 헤스6":"assets/일자형-헤스6.png",
  '기본형 · 엠보1':'assets/basic-embo1.png',
  '기본형 · 섀도우1':'assets/basic-shadow1.png',
  '기본형 · 헤스1':'assets/basic-hes1.png',
@@ -132,7 +157,7 @@ function savePersonalBrows(v){try{localStorage.setItem(PERSONAL_BROW_KEY,JSON.st
 function personalFor(design){return personalBrows()[design]||[]}
 function addPersonalButton(design){const btn=document.createElement('button');btn.className='card personal-add';btn.dataset.design=design;btn.type='button';btn.innerHTML='<div class="mini" style="display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:300">＋</div><small>내 결 추가</small>';rail.appendChild(btn)}
 function renderPersonalBrow(design,item){const btn=document.createElement('button');btn.className='card tech-card personal-tech';btn.dataset.name=item.name;btn.dataset.src=item.src;btn.dataset.personalId=item.id;const mini=document.createElement('div');mini.className='mini';const im=document.createElement('img');im.style.cssText='width:100%;height:100%;object-fit:contain;';im.src=item.src;mini.appendChild(im);const sm=document.createElement('small');sm.textContent=item.name;btn.append(mini,sm);rail.appendChild(btn)}
-function showTech(design){currentBrowDesign=design;rail.innerHTML='';const techs=design==='기본형'?['기본형 · 엠보1','기본형 · 섀도우1','기본형 · 헤스1']:design==='일자형'?['일자형 · 엠보1','일자형 · 섀도우1','일자형 · 헤스1']:design==='세미아치'?['세미아치 · 엠보1','세미아치 · 섀도우1','세미아치 · 헤스1']:design==='아치형'?['아치형 · 엠보1','아치형 · 섀도우1','아치형 · 헤스1']:design==='각진아치'?[]:[];rail.style.display='flex';S.className='sheet level3';techs.forEach(n=>{const btn=document.createElement('button');btn.className='card tech-card';btn.dataset.name=n;const mini=document.createElement('div');mini.className='mini';const im=document.createElement('img');im.style.cssText='width:100%;height:100%;object-fit:contain;';im.src=browAssets[n];mini.appendChild(im);const sm=document.createElement('small');sm.textContent=n.split(' · ')[1];btn.append(mini,sm);rail.appendChild(btn)});personalFor(design).forEach(x=>renderPersonalBrow(design,x));addPersonalButton(design)}
+function showTech(design){currentBrowDesign=design;rail.innerHTML='';const techs=design==='기본형'?['기본형 · 엠보1','기본형 · 섀도우1','기본형 · 헤스1']:design==='일자형'?['일자형 · 엠보1','일자형 · 섀도우1','일자형 · 헤스1']:design==='세미아치'?['세미아치 · 엠보1','세미아치 · 섀도우1','세미아치 · 헤스1']:design==='아치형'?['아치형 · 엠보1','아치형 · 섀도우1','아치형 · 헤스1']:design==='각진아치'?[]:[];techs.push(...Object.keys(browAssets).filter(n=>n.startsWith(design+' · ')&&!techs.includes(n)));rail.style.display='flex';S.className='sheet level3';techs.forEach(n=>{const btn=document.createElement('button');btn.className='card tech-card';btn.dataset.name=n;const mini=document.createElement('div');mini.className='mini';const im=document.createElement('img');im.style.cssText='width:100%;height:100%;object-fit:contain;';im.src=browAssets[n];mini.appendChild(im);const sm=document.createElement('small');sm.textContent=n.split(' · ')[1];btn.append(mini,sm);rail.appendChild(btn)});personalFor(design).forEach(x=>renderPersonalBrow(design,x));addPersonalButton(design)}
 function showMaleTech(type){rail.innerHTML='';const techs=type==='결눈썹'?['남자 결눈썹 · 헤스1','남자 결눈썹 · 헤스2','남자 결눈썹 · 헤스3','남자 결눈썹 · 헤스4']:[];if(!techs.length){rail.style.display='none';S.className='sheet level2';return}rail.style.display='flex';S.className='sheet level3';techs.forEach((n,i)=>{const btn=document.createElement('button');btn.className='card tech-card';btn.dataset.name=n;const mini=document.createElement('div');mini.className='mini';const im=document.createElement('img');im.style.cssText='width:100%;height:100%;object-fit:contain;';im.src=browAssets[n];mini.appendChild(im);const sm=document.createElement('small');sm.textContent='헤스'+(i+1);btn.append(mini,sm);rail.appendChild(btn)})}
 designRail.onclick=e=>{const x=e.target.closest('.design-card');if(!x)return;[...designRail.children].forEach(y=>y.classList.remove('sel'));x.classList.add('sel');if(x.dataset.male)showMaleTech(x.dataset.male);else showTech(x.dataset.design)};function openBrowDesigns(){designRail.style.display='flex';rail.style.display='none';S.className='sheet level2'};$('#browTab').addEventListener('pointerup',openBrowDesigns);$('#browTab').addEventListener('click',openBrowDesigns);$('#maleBrowTab').addEventListener('click',()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));$('#maleBrowTab').classList.add('active');rail.style.display='none';designRail.innerHTML='<button class="design-card male-type" data-male="결눈썹">결눈썹</button><button class="design-card male-type" data-male="화장눈썹">화장눈썹</button>';designRail.style.display='flex';S.className='sheet level2'});$('#browTab').addEventListener('click',()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));$('#browTab').classList.add('active');designRail.innerHTML='';['기본형','일자형','세미아치','아치형','각진아치'].forEach(n=>designRail.insertAdjacentHTML('beforeend','<button class="design-card" data-design="'+n+'">'+n+'</button>'));openBrowDesigns()});
 let selected=null,brows=[],nextId=3,faceAxisX=null,zoom=1,panX=0,panY=0,touches=new Map(),pinch=null;
