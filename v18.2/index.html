@@ -267,7 +267,7 @@ function editor(el){let st=null;
  const h=st.handle,im=el.querySelector('img');if(im&&(!im.complete||!im.naturalWidth||!im.naturalHeight))return;const ratio=Number(el.dataset.originalRatio)||(im?(im.naturalWidth/im.naturalHeight):(st.w/st.h));if(!Number.isFinite(ratio)||ratio<=0)return;el.dataset.originalRatio=String(ratio);let change;if(h.includes('e'))change=dx/st.w;else if(h.includes('w'))change=-dx/st.w;else if(h.includes('s'))change=dy/st.h;else change=-dy/st.h;const isWhiteSide=['n','s','e','w'].includes(h);const nw=isWhiteSide?(h==='n'||h==='s'?st.w:Math.max(10,st.w*(1+change))):Math.max(10,st.w*(1+change));const nh=isWhiteSide?(h==='e'||h==='w'?st.h:Math.max(5,st.h*(1+change))):nw/ratio;
  const left=st.left+(h.includes('w')?st.w-nw:!h.includes('e')?(st.w-nw)/2:0);
  const top=st.top+(h.includes('n')?st.h-nh:!h.includes('s')?(st.h-nh)/2:0);
- Object.assign(el.style,{left:left+'px',top:top+'px',width:nw+'px',height:nh+'px'});el.dataset.userSized='1';sizeHandles(el)});
+ Object.assign(el.style,{left:left+'px',top:top+'px',width:nw+'px',height:nh+'px'});if(isWhiteSide&&im){im.style.objectFit='fill'}el.dataset.userSized='1';sizeHandles(el)});
  el.addEventListener('pointerup',()=>{st=null});el.addEventListener('pointercancel',()=>{st=null});
 }
 
