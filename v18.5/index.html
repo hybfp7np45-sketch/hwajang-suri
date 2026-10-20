@@ -365,7 +365,7 @@ function endPointer(e){
  touches.delete(e.pointerId);gestureMoved.delete(e.pointerId);if(touches.size<2)pinch=null;
  if(stageDrag&&stageDrag.id===e.pointerId)stageDrag=null;
  if(!wasTwo&&!moved&&!e.target.closest('.brow')&&!e.target.closest('.edit-guide-line')){
-  const now=Date.now();if(now-lastTap<330){select(null);lastTap=0}else lastTap=now
+  const now=Date.now();if(now-lastTap<330){select(null);rail.style.display='none';S.className='sheet level2';lastTap=0}else lastTap=now
  }else if(wasTwo||moved)lastTap=0
 }
 stage.addEventListener('pointerup',endPointer);stage.addEventListener('pointercancel',endPointer);
