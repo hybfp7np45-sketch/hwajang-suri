@@ -235,7 +235,7 @@ function drawExistingBrowLayer(){
  }
  c.putImageData(im,0,0);out.drawImage(tmp,0,0,w,h);
 }
-function resetLoadedPhoto(){P.style.display='block';$('#empty').style.display='none';brows.forEach(x=>x.remove());brows=[];nextId=3;layerOrder=['existing'];zoom=1;panX=panY=0;world.style.transform='translate(0px,0px) scale(1)';select(null);drawExistingBrowLayer();syncZ();if(window.suriProcessLoadedPhoto)window.suriProcessLoadedPhoto(P)}
+function resetLoadedPhoto(){const fw=stage.clientWidth,fh=stage.clientHeight,iw=P.naturalWidth,ih=P.naturalHeight;if(fw>0&&fh>0&&iw>0&&ih>0){const fit=Math.min(fw/iw,fh/ih);P.style.width=(iw*fit)+'px';P.style.height=(ih*fit)+'px';P.style.left=((fw-iw*fit)/2)+'px';P.style.top=((fh-ih*fit)/2)+'px';P.style.right='auto';P.style.bottom='auto';P.style.objectFit='fill';}P.style.display='block';$('#empty').style.display='none';brows.forEach(x=>x.remove());brows=[];nextId=3;layerOrder=['existing'];zoom=1;panX=panY=0;world.style.transform='translate(0px,0px) scale(1)';select(null);drawExistingBrowLayer();syncZ();if(window.suriProcessLoadedPhoto)window.suriProcessLoadedPhoto(P)}
 // Galaxy image loading only; V18 layer/color/UI code preserved.
 let photoImportURL=null;
 function releasePreviousPhotoURL(){
