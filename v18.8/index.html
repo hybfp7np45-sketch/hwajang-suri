@@ -1056,7 +1056,7 @@ body.suri-photo-erase-active #photo{image-rendering:auto!important;filter:none!i
 (function(){
  const stage=document.getElementById('stage'),photo=document.getElementById('photo'),mask=document.getElementById('browEraseMask'),panel=document.getElementById('browErasePanel');
  if(!stage||!photo||!mask||!panel)return;
- const lens=document.getElementById('suriMaskLens188');if(!lens)return;
+ let lens=document.getElementById('suriMaskLens188');if(!lens){lens=document.createElement('div');lens.id='suriMaskLens188';const canvas=document.createElement('canvas');canvas.width=canvas.height=144;lens.appendChild(canvas);document.body.appendChild(lens)}
  const cv=lens.querySelector('canvas'),ctx=cv.getContext('2d');
  let tracking=false,lastTouch=null;
  function hide(){tracking=false;lastTouch=null;lens.style.display='none'}
