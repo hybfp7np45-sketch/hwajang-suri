@@ -600,7 +600,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
   let top=h,bottom=0,left=w,right=0;
   for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++)if(hole[yy*w+xx]){top=Math.min(top,yy);bottom=Math.max(bottom,yy);left=Math.min(left,xx);right=Math.max(right,xx)}
   const patch=2,step=3,search=Math.max(18,Math.min(90,Math.round(Math.max(w,h)*.23)));
-  const skinGap=Math.max(7,Math.round((bottom-top+1)*.4));
+  const skinGap=Math.max(4,Math.min(12,Math.round((bottom-top+1)*.12)));
   const cleanSkin=(xx,yy)=>yy+patch<top-skinGap && xx>=patch && xx<w-patch && yy>=patch && yy<h-patch;
   const cleanPatch=(xx,yy)=>{if(!cleanSkin(xx,yy))return false;for(let dy=-patch;dy<=patch;dy++)for(let dx=-patch;dx<=patch;dx++)if(hole[(yy+dy)*w+xx+dx])return false;return true};
   const isValid=(x,y)=>x>=patch&&y>=patch&&x<w-patch&&y<h-patch;
@@ -616,7 +616,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
    for(let k=0;k<frontier.length;k+=step){
     const i=frontier[k],x=i%w,y=(i/w)|0;
     let best=-1,bestErr=Infinity;
-    const trials=70;
+    const trials=90;
     for(let t=0;t<trials;t++){
      const angle=t*2.39996323,rad=6+search*Math.sqrt((t+.5)/trials),sx=Math.round(x+Math.cos(angle)*rad),sy=Math.round(y+Math.sin(angle)*rad);
      if(!isValid(sx,sy)||!cleanPatch(sx,sy))continue;
@@ -644,10 +644,22 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
    }
    // If there is no verified clean skin, do not copy eyebrow-colored neighbors.
    // Leave unresolved pixels unchanged rather than producing dark streaks.
-   // Sparse fallback: fill boundary pixels from their closest known skin pixel.
+   // Never sample from the unpainted eyebrow edge: it can drag dark hairs
+   // into the removed area. If matching fails, use only verified skin above.
    if(passes>2&&remaining>0&&frontier.every(i=>!done[i])){
-    for(const i of frontier){let j=-1;for(const n of [i-1,i+1,i-w,i+w])if(done[n]){j=n;break}if(j<0)continue;
-     for(let c=0;c<4;c++)dst[i*4+c]=dst[j*4+c];done[i]=1;remaining--}
+    let fallback=-1;
+    for(let yy=Math.max(patch,top-skinGap-1);yy>=patch&&fallback<0;yy--)
+     for(let xx=patch;xx<w-patch;xx++)if(cleanPatch(xx,yy)){fallback=yy*w+xx;break}
+    if(fallback<0)break;
+    for(const i of frontier){
+     if(done[i])continue;
+     const yy=(i/w)|0,xx=i%w,skinX=Math.max(patch,Math.min(w-patch-1,xx));
+     let sample=fallback;
+     for(let y0=Math.min(top-skinGap-1,h-patch-1);y0>=patch;y0--)
+      if(cleanPatch(skinX,y0)){sample=y0*w+skinX;break}
+     for(let c=0;c<4;c++)dst[i*4+c]=src[sample*4+c];
+     done[i]=1;remaining--;
+    }
    }
   }
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
@@ -672,7 +684,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
   try{
    eraseStep='이전 상태 저장';history.push(snap());maskUndo=[];st.textContent='피부 결에 맞춰 채우는 중…';await new Promise(function(r){setTimeout(r,30)});
    var brushPx=(+size.value)*dpr,M=Math.round(Math.max(30,brushPx*1.1));
-   var bx=Math.max(0,minx-M),by=Math.max(0,miny-M),bx2=Math.min(W,maxx+M+1),by2=Math.min(H,maxy+M+1),cw=bx2-bx,ch=by2-by;
+   var bx=Math.max(0,minx-M),by=Math.max(0,miny-M-Math.round(110*dpr)),bx2=Math.min(W,maxx+M+1),by2=Math.min(H,maxy+M+1),cw=bx2-bx,ch=by2-by;
    var w=stage.clientWidth,h=stage.clientHeight,iw=photo.naturalWidth,ih=photo.naturalHeight,sc=Math.min(w/iw,h/ih),rw=iw*sc,rh=ih*sc,ox=(w-rw)/2,oy=(h-rh)/2;
    var crop=document.createElement('canvas');crop.width=cw;crop.height=ch;var cx=crop.getContext('2d');cx.setTransform(dpr,0,0,dpr,-bx,-by);cx.drawImage(photo,ox,oy,rw,rh);cx.drawImage(result,0,0,w,h);
    var id=cx.getImageData(0,0,cw,ch),hard=new Uint8Array(cw*ch);
