@@ -595,12 +595,6 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
    hole[di]=mask[si];done[di]=!hole[di]?1:0;
    for(let c=0;c<4;c++)src[di*4+c]=dst[di*4+c]=rgba[si*4+c];
   }
-  // v18.6 test: build a conservative skin-only source pool. Pixels inside the
-  // brow's horizontal band must never be used as donor patches.
-  const ys=[];for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(hole[y*w+x])ys.push(y);
-  const top=ys.length?Math.min(...ys):0,bottom=ys.length?Math.max(...ys):h-1;
-  const safeTop=Math.max(0,top-Math.max(5,Math.round(h*.025)));
-  const safeBottom=Math.min(h-1,bottom+Math.max(5,Math.round(h*.025)));
   const patch=2,step=3,search=Math.max(18,Math.min(90,Math.round(Math.max(w,h)*.23)));
   const isValid=(x,y)=>x>=patch&&y>=patch&&x<w-patch&&y<h-patch;
   let remaining=hole.reduce((a,b)=>a+b,0),passes=0;
@@ -618,12 +612,12 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
     const trials=70;
     for(let t=0;t<trials;t++){
      const angle=t*2.39996323,rad=6+search*Math.sqrt((t+.5)/trials),sx=Math.round(x+Math.cos(angle)*rad),sy=Math.round(y+Math.sin(angle)*rad);
-     if(!isValid(sx,sy)||hole[sy*w+sx]||(sy>=safeTop&&sy<=safeBottom))continue;
+     if(!isValid(sx,sy)||hole[sy*w+sx])continue;
      let err=0,count=0;
      for(let dy=-patch;dy<=patch;dy++)for(let dx=-patch;dx<=patch;dx++){
       const ax=x+dx,ay=y+dy,bx=sx+dx,by=sy+dy;
       if(ax<0||ay<0||ax>=w||ay>=h||bx<0||by<0||bx>=w||by>=h)continue;
-      const ai=ay*w+ax,bi=by*w+bx;if(!done[ai]||hole[bi]||(by>=safeTop&&by<=safeBottom))continue;
+      const ai=ay*w+ax,bi=by*w+bx;if(!done[ai]||hole[bi])continue;
       const a=ai*4,b=bi*4;
       const dr=dst[a]-src[b],dg=dst[a+1]-src[b+1],db=dst[a+2]-src[b+2];
       err+=dr*dr+dg*dg+db*db;count++;
@@ -636,7 +630,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
     for(let dy=-patch;dy<=patch;dy++)for(let dx=-patch;dx<=patch;dx++){
      const xx=x+dx,yy=y+dy,bx=(best%w)+dx,by=((best/w)|0)+dy;
      if(xx<0||yy<0||xx>=w||yy>=h||bx<0||by<0||bx>=w||by>=h)continue;
-     const di=yy*w+xx,si=by*w+bx;if(!hole[di]||done[di]||hole[si]||(by>=safeTop&&by<=safeBottom))continue;
+     const di=yy*w+xx,si=by*w+bx;if(!hole[di]||done[di]||hole[si])continue;
      for(let c=0;c<4;c++)dst[di*4+c]=src[si*4+c];
      done[di]=1;remaining--;
     }
