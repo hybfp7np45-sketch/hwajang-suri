@@ -2,6 +2,7 @@
 (function(){
 let sessionPromise=null;
 async function runtime(){
+ const timeout=(promise,ms,label)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(Error(label+' 시간 초과 ('+Math.round(ms/1000)+'초). 네트워크 또는 아이폰 메모리 문제일 수 있습니다.')),ms))]);
  if(!sessionPromise)sessionPromise=(async()=>{
   if(!window.ort){
    await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.min.js';s.onload=resolve;s.onerror=()=>reject(Error('AI 실행 라이브러리 다운로드 실패'));document.head.appendChild(s)});
@@ -9,7 +10,7 @@ async function runtime(){
   ort.env.wasm.wasmPaths='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/';
   ort.env.wasm.numThreads=1;
   const url='https://huggingface.co/edgetools/lama/resolve/main/lama_fp32.onnx';
-  return await ort.InferenceSession.create(url,{executionProviders:['wasm'],graphOptimizationLevel:'all'});
+  return await timeout(ort.InferenceSession.create(url,{executionProviders:['wasm'],graphOptimizationLevel:'all'}),120000,'AI 모델 다운로드/초기화');
  })().catch(e=>{sessionPromise=null;throw e});
  return sessionPromise;
 }
