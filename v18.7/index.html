@@ -498,8 +498,8 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
  var maskUndo=[],editUndo=[];
  function rememberMask(){fitAll();var c=mask.getContext('2d');maskUndo.push(c.getImageData(0,0,mask.width,mask.height));if(maskUndo.length>30)maskUndo.shift()}
  function restoreMask(snapshot){if(!snapshot)return;fitAll();var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);c.putImageData(snapshot,0,0)}
- function open(){panel.style.display='block';btn.textContent='지우기 OFF'}
- function close(){panel.style.display='none';btn.textContent='지우기 ON';drawing=false}
+ function open(){panel.style.display='block';btn.textContent='지우기 OFF';document.body.classList.add('suri-photo-erase-active');document.querySelectorAll('.brow.selected').forEach(function(el){el.dataset.eraseWasSelected='1'})}
+ function close(){panel.style.display='none';btn.textContent='지우기 ON';drawing=false;mouseDrawing=false;touchPending=null;gestureMask=null;multiTouch=false;clearMask();maskUndo=[];document.body.classList.remove('suri-photo-erase-active');hideBrushPreview()}
  btn.onclick=function(e){e.preventDefault();e.stopPropagation();panel.style.display==='block'?close():open()};document.getElementById('beDone').onclick=close;
  function showBrushPreview(){var r=stage.getBoundingClientRect(),d=+size.value;brushPreview.style.width=d+'px';brushPreview.style.height=d+'px';brushPreview.style.left=(r.left+r.width/2)+'px';brushPreview.style.top=(r.top+Math.min(r.height*.55,r.height-80))+'px';brushPreview.style.display='block'} function hideBrushPreview(){brushPreview.style.display='none'} function syncBrushSize(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview()} size.oninput=syncBrushSize;size.onchange=function(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview();setTimeout(hideBrushPreview,650)};size.addEventListener('touchstart',showBrushPreview,{passive:true});size.addEventListener('touchend',function(){setTimeout(hideBrushPreview,650)},{passive:true});size.addEventListener('pointerdown',showBrushPreview);size.addEventListener('pointerup',function(){setTimeout(hideBrushPreview,650)});document.getElementById('beSizeV').textContent=size.value+'px';
  function setMode(m){mode=m;document.getElementById('beRemove').classList.toggle('on',m==='remove');document.getElementById('beRestore').classList.toggle('on',m==='restore');document.getElementById('beStatus').textContent=m==='restore'?'마스크 지우기 모드: 칠한 부분을 문질러 지우세요.':'마스크 칠하기 모드'}
@@ -989,4 +989,10 @@ window.suriProcessLoadedPhoto=processPhoto;
  transform:none!important;
  z-index:2147483646!important;
 }
+</style>
+<style id="v187-photo-erase-isolation">
+/* Photo removal edits the underlying photo, never the design brow. */
+body.suri-photo-erase-active .brow,body.suri-photo-erase-active .brow *{pointer-events:none!important;touch-action:none!important}
+body.suri-photo-erase-active .brow .rh,body.suri-photo-erase-active .brow .handle,body.suri-photo-erase-active .brow .handles{visibility:hidden!important}
+body.suri-photo-erase-active #stage{touch-action:none!important}
 </style>
