@@ -584,7 +584,7 @@ window.suriLamaInpaint=async function(crop,mask,progress){
  var result=document.createElement('canvas');result.id='browEraseCanvas';world.appendChild(result);window.browEraseCanvas=result;
  var mask=document.createElement('canvas');mask.id='browEraseMask';world.appendChild(mask);
  var panel=document.getElementById('browErasePanel');if(panel)panel.remove();panel=document.createElement('div');panel.id='browErasePanel';
- panel.innerHTML='<div class="be-mode"><button id="beRemove" class="on">눈썹 제거</button><button id="beRestore">지우기</button></div><div class="be-row"><span>브러시</span><input id="beSize" type="range" min="6" max="70" value="22"><b id="beSizeV">22</b></div><div class="be-actions"><button id="beUndo" type="button">되돌리기</button><button id="beRun" type="button">지우기</button><button id="beDone" type="button">완료</button></div><div id="beStatus" style="font-size:10px;text-align:center;color:#777;min-height:14px"></div>';
+ panel.innerHTML='<div class="be-mode"><button id="beRemove" class="on">눈썹 제거</button><button id="beRestore">지우기</button></div><div class="be-row"><span>브러시</span><input id="beSize" type="range" min="2" max="70" value="22"><b id="beSizeV">22</b></div><div class="be-actions"><button id="beUndo" type="button">되돌리기</button><button id="beRun" type="button">지우기</button><button id="beDone" type="button">완료</button></div><div id="beStatus" style="font-size:10px;text-align:center;color:#777;min-height:14px"></div>';
  var panelSlot=document.getElementById('eraserPanelSlot');if(panelSlot)panelSlot.appendChild(panel);else document.body.appendChild(panel);var brushPreview=document.createElement('div');brushPreview.id='beBrushPreview';document.body.appendChild(brushPreview);
  var mode='remove',drawing=false,history=[],dpr=1,size=document.getElementById('beSize'),session=null; // Mask is a selection overlay, not the source photo; avoid iOS retina backing-store pressure.
  function fit(c){var w=stage.clientWidth,h=stage.clientHeight,nw=Math.round(w*dpr),nh=Math.round(h*dpr);if(c.width===nw&&c.height===nh)return;var o=document.createElement('canvas');o.width=c.width;o.height=c.height;if(c.width)o.getContext('2d').drawImage(c,0,0);c.width=nw;c.height=nh;c.style.width=w+'px';c.style.height=h+'px';var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);if(o.width)x.drawImage(o,0,0,o.width,o.height,0,0,w,h)}
@@ -777,7 +777,7 @@ window.suriLamaInpaint=async function(crop,mask,progress){
   for(var y=0;y<H;y++)for(var x=0;x<W;x++)if(md[(y*W+x)*4+3]>20){if(x<minx)minx=x;if(x>maxx)maxx=x;if(y<miny)miny=y;if(y>maxy)maxy=y}
   if(maxx<0){st.textContent='먼저 지울 눈썹 부분을 문질러 주세요.';return}
   try{
-   history.push(snap());maskUndo=[];st.textContent='[INT8 새 설치] 경량 AI 준비 중…';
+   history.push(snap());maskUndo=[];st.classList.add('suri-ai-busy');st.textContent='◌ 눈썹 제거 진행 중 · AI 준비 중…';
    await new Promise(function(r){setTimeout(r,30)});
    var brushPx=(+size.value)*dpr,M=Math.round(Math.max(30,brushPx*1.1));
    var bx=Math.max(0,minx-M),by=Math.max(0,miny-M-Math.round(110*dpr)),bx2=Math.min(W,maxx+M+1),by2=Math.min(H,maxy+M+1),cw=bx2-bx,ch=by2-by;
@@ -785,10 +785,10 @@ window.suriLamaInpaint=async function(crop,mask,progress){
    var crop=document.createElement('canvas');crop.width=cw;crop.height=ch;var cx=crop.getContext('2d');cx.setTransform(dpr,0,0,dpr,-bx,-by);cx.drawImage(photo,ox,oy,rw,rh);cx.drawImage(result,0,0,w,h);
    var hard=new Uint8Array(cw*ch);
    for(var yy=0;yy<ch;yy++)for(var xx=0;xx<cw;xx++)if(md[((by+yy)*W+bx+xx)*4+3]>20)hard[yy*cw+xx]=1;
-   var fc=await window.suriLamaInpaint(crop,hard,function(msg){st.textContent='[INT8 새 설치] '+msg});
+   var fc=await window.suriLamaInpaint(crop,hard,function(msg){st.textContent='◌ 눈썹 제거 진행 중 · '+(msg.includes('모델 준비 완료')?'AI 피부 복원 처리 중…':msg)});
    result.getContext('2d').drawImage(fc,bx/dpr,by/dpr,cw/dpr,ch/dpr);
-   clearMask();st.textContent='경량 AI 복원 완료';
-  }catch(err){st.textContent='경량 AI 오류: '+(err&&err.message?err.message:String(err));console.error(err)}
+   clearMask();st.classList.remove('suri-ai-busy');st.textContent='100% · 눈썹 제거 완료';
+  }catch(err){st.classList.remove('suri-ai-busy');st.textContent='눈썹 제거 오류: '+(err&&err.message?err.message:String(err));console.error(err)}
 
  }
  document.getElementById('beRun').onclick=runAI;close();
@@ -1052,6 +1052,7 @@ body.suri-photo-erase-active #photo{image-rendering:auto!important;filter:none!i
 #suriMaskLens188{position:fixed;display:none;pointer-events:none;z-index:2147483645;width:76px;height:76px;border:2px solid white;border-radius:50%;overflow:hidden;box-shadow:0 2px 9px #0007;background:white;transform:translate(-50%,-50%)}
 #suriMaskLens188 canvas{width:72px;height:72px;display:block}
 </style>
+<style id="suri-v188-ai-progress">#beStatus.suri-ai-busy{color:#258db9!important;font-weight:600;animation:suriAiPulse 1.2s ease-in-out infinite}@keyframes suriAiPulse{0%,100%{opacity:1}50%{opacity:.5}}</style>
 <script id="suri-v188-existing-mask-lens">
 (function(){
  const stage=document.getElementById('stage'),photo=document.getElementById('photo'),mask=document.getElementById('browEraseMask'),panel=document.getElementById('browErasePanel');
