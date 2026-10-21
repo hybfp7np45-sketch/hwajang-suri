@@ -1054,37 +1054,37 @@ body.suri-photo-erase-active #photo{image-rendering:auto!important;filter:none!i
 </style>
 <script id="suri-v188-existing-mask-lens">
 (function(){
- const stage=document.getElementById('stage'),photo=document.getElementById('photo'),mask=document.getElementById('browEraseMask');
- if(!stage||!photo||!mask)return;
- const lens=document.createElement('div');lens.id='suriMaskLens188';
- const cv=document.createElement('canvas');cv.width=cv.height=144;lens.appendChild(cv);document.body.appendChild(lens);
- const ctx=cv.getContext('2d');let active=false;
- function hide(){active=false;lens.style.display='none'}
- function draw(t){
-  if(!document.body.classList.contains('suri-photo-erase-active')||!photo.naturalWidth){hide();return}
-  const sr=stage.getBoundingClientRect(),x=t.clientX-sr.left,y=t.clientY-sr.top;
-  if(x<0||y<0||x>sr.width||y>sr.height){hide();return}
-  // Use the exact inverse of the stage zoom/pan transform used by the mask brush.
-  const z=typeof zoom==='number'?zoom:1,px=typeof panX==='number'?panX:0,py=typeof panY==='number'?panY:0;
-  const wx=(x-sr.width/2-px)/z+sr.width/2,wy=(y-sr.height/2-py)/z+sr.height/2;
-  const pr=photo.getBoundingClientRect();
-  // Photo's layout box is scaled by world transform, so convert through its untransformed style box.
+ const stage=document.getElementById('stage'),photo=document.getElementById('photo'),mask=document.getElementById('browEraseMask'),panel=document.getElementById('browErasePanel');
+ if(!stage||!photo||!mask||!panel)return;
+ const lens=document.getElementById('suriMaskLens188');if(!lens)return;
+ const cv=lens.querySelector('canvas'),ctx=cv.getContext('2d');
+ let tracking=false,lastTouch=null;
+ function hide(){tracking=false;lastTouch=null;lens.style.display='none'}
+ function render(t){
+  if(!t||!document.body.classList.contains('suri-photo-erase-active')||panel.style.display!=='block'||!photo.naturalWidth){hide();return}
+  const sr=stage.getBoundingClientRect(),sx=t.clientX-sr.left,sy=t.clientY-sr.top;
+  if(sx<0||sy<0||sx>sr.width||sy>sr.height){hide();return}
+  const z=typeof zoom==='number'&&zoom>0?zoom:1,px=typeof panX==='number'?panX:0,py=typeof panY==='number'?panY:0;
+  const wx=(sx-stage.clientWidth/2-px)/z+stage.clientWidth/2,wy=(sy-stage.clientHeight/2-py)/z+stage.clientHeight/2;
   const left=parseFloat(photo.style.left)||0,top=parseFloat(photo.style.top)||0;
   const pw=parseFloat(photo.style.width)||photo.naturalWidth,ph=parseFloat(photo.style.height)||photo.naturalHeight;
-  const ix=(wx-left)/pw*photo.naturalWidth,iy=(wy-top)/ph*photo.naturalHeight;
+  const ix=(wx-left)*photo.naturalWidth/pw,iy=(wy-top)*photo.naturalHeight/ph;
+  const view=72/z,src=view*photo.naturalWidth/pw;
   ctx.clearRect(0,0,144,144);ctx.fillStyle='#fff';ctx.fillRect(0,0,144,144);
-  const sourceSize=72/Math.max(1,z)*(photo.naturalWidth/pw);
-  try{ctx.drawImage(photo,ix-sourceSize/2,iy-sourceSize/2,sourceSize,sourceSize,0,0,144,144)}catch(e){}
-  ctx.beginPath();ctx.arc(72,72,Math.max(2,(+document.getElementById('beSize').value)*1.0),0,Math.PI*2);
+  try{ctx.drawImage(photo,ix-src/2,iy-src/2,src,src,0,0,144,144)}catch(e){}
+  // Mask uses stage-local coordinates, the same as the painting tool.
+  try{ctx.save();ctx.globalAlpha=.55;ctx.drawImage(mask,wx-view/2,wy-view/2,view,view,0,0,144,144);ctx.restore()}catch(e){}
+  const size=document.getElementById('beSize'),diam=size?+size.value:22;
+  ctx.beginPath();ctx.arc(72,72,Math.max(2,diam),0,Math.PI*2);
   ctx.strokeStyle='#4caedc';ctx.lineWidth=2;ctx.stroke();
-  let lx=t.clientX+55,ly=t.clientY-90;
-  if(lx+38>innerWidth)lx=t.clientX-55;
-  if(ly-38<0)ly=t.clientY+90;
-  lens.style.left=lx+'px';lens.style.top=ly+'px';lens.style.display='block';active=true;
+  let lx=t.clientX+58,ly=t.clientY-94;
+  if(lx+40>innerWidth)lx=t.clientX-58;
+  if(ly-40<0)ly=t.clientY+94;
+  lens.style.left=lx+'px';lens.style.top=ly+'px';lens.style.display='block';
  }
- stage.addEventListener('touchstart',e=>{if(e.touches.length===1)draw(e.touches[0]);else hide()},{passive:true});
- stage.addEventListener('touchmove',e=>{if(e.touches.length===1)draw(e.touches[0]);else hide()},{passive:true});
- stage.addEventListener('touchend',e=>{if(!e.touches.length)hide()},{passive:true});
+ stage.addEventListener('touchstart',e=>{if(e.touches.length===1){tracking=true;lastTouch=e.touches[0];render(lastTouch)}else hide()},{passive:true});
+ stage.addEventListener('touchmove',e=>{if(e.touches.length===1&&tracking){lastTouch=e.touches[0];requestAnimationFrame(()=>{if(tracking)render(lastTouch)})}else hide()},{passive:true});
+ stage.addEventListener('touchend',e=>{if(e.touches.length===0)hide()},{passive:true});
  stage.addEventListener('touchcancel',hide,{passive:true});
  document.getElementById('beDone')?.addEventListener('click',hide);
  document.getElementById('magicEraseToggle')?.addEventListener('click',hide);
