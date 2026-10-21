@@ -540,7 +540,7 @@ async function runtime(progress){
   }catch(e){clearTimeout(abort);throw e}
   report('6 INT8 모델 초기화','진단 6/7: LaMa INT8 초기화 ('+Math.round(bytes.byteLength/1048576)+'MB)…');await yieldUI();
   const sess=await withTimeout(ort.InferenceSession.create(bytes,{executionProviders:['wasm'],graphOptimizationLevel:'all'}),120000,'모델 초기화');
-  report('7 모델 준비 완료','진단 7/7: 모델 준비 완료');await yieldUI();
+  report('7 모델 로드됨','진단 7/7: AI 처리 계속 진행 중…');await yieldUI();
   return sess;
  })().catch(e=>{stage('오류: '+e.message);sessionPromise=null;throw e});
  return sessionPromise;
@@ -584,7 +584,7 @@ window.suriLamaInpaint=async function(crop,mask,progress){
  var result=document.createElement('canvas');result.id='browEraseCanvas';world.appendChild(result);window.browEraseCanvas=result;
  var mask=document.createElement('canvas');mask.id='browEraseMask';world.appendChild(mask);
  var panel=document.getElementById('browErasePanel');if(panel)panel.remove();panel=document.createElement('div');panel.id='browErasePanel';
- panel.innerHTML='<div class="be-mode"><button id="beRemove" class="on">눈썹 제거</button><button id="beRestore">지우기</button></div><div class="be-row"><span>브러시</span><input id="beSize" type="range" min="2" max="70" value="22"><b id="beSizeV">22</b></div><div class="be-actions"><button id="beUndo" type="button">되돌리기</button><button id="beRun" type="button">지우기</button><button id="beDone" type="button">완료</button></div><div id="beStatus" style="font-size:10px;text-align:center;color:#777;min-height:14px"></div>';
+ panel.innerHTML='<div class="be-mode"><button id="beRemove" class="on">눈썹 제거</button><button id="beRestore">지우기</button></div><div class="be-row"><span>브러시</span><input id="beSize" type="range" min="1" max="70" value="22" step="1"><b id="beSizeV">22</b></div><div class="be-actions"><button id="beUndo" type="button">되돌리기</button><button id="beRun" type="button">지우기</button><button id="beDone" type="button">완료</button></div><div id="beStatus" style="font-size:10px;text-align:center;color:#777;min-height:14px"></div>';
  var panelSlot=document.getElementById('eraserPanelSlot');if(panelSlot)panelSlot.appendChild(panel);else document.body.appendChild(panel);var brushPreview=document.createElement('div');brushPreview.id='beBrushPreview';document.body.appendChild(brushPreview);
  var mode='remove',drawing=false,history=[],dpr=1,size=document.getElementById('beSize'),session=null; // Mask is a selection overlay, not the source photo; avoid iOS retina backing-store pressure.
  function fit(c){var w=stage.clientWidth,h=stage.clientHeight,nw=Math.round(w*dpr),nh=Math.round(h*dpr);if(c.width===nw&&c.height===nh)return;var o=document.createElement('canvas');o.width=c.width;o.height=c.height;if(c.width)o.getContext('2d').drawImage(c,0,0);c.width=nw;c.height=nh;c.style.width=w+'px';c.style.height=h+'px';var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);if(o.width)x.drawImage(o,0,0,o.width,o.height,0,0,w,h)}
@@ -593,7 +593,7 @@ window.suriLamaInpaint=async function(crop,mask,progress){
  var maskUndo=[],editUndo=[];
  function rememberMask(){fitAll();var c=mask.getContext('2d');maskUndo.push(c.getImageData(0,0,mask.width,mask.height));if(maskUndo.length>30)maskUndo.shift()}
  function restoreMask(snapshot){if(!snapshot)return;fitAll();var c=mask.getContext('2d');c.clearRect(0,0,stage.clientWidth,stage.clientHeight);c.putImageData(snapshot,0,0)}
- function open(){select(null);document.querySelectorAll('.brow').forEach(function(el){el.classList.remove('selected')});panel.style.display='block';btn.textContent='지우기 OFF';document.body.classList.add('suri-photo-erase-active');clearMask();maskUndo=[];var sheet=document.getElementById('sheet');if(sheet){sheet.dataset.erasePriorDisplay=sheet.style.display;sheet.style.display='none'}}
+ function open(){size.min='1';size.step='1';document.getElementById('beSizeV').textContent=size.value+'px (최소 1px)';select(null);document.querySelectorAll('.brow').forEach(function(el){el.classList.remove('selected')});panel.style.display='block';btn.textContent='지우기 OFF';document.body.classList.add('suri-photo-erase-active');clearMask();maskUndo=[];var sheet=document.getElementById('sheet');if(sheet){sheet.dataset.erasePriorDisplay=sheet.style.display;sheet.style.display='none'}}
  function close(){panel.style.display='none';btn.textContent='지우기 ON';drawing=false;mouseDrawing=false;touchPending=null;gestureMask=null;multiTouch=false;clearMask();maskUndo=[];document.body.classList.remove('suri-photo-erase-active');var sheet=document.getElementById('sheet');if(sheet){sheet.style.display=sheet.dataset.erasePriorDisplay||'';delete sheet.dataset.erasePriorDisplay}hideBrushPreview()}
  btn.onclick=function(e){e.preventDefault();e.stopPropagation();panel.style.display==='block'?close():open()};document.getElementById('beDone').onclick=close;
  function showBrushPreview(){var r=stage.getBoundingClientRect(),d=+size.value;brushPreview.style.width=d+'px';brushPreview.style.height=d+'px';brushPreview.style.left=(r.left+r.width/2)+'px';brushPreview.style.top=(r.top+Math.min(r.height*.55,r.height-80))+'px';brushPreview.style.display='block'} function hideBrushPreview(){brushPreview.style.display='none'} function syncBrushSize(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview()} size.oninput=syncBrushSize;size.onchange=function(){document.getElementById('beSizeV').textContent=size.value+'px';showBrushPreview();setTimeout(hideBrushPreview,650)};size.addEventListener('touchstart',showBrushPreview,{passive:true});size.addEventListener('touchend',function(){setTimeout(hideBrushPreview,650)},{passive:true});size.addEventListener('pointerdown',showBrushPreview);size.addEventListener('pointerup',function(){setTimeout(hideBrushPreview,650)});document.getElementById('beSizeV').textContent=size.value+'px';
@@ -769,6 +769,7 @@ window.suriLamaInpaint=async function(crop,mask,progress){
  }
  async function runAI(){
   var st=document.getElementById('beStatus');
+  if(st.dataset.running==='1')return;
   if(!window.suriLamaInpaint){st.textContent='경량 AI 코드 연결 실패';return}
   fit(result);
   if(mode==='restore'){st.textContent='마스크 지우기는 사진 위에서 문질러 주세요.';return}
@@ -777,7 +778,7 @@ window.suriLamaInpaint=async function(crop,mask,progress){
   for(var y=0;y<H;y++)for(var x=0;x<W;x++)if(md[(y*W+x)*4+3]>20){if(x<minx)minx=x;if(x>maxx)maxx=x;if(y<miny)miny=y;if(y>maxy)maxy=y}
   if(maxx<0){st.textContent='먼저 지울 눈썹 부분을 문질러 주세요.';return}
   try{
-   history.push(snap());maskUndo=[];st.classList.add('suri-ai-busy');st.textContent='◌ 눈썹 제거 진행 중 · AI 준비 중…';
+   history.push(snap());maskUndo=[];st.dataset.running='1';st.classList.add('suri-ai-busy');var aiStart=Date.now(),aiPhase='AI 준비 중';var aiTimer=setInterval(function(){st.textContent='◌ 눈썹 제거 진행 중 · '+aiPhase+' · '+Math.floor((Date.now()-aiStart)/1000)+'초 경과';},500);st.textContent='◌ 눈썹 제거 진행 중 · AI 준비 중…';
    await new Promise(function(r){setTimeout(r,30)});
    var brushPx=(+size.value)*dpr,M=Math.round(Math.max(30,brushPx*1.1));
    var bx=Math.max(0,minx-M),by=Math.max(0,miny-M-Math.round(110*dpr)),bx2=Math.min(W,maxx+M+1),by2=Math.min(H,maxy+M+1),cw=bx2-bx,ch=by2-by;
@@ -785,10 +786,10 @@ window.suriLamaInpaint=async function(crop,mask,progress){
    var crop=document.createElement('canvas');crop.width=cw;crop.height=ch;var cx=crop.getContext('2d');cx.setTransform(dpr,0,0,dpr,-bx,-by);cx.drawImage(photo,ox,oy,rw,rh);cx.drawImage(result,0,0,w,h);
    var hard=new Uint8Array(cw*ch);
    for(var yy=0;yy<ch;yy++)for(var xx=0;xx<cw;xx++)if(md[((by+yy)*W+bx+xx)*4+3]>20)hard[yy*cw+xx]=1;
-   var fc=await window.suriLamaInpaint(crop,hard,function(msg){st.textContent='◌ 눈썹 제거 진행 중 · '+(msg.includes('모델 준비 완료')?'AI 피부 복원 처리 중…':msg)});
+   var fc=await window.suriLamaInpaint(crop,hard,function(msg){aiPhase=msg.includes('모델 준비 완료')?'AI 피부 복원 처리 중':msg.replace(/완료/g,'처리됨')});
    result.getContext('2d').drawImage(fc,bx/dpr,by/dpr,cw/dpr,ch/dpr);
-   clearMask();st.classList.remove('suri-ai-busy');st.textContent='100% · 눈썹 제거 완료';
-  }catch(err){st.classList.remove('suri-ai-busy');st.textContent='눈썹 제거 오류: '+(err&&err.message?err.message:String(err));console.error(err)}
+   clearMask();clearInterval(aiTimer);st.dataset.running='0';st.classList.remove('suri-ai-busy');st.textContent='100% · 눈썹 제거 완료';
+  }catch(err){if(typeof aiTimer!=='undefined')clearInterval(aiTimer);st.dataset.running='0';st.classList.remove('suri-ai-busy');st.textContent='눈썹 제거 오류: '+(err&&err.message?err.message:String(err));console.error(err)}
 
  }
  document.getElementById('beRun').onclick=runAI;close();
