@@ -778,7 +778,7 @@ window.suriLamaInpaint=async function(crop,mask,progress){
   for(var y=0;y<H;y++)for(var x=0;x<W;x++)if(md[(y*W+x)*4+3]>20){if(x<minx)minx=x;if(x>maxx)maxx=x;if(y<miny)miny=y;if(y>maxy)maxy=y}
   if(maxx<0){st.textContent='먼저 지울 눈썹 부분을 문질러 주세요.';return}
   try{
-   history.push(snap());maskUndo=[];st.dataset.running='1';st.classList.add('suri-ai-busy');var aiStart=Date.now(),aiPhase='AI 준비 중';var aiTimer=setInterval(function(){st.textContent='◌ 눈썹 제거 진행 중 · '+aiPhase+' · '+Math.floor((Date.now()-aiStart)/1000)+'초 경과';},500);st.textContent='◌ 눈썹 제거 진행 중 · AI 준비 중 · 0초 경과';
+   history.push(snap());maskUndo=[];st.dataset.running='1';st.classList.add('suri-ai-busy');var aiStart=Date.now(),aiPhase='AI 준비 중';var aiTimer=setInterval(function(){st.textContent='◌ 눈썹 제거 진행 중 · '+aiPhase;},500);st.textContent='◌ 눈썹 제거 진행 중 · AI 준비 중';
    await new Promise(function(r){setTimeout(r,30)});
    var brushPx=(+size.value)*dpr,M=Math.round(Math.max(30,brushPx*1.1));
    var bx=Math.max(0,minx-M),by=Math.max(0,miny-M-Math.round(110*dpr)),bx2=Math.min(W,maxx+M+1),by2=Math.min(H,maxy+M+1),cw=bx2-bx,ch=by2-by;
@@ -1050,8 +1050,8 @@ window.suriProcessLoadedPhoto=processPhoto;
 <style id="suri-v188-photo-detail-and-mask-lens">
 /* Keep original image element as the zoom source; avoid extra rasterized previews. */
 body.suri-photo-erase-active #photo{image-rendering:auto!important;filter:none!important}
-#suriMaskLens188{position:fixed;display:none;pointer-events:none;z-index:2147483645;width:76px;height:76px;border:2px solid white;border-radius:50%;overflow:hidden;box-shadow:0 2px 9px #0007;background:white;transform:translate(-50%,-50%)}
-#suriMaskLens188 canvas{width:72px;height:72px;display:block}
+#suriMaskLens188{position:fixed;display:none;pointer-events:none;z-index:2147483645;width:124px;height:124px;border:2px solid white;border-radius:50%;overflow:hidden;box-shadow:0 2px 9px #0007;background:white;transform:translate(-50%,-50%)}
+#suriMaskLens188 canvas{width:120px;height:120px;display:block}
 </style>
 <style id="suri-v188-ai-progress">#beStatus.suri-ai-busy{color:#258db9!important;font-weight:600;animation:suriAiPulse 1.2s ease-in-out infinite}@keyframes suriAiPulse{0%,100%{opacity:1}50%{opacity:.5}}</style>
 <script id="suri-v188-existing-mask-lens">
@@ -1060,7 +1060,7 @@ body.suri-photo-erase-active #photo{image-rendering:auto!important;filter:none!i
  if(!stage||!photo||!mask||!panel)return;
  let lens=document.getElementById('suriMaskLens188');if(!lens){lens=document.createElement('div');lens.id='suriMaskLens188';const canvas=document.createElement('canvas');canvas.width=canvas.height=144;lens.appendChild(canvas);document.body.appendChild(lens)}
  const cv=lens.querySelector('canvas'),ctx=cv.getContext('2d');
- let tracking=false,lastTouch=null;
+ let tracking=false,lastTouch=null,framePending=false;
  function hide(){tracking=false;lastTouch=null;lens.style.display='none'}
  function render(t){
   if(!t||!photo.naturalWidth||document.getElementById('magicEraseToggle')?.textContent?.includes('ON')){hide();return}
@@ -1071,7 +1071,7 @@ body.suri-photo-erase-active #photo{image-rendering:auto!important;filter:none!i
   const left=parseFloat(photo.style.left)||0,top=parseFloat(photo.style.top)||0;
   const pw=parseFloat(photo.style.width)||photo.naturalWidth,ph=parseFloat(photo.style.height)||photo.naturalHeight;
   const ix=(wx-left)*photo.naturalWidth/pw,iy=(wy-top)*photo.naturalHeight/ph;
-  const view=72/z,src=view*photo.naturalWidth/pw;
+  const view=60/z,src=view*photo.naturalWidth/pw;
   ctx.clearRect(0,0,144,144);ctx.fillStyle='#fff';ctx.fillRect(0,0,144,144);
   try{ctx.drawImage(photo,ix-src/2,iy-src/2,src,src,0,0,144,144)}catch(e){}
   // Mask uses stage-local coordinates, the same as the painting tool.
@@ -1079,13 +1079,11 @@ body.suri-photo-erase-active #photo{image-rendering:auto!important;filter:none!i
   const size=document.getElementById('beSize'),diam=size?+size.value:22;
   ctx.beginPath();ctx.arc(72,72,Math.max(2,diam),0,Math.PI*2);
   ctx.strokeStyle='#4caedc';ctx.lineWidth=2;ctx.stroke();
-  let lx=t.clientX+58,ly=t.clientY-94;
-  if(lx+40>innerWidth)lx=t.clientX-58;
-  if(ly-40<0)ly=t.clientY+94;
+  let lx=Math.min(innerWidth-64,Math.max(64,t.clientX+82)),ly=Math.min(innerHeight-64,Math.max(64,t.clientY-128));
   lens.style.left=lx+'px';lens.style.top=ly+'px';lens.style.display='block';
  }
  document.addEventListener('touchstart',e=>{if(e.touches.length===1&&stage.contains(e.target)){tracking=true;lastTouch=e.touches[0];render(lastTouch)}else hide()},{passive:true});
- document.addEventListener('touchmove',e=>{if(e.touches.length===1&&tracking){lastTouch=e.touches[0];requestAnimationFrame(()=>{if(tracking)render(lastTouch)})}else hide()},{passive:true});
+ document.addEventListener('touchmove',e=>{if(e.touches.length===1&&tracking){lastTouch={clientX:e.touches[0].clientX,clientY:e.touches[0].clientY};if(!framePending){framePending=true;requestAnimationFrame(()=>{framePending=false;if(tracking)render(lastTouch)})}}else hide()},{passive:true});
  document.addEventListener('touchend',e=>{if(e.touches.length===0)hide()},{passive:true});
  document.addEventListener('touchcancel',hide,{passive:true});
  document.getElementById('beDone')?.addEventListener('click',hide);
