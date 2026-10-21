@@ -447,7 +447,7 @@ async function saveComposite(){
  }catch(e){alert('사진 저장을 완료하지 못했어요. 다시 시도해 주세요.')}
 }
 $('#save').onclick=saveComposite;renderLayers();
-const colorbar=$('#colorbar'),colorpicker=$('#colorpicker'),colors=$('#colors');function savedColors(){try{return JSON.parse(localStorage.getItem('hwajang-brow-colors')||'[]')}catch(e){return[]}}function renderColors(){[...colors.querySelectorAll('.swatch')].forEach(x=>x.remove());savedColors().forEach(c=>{const b=document.createElement('button');b.className='swatch';b.style.background=c;b.dataset.c=c;colors.appendChild(b)})}function setBrowColor(c){globalUndoSnapshotV185();if(!selected||selected.dataset.name.includes('엠보'))return;selected.dataset.color=c;apply(selected)}function openOpacityPanel(e){if(e){e.preventDefault();e.stopPropagation()}if(!selected)return;layers.classList.remove('show');colorbar.classList.add('show');const iv=$('#intensity');iv.value=selected.dataset.intensity||100;$('#intensityVal').textContent=iv.value+'%'}const colorBtn=$('#colorbtn');colorpicker.oninput=e=>setBrowColor(e.target.value);const intensity=$('#intensity');intensity.oninput=e=>{if(!selected)return;globalUndoSnapshotV185();selected.dataset.intensity=e.target.value;$('#intensityVal').textContent=e.target.value+'%';apply(selected)};colors.onclick=e=>{const b=e.target.closest('.swatch');if(b)setBrowColor(b.dataset.c)};$('#savecolor').onclick=()=>{const c=colorpicker.value,a=savedColors();if(!a.includes(c)){a.unshift(c);localStorage.setItem('hwajang-brow-colors',JSON.stringify(a.slice(0,10)));renderColors()}};renderColors();</script><div id="build-badge-v5" style="position:fixed;right:8px;top:8px;z-index:99999;background:#111;color:#fff;font:11px/1.2 sans-serif;padding:4px 6px;border-radius:6px;opacity:.72">V18.8 · AI 제거됨</div><div class="camview" id="camview"><video id="camvideo" autoplay playsinline muted></video><div class="grid" id="grid"></div><button class="camclose" id="camclose">닫기</button><button class="gridbtn" id="gridbtn">Guide ON</button><button class="flipcam" id="flipcam" aria-label="카메라 전환">↻</button><div class="camctl"><button class="shot" id="shot" aria-label="촬영"></button></div><canvas id="camcanvas" hidden></canvas></div><script>let stream=null,facing='environment',camZoom=1,camPinch=null,currentDeviceId=null;const cv=$('#camview'),video=$('#camvideo'),grid=$('#grid');
+const colorbar=$('#colorbar'),colorpicker=$('#colorpicker'),colors=$('#colors');function savedColors(){try{return JSON.parse(localStorage.getItem('hwajang-brow-colors')||'[]')}catch(e){return[]}}function renderColors(){[...colors.querySelectorAll('.swatch')].forEach(x=>x.remove());savedColors().forEach(c=>{const b=document.createElement('button');b.className='swatch';b.style.background=c;b.dataset.c=c;colors.appendChild(b)})}function setBrowColor(c){globalUndoSnapshotV185();if(!selected||selected.dataset.name.includes('엠보'))return;selected.dataset.color=c;apply(selected)}function openOpacityPanel(e){if(e){e.preventDefault();e.stopPropagation()}if(!selected)return;layers.classList.remove('show');colorbar.classList.add('show');const iv=$('#intensity');iv.value=selected.dataset.intensity||100;$('#intensityVal').textContent=iv.value+'%'}const colorBtn=$('#colorbtn');colorpicker.oninput=e=>setBrowColor(e.target.value);const intensity=$('#intensity');intensity.oninput=e=>{if(!selected)return;globalUndoSnapshotV185();selected.dataset.intensity=e.target.value;$('#intensityVal').textContent=e.target.value+'%';apply(selected)};colors.onclick=e=>{const b=e.target.closest('.swatch');if(b)setBrowColor(b.dataset.c)};$('#savecolor').onclick=()=>{const c=colorpicker.value,a=savedColors();if(!a.includes(c)){a.unshift(c);localStorage.setItem('hwajang-brow-colors',JSON.stringify(a.slice(0,10)));renderColors()}};renderColors();</script><div id="build-badge-v5" style="position:fixed;right:8px;top:8px;z-index:99999;background:#111;color:#fff;font:11px/1.2 sans-serif;padding:4px 6px;border-radius:6px;opacity:.72">V18.8 · INT8 새 설치</div><div class="camview" id="camview"><video id="camvideo" autoplay playsinline muted></video><div class="grid" id="grid"></div><button class="camclose" id="camclose">닫기</button><button class="gridbtn" id="gridbtn">Guide ON</button><button class="flipcam" id="flipcam" aria-label="카메라 전환">↻</button><div class="camctl"><button class="shot" id="shot" aria-label="촬영"></button></div><canvas id="camcanvas" hidden></canvas></div><script>let stream=null,facing='environment',camZoom=1,camPinch=null,currentDeviceId=null;const cv=$('#camview'),video=$('#camvideo'),grid=$('#grid');
 function applyCamZoom(){video.style.transform='scale('+camZoom+')'}
 async function stopCamStream(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;await new Promise(r=>setTimeout(r,120))}
 async function cameraDevices(){try{return (await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput')}catch(_){return[]}}
@@ -488,7 +488,96 @@ body.suri-photo-erase-active .brow::before,body.suri-photo-erase-active .brow::a
 body.suri-photo-erase-active .brow .rh,body.suri-photo-erase-active .brow .rh::after,body.suri-photo-erase-active .brow [data-h]{display:none!important;visibility:hidden!important}
 body.suri-photo-erase-active #editbar,body.suri-photo-erase-active #colorbar,body.suri-photo-erase-active #layers,body.suri-photo-erase-active #sheet{display:none!important;visibility:hidden!important;pointer-events:none!important}
 body.suri-photo-erase-active #browEraseMask{z-index:3!important}body.suri-photo-erase-active #browEraseCanvas{z-index:2!important}body.suri-photo-erase-active .brow{z-index:12!important}
-</style><script id="brow-eraser-ai-v4">
+</style><script id="v188-clean-int8-lama">/* V18.7 LaMa browser inference: process original photo/result only, never .brow overlays. */
+(function(){
+let sessionPromise=null;
+const DIAG='suri_lama_int8_clean_v188';
+window.suriLamaDiagVersion='INT8-CLEAN-20261022';
+function stage(name){try{localStorage.setItem(DIAG,JSON.stringify({stage:name,at:Date.now()}))}catch(e){}}
+function lastStage(){try{const d=JSON.parse(localStorage.getItem(DIAG)||'null');return d&&Date.now()-d.at<3600000?d.stage:null}catch(e){return null}}
+async function runtime(progress){
+ const report=(name,msg)=>{stage(name);progress(msg)};
+ const yieldUI=()=>new Promise(resolve=>setTimeout(resolve,35));
+ const withTimeout=(p,ms,label)=>Promise.race([p,new Promise((_,reject)=>setTimeout(()=>reject(Error(label+' 시간 초과 ('+Math.round(ms/1000)+'초)')),ms))]);
+ if(!sessionPromise)sessionPromise=(async()=>{
+  if(!window.ort){
+   report('1 라이브러리 다운로드','진단 1/7: 실행 라이브러리 다운로드…');await yieldUI();
+   await withTimeout(new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.min.js';script.onload=resolve;script.onerror=()=>reject(Error('실행 라이브러리 다운로드 실패'));document.head.appendChild(script)}),30000,'라이브러리');
+  }
+  report('2 WASM 환경 설정','진단 2/7: WASM 실행 환경 설정…');
+  ort.env.wasm.wasmPaths='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/';
+  ort.env.wasm.numThreads=1;await yieldUI();
+  const url='https://huggingface.co/g-ronimo/lama/resolve/main/lama_512_int8.onnx';
+  report('3 모델 서버 연결','진단 3/7: 모델 서버 연결 중…');await yieldUI();
+  const controller=new AbortController();
+  const abort=setTimeout(()=>controller.abort(),60000);
+  let response;
+  try{response=await fetch(url,{signal:controller.signal,cache:'no-store'});}
+  catch(e){clearTimeout(abort);throw Error('모델 연결 실패: '+e.message+' (네트워크/CORS 확인)')}
+  if(!response.ok){clearTimeout(abort);throw Error('모델 서버 HTTP '+response.status)}
+  const total=Number(response.headers.get('content-length'))||0;
+  if(total>100*1048576){clearTimeout(abort);try{await response.body?.cancel()}catch(e){}throw Error('경량 모델이 아닙니다: '+Math.round(total/1048576)+'MB 다운로드 차단');}
+  report('4 모델 파일 수신','진단 4/7: 모델 다운로드 시작'+(total?' ('+Math.round(total/1048576)+'MB)':'')+'…');await yieldUI();
+  let bytes;
+  try{
+   if(response.body&&response.body.getReader){
+    const reader=response.body.getReader(),chunks=[];let loaded=0,last=0;
+    while(true){
+     const {done,value}=await reader.read();if(done)break;
+     chunks.push(value);loaded+=value.byteLength;if(loaded>100*1048576){await reader.cancel();throw Error('100MB 초과 다운로드 차단');}
+     const now=Date.now();
+     if(now-last>500){last=now;report('4 다운로드 '+Math.round(loaded/1048576)+'MB'+(total?'/'+Math.round(total/1048576)+'MB':''),'진단 4/7: 다운로드 '+Math.round(loaded/1048576)+'MB'+(total?'/'+Math.round(total/1048576)+'MB':'')+'…');await yieldUI();}
+    }
+    clearTimeout(abort);
+    report('5 모델 데이터 병합','진단 5/7: 다운로드 완료, 모델 데이터 병합 ('+Math.round(loaded/1048576)+'MB)…');await yieldUI();
+    bytes=new Uint8Array(loaded);let offset=0;
+    for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
+   }else{
+    const buffer=await response.arrayBuffer();clearTimeout(abort);
+    bytes=new Uint8Array(buffer);
+    report('5 모델 다운로드 완료','진단 5/7: 다운로드 완료 ('+Math.round(bytes.byteLength/1048576)+'MB)…');await yieldUI();
+   }
+  }catch(e){clearTimeout(abort);throw e}
+  report('6 INT8 모델 초기화','진단 6/7: LaMa INT8 초기화 ('+Math.round(bytes.byteLength/1048576)+'MB)…');await yieldUI();
+  const sess=await withTimeout(ort.InferenceSession.create(bytes,{executionProviders:['wasm'],graphOptimizationLevel:'all'}),120000,'모델 초기화');
+  report('7 모델 준비 완료','진단 7/7: 모델 준비 완료');await yieldUI();
+  return sess;
+ })().catch(e=>{stage('오류: '+e.message);sessionPromise=null;throw e});
+ return sessionPromise;
+}
+window.suriLamaInpaint=async function(crop,mask,progress){
+ const prev=lastStage();progress(prev&&prev!=='모델 준비 완료'?'이전 실행 마지막 단계: '+prev+' / 다시 진단 중…':'AI 실행 진단 시작…');
+ const session=await runtime(progress);
+ stage('AI 추론 준비');progress('AI 모델 준비 완료. 피부 복원 처리 중…');
+ const S=512,c=document.createElement('canvas');c.width=c.height=S;
+ const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(crop,0,0,S,S);
+ const rgba=ctx.getImageData(0,0,S,S);
+ const mc=document.createElement('canvas');mc.width=mc.height=S;
+ const mx=mc.getContext('2d',{willReadFrequently:true});
+ const originalMask=document.createElement('canvas');originalMask.width=crop.width;originalMask.height=crop.height;
+ const om=originalMask.getContext('2d');const md=om.createImageData(crop.width,crop.height);
+ for(let i=0;i<mask.length;i++){md.data[i*4]=255;md.data[i*4+1]=255;md.data[i*4+2]=255;md.data[i*4+3]=mask[i]?255:0}
+ om.putImageData(md,0,0);mx.drawImage(originalMask,0,0,S,S);
+ const maskData=mx.getImageData(0,0,S,S).data;
+ const image=new Float32Array(4*S*S);
+ for(let i=0;i<S*S;i++){const hole=maskData[i*4+3]>35?1:0;image[3*S*S+i]=hole;for(let ch=0;ch<3;ch++)image[ch*S*S+i]=hole?0:rgba.data[i*4+ch]/255}
+ progress('AI가 피부를 복원하는 중…');
+ const input={input:new ort.Tensor('float32',image,[1,4,S,S])};
+ const output=await session.run(input);
+ const values=output[session.outputNames[0]].data;
+ const result=ctx.createImageData(S,S);
+ for(let i=0;i<S*S;i++){for(let ch=0;ch<3;ch++)result.data[i*4+ch]=Math.max(0,Math.min(255,values[ch*S*S+i]*255));result.data[i*4+3]=255}
+ const predicted=document.createElement('canvas');predicted.width=predicted.height=S;predicted.getContext('2d').putImageData(result,0,0);
+ const full=document.createElement('canvas');full.width=crop.width;full.height=crop.height;full.getContext('2d').drawImage(predicted,0,0,full.width,full.height);
+ const out=full.getContext('2d').getImageData(0,0,full.width,full.height);
+ const orig=crop.getContext('2d').getImageData(0,0,crop.width,crop.height);
+ const blended=new Uint8ClampedArray(out.data.length);
+ for(let i=0;i<mask.length;i++){const a=mask[i]?255:0;for(let ch=0;ch<3;ch++)blended[i*4+ch]=out.data[i*4+ch];blended[i*4+3]=a}
+ const fc=document.createElement('canvas');fc.width=crop.width;fc.height=crop.height;
+ fc.getContext('2d').putImageData(new ImageData(blended,crop.width,crop.height),0,0);
+ return fc;
+};
+})();</script><script id="brow-eraser-ai-v4">
 (function(){
  var stage=document.getElementById('stage'),world=document.getElementById('world'),photo=document.getElementById('photo'),btn=document.getElementById('magicEraseToggle');if(!stage||!world||!photo||!btn)return;
  var old=document.getElementById('browEraseCanvas');if(old)old.remove();var oldm=document.getElementById('browEraseMask');if(oldm)oldm.remove();
@@ -680,7 +769,27 @@ body.suri-photo-erase-active #browEraseMask{z-index:3!important}body.suri-photo-
  }
  async function runAI(){
   var st=document.getElementById('beStatus');
-  st.textContent='AI 눈썹 제거 기능을 비활성화했습니다. 모델 다운로드는 실행되지 않습니다.';
+  if(!window.suriLamaInpaint){st.textContent='경량 AI 코드 연결 실패';return}
+  fit(result);
+  if(mode==='restore'){st.textContent='마스크 지우기는 사진 위에서 문질러 주세요.';return}
+  var W=mask.width,H=mask.height;if(!W||!H)return;
+  var md=mask.getContext('2d').getImageData(0,0,W,H).data,minx=W,miny=H,maxx=-1,maxy=-1;
+  for(var y=0;y<H;y++)for(var x=0;x<W;x++)if(md[(y*W+x)*4+3]>20){if(x<minx)minx=x;if(x>maxx)maxx=x;if(y<miny)miny=y;if(y>maxy)maxy=y}
+  if(maxx<0){st.textContent='먼저 지울 눈썹 부분을 문질러 주세요.';return}
+  try{
+   history.push(snap());maskUndo=[];st.textContent='[INT8 새 설치] 경량 AI 준비 중…';
+   await new Promise(function(r){setTimeout(r,30)});
+   var brushPx=(+size.value)*dpr,M=Math.round(Math.max(30,brushPx*1.1));
+   var bx=Math.max(0,minx-M),by=Math.max(0,miny-M-Math.round(110*dpr)),bx2=Math.min(W,maxx+M+1),by2=Math.min(H,maxy+M+1),cw=bx2-bx,ch=by2-by;
+   var w=stage.clientWidth,h=stage.clientHeight,iw=photo.naturalWidth,ih=photo.naturalHeight,sc=Math.min(w/iw,h/ih),rw=iw*sc,rh=ih*sc,ox=(w-rw)/2,oy=(h-rh)/2;
+   var crop=document.createElement('canvas');crop.width=cw;crop.height=ch;var cx=crop.getContext('2d');cx.setTransform(dpr,0,0,dpr,-bx,-by);cx.drawImage(photo,ox,oy,rw,rh);cx.drawImage(result,0,0,w,h);
+   var hard=new Uint8Array(cw*ch);
+   for(var yy=0;yy<ch;yy++)for(var xx=0;xx<cw;xx++)if(md[((by+yy)*W+bx+xx)*4+3]>20)hard[yy*cw+xx]=1;
+   var fc=await window.suriLamaInpaint(crop,hard,function(msg){st.textContent='[INT8 새 설치] '+msg});
+   result.getContext('2d').drawImage(fc,bx/dpr,by/dpr,cw/dpr,ch/dpr);
+   clearMask();st.textContent='경량 AI 복원 완료';
+  }catch(err){st.textContent='경량 AI 오류: '+(err&&err.message?err.message:String(err));console.error(err)}
+
  }
  document.getElementById('beRun').onclick=runAI;close();
 })();
