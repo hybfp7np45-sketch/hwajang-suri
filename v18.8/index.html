@@ -1061,7 +1061,7 @@ body.suri-photo-erase-active #photo{image-rendering:auto!important;filter:none!i
  let tracking=false,lastTouch=null;
  function hide(){tracking=false;lastTouch=null;lens.style.display='none'}
  function render(t){
-  if(!t||panel.style.display!=='block'||!photo.naturalWidth){hide();return}
+  if(!t||!photo.naturalWidth||document.getElementById('magicEraseToggle')?.textContent?.includes('ON')){hide();return}
   const sr=stage.getBoundingClientRect(),sx=t.clientX-sr.left,sy=t.clientY-sr.top;
   if(sx<0||sy<0||sx>sr.width||sy>sr.height){hide();return}
   const z=typeof zoom==='number'&&zoom>0?zoom:1,px=typeof panX==='number'?panX:0,py=typeof panY==='number'?panY:0;
@@ -1082,10 +1082,10 @@ body.suri-photo-erase-active #photo{image-rendering:auto!important;filter:none!i
   if(ly-40<0)ly=t.clientY+94;
   lens.style.left=lx+'px';lens.style.top=ly+'px';lens.style.display='block';
  }
- stage.addEventListener('touchstart',e=>{if(e.touches.length===1){tracking=true;lastTouch=e.touches[0];render(lastTouch)}else hide()},{passive:true});
- stage.addEventListener('touchmove',e=>{if(e.touches.length===1&&tracking){lastTouch=e.touches[0];requestAnimationFrame(()=>{if(tracking)render(lastTouch)})}else hide()},{passive:true});
- stage.addEventListener('touchend',e=>{if(e.touches.length===0)hide()},{passive:true});
- stage.addEventListener('touchcancel',hide,{passive:true});
+ document.addEventListener('touchstart',e=>{if(e.touches.length===1&&stage.contains(e.target)){tracking=true;lastTouch=e.touches[0];render(lastTouch)}else hide()},{passive:true});
+ document.addEventListener('touchmove',e=>{if(e.touches.length===1&&tracking){lastTouch=e.touches[0];requestAnimationFrame(()=>{if(tracking)render(lastTouch)})}else hide()},{passive:true});
+ document.addEventListener('touchend',e=>{if(e.touches.length===0)hide()},{passive:true});
+ document.addEventListener('touchcancel',hide,{passive:true});
  document.getElementById('beDone')?.addEventListener('click',hide);
  document.getElementById('magicEraseToggle')?.addEventListener('click',hide);
 })();
