@@ -595,7 +595,14 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
    hole[di]=mask[si];done[di]=!hole[di]?1:0;
    for(let c=0;c<4;c++)src[di*4+c]=dst[di*4+c]=rgba[si*4+c];
   }
+  // V18.7: sample only from a clean skin band ABOVE the entire painted eyebrow region.
+  // This prevents unpainted eyebrow hairs from being dragged into a partial erase.
+  let top=h,bottom=0,left=w,right=0;
+  for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++)if(hole[yy*w+xx]){top=Math.min(top,yy);bottom=Math.max(bottom,yy);left=Math.min(left,xx);right=Math.max(right,xx)}
   const patch=2,step=3,search=Math.max(18,Math.min(90,Math.round(Math.max(w,h)*.23)));
+  const skinGap=Math.max(7,Math.round((bottom-top+1)*.4));
+  const cleanSkin=(xx,yy)=>yy+patch<top-skinGap && xx>=patch && xx<w-patch && yy>=patch && yy<h-patch;
+  const cleanPatch=(xx,yy)=>{if(!cleanSkin(xx,yy))return false;for(let dy=-patch;dy<=patch;dy++)for(let dx=-patch;dx<=patch;dx++)if(hole[(yy+dy)*w+xx+dx])return false;return true};
   const isValid=(x,y)=>x>=patch&&y>=patch&&x<w-patch&&y<h-patch;
   let remaining=hole.reduce((a,b)=>a+b,0),passes=0;
   while(remaining>0&&passes++<Math.max(w,h)){
@@ -612,7 +619,7 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
     const trials=70;
     for(let t=0;t<trials;t++){
      const angle=t*2.39996323,rad=6+search*Math.sqrt((t+.5)/trials),sx=Math.round(x+Math.cos(angle)*rad),sy=Math.round(y+Math.sin(angle)*rad);
-     if(!isValid(sx,sy)||hole[sy*w+sx])continue;
+     if(!isValid(sx,sy)||!cleanPatch(sx,sy))continue;
      let err=0,count=0;
      for(let dy=-patch;dy<=patch;dy++)for(let dx=-patch;dx<=patch;dx++){
       const ax=x+dx,ay=y+dy,bx=sx+dx,by=sy+dy;
@@ -635,6 +642,8 @@ $('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.
      done[di]=1;remaining--;
     }
    }
+   // If there is no verified clean skin, do not copy eyebrow-colored neighbors.
+   // Leave unresolved pixels unchanged rather than producing dark streaks.
    // Sparse fallback: fill boundary pixels from their closest known skin pixel.
    if(passes>2&&remaining>0&&frontier.every(i=>!done[i])){
     for(const i of frontier){let j=-1;for(const n of [i-1,i+1,i-w,i+w])if(done[n]){j=n;break}if(j<0)continue;
