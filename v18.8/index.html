@@ -509,7 +509,8 @@ async function runtime(progress){
   ort.env.wasm.wasmPaths='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/';
   ort.env.wasm.numThreads=1;await yieldUI();
   const url='https://huggingface.co/g-ronimo/lama/resolve/main/lama_512_int8.onnx';
-  report('3 모델 서버 연결','진단 3/7: 모델 서버 연결 중…');await yieldUI();
+  const modelLabel='LaMa 512 INT8 (약 62MB)';
+  report('3 INT8 모델 서버 연결','진단 3/7: '+modelLabel+' 연결 중…');await yieldUI();
   const controller=new AbortController();
   const abort=setTimeout(()=>controller.abort(),60000);
   let response;
@@ -517,6 +518,7 @@ async function runtime(progress){
   catch(e){clearTimeout(abort);throw Error('모델 연결 실패: '+e.message+' (네트워크/CORS 확인)')}
   if(!response.ok){clearTimeout(abort);throw Error('모델 서버 HTTP '+response.status)}
   const total=Number(response.headers.get('content-length'))||0;
+  if(total>100*1048576){clearTimeout(abort);try{await response.body?.cancel()}catch(e){}throw Error('안전 차단: 경량 모델 대신 '+Math.round(total/1048576)+'MB 파일이 응답했습니다.');}
   report('4 모델 파일 수신','진단 4/7: 모델 다운로드 시작'+(total?' ('+Math.round(total/1048576)+'MB)':'')+'…');await yieldUI();
   let bytes;
   try{
@@ -525,6 +527,7 @@ async function runtime(progress){
     while(true){
      const {done,value}=await reader.read();if(done)break;
      chunks.push(value);loaded+=value.byteLength;
+     if(loaded>100*1048576){await reader.cancel();throw Error('안전 차단: 실제 다운로드가 100MB를 초과했습니다.');}
      const now=Date.now();
      if(now-last>500){last=now;report('4 다운로드 '+Math.round(loaded/1048576)+'MB'+(total?'/'+Math.round(total/1048576)+'MB':''),'진단 4/7: 다운로드 '+Math.round(loaded/1048576)+'MB'+(total?'/'+Math.round(total/1048576)+'MB':'')+'…');await yieldUI();}
     }
@@ -538,7 +541,8 @@ async function runtime(progress){
     report('5 모델 다운로드 완료','진단 5/7: 다운로드 완료 ('+Math.round(bytes.byteLength/1048576)+'MB)…');await yieldUI();
    }
   }catch(e){clearTimeout(abort);throw e}
-  report('6 모델 세션 초기화','진단 6/7: ONNX 모델 초기화 중 ('+Math.round(bytes.byteLength/1048576)+'MB)…');await yieldUI();
+  if(bytes.byteLength>100*1048576)throw Error('안전 차단: 모델 크기가 100MB를 초과했습니다.');
+  report('6 INT8 모델 세션 초기화','진단 6/7: '+modelLabel+' 초기화 중 (실제 '+Math.round(bytes.byteLength/1048576)+'MB)…');await yieldUI();
   const sess=await withTimeout(ort.InferenceSession.create(bytes,{executionProviders:['wasm'],graphOptimizationLevel:'all'}),120000,'모델 초기화');
   report('7 모델 준비 완료','진단 7/7: 모델 준비 완료');await yieldUI();
   return sess;
