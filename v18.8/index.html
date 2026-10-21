@@ -1061,7 +1061,7 @@ body.suri-photo-erase-active #photo{image-rendering:auto!important;filter:none!i
  let tracking=false,lastTouch=null;
  function hide(){tracking=false;lastTouch=null;lens.style.display='none'}
  function render(t){
-  if(!t||!document.body.classList.contains('suri-photo-erase-active')||panel.style.display!=='block'||!photo.naturalWidth){hide();return}
+  if(!t||panel.style.display!=='block'||!photo.naturalWidth){hide();return}
   const sr=stage.getBoundingClientRect(),sx=t.clientX-sr.left,sy=t.clientY-sr.top;
   if(sx<0||sy<0||sx>sr.width||sy>sr.height){hide();return}
   const z=typeof zoom==='number'&&zoom>0?zoom:1,px=typeof panX==='number'?panX:0,py=typeof panY==='number'?panY:0;
