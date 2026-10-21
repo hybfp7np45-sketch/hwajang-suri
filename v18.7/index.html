@@ -488,7 +488,7 @@ body.suri-photo-erase-active .brow::before,body.suri-photo-erase-active .brow::a
 body.suri-photo-erase-active .brow .rh,body.suri-photo-erase-active .brow .rh::after,body.suri-photo-erase-active .brow [data-h]{display:none!important;visibility:hidden!important}
 body.suri-photo-erase-active #editbar,body.suri-photo-erase-active #colorbar,body.suri-photo-erase-active #layers,body.suri-photo-erase-active #sheet{display:none!important;visibility:hidden!important;pointer-events:none!important}
 body.suri-photo-erase-active #browEraseMask{z-index:3!important}body.suri-photo-erase-active #browEraseCanvas{z-index:2!important}body.suri-photo-erase-active .brow{z-index:12!important}
-</style><script id="brow-eraser-ai-v4">
+</style><script src="./lama-inpaint.js"></script><script id="brow-eraser-ai-v4">
 (function(){
  var stage=document.getElementById('stage'),world=document.getElementById('world'),photo=document.getElementById('photo'),btn=document.getElementById('magicEraseToggle');if(!stage||!world||!photo||!btn)return;
  var old=document.getElementById('browEraseCanvas');if(old)old.remove();var oldm=document.getElementById('browEraseMask');if(oldm)oldm.remove();
@@ -695,11 +695,8 @@ body.suri-photo-erase-active #browEraseMask{z-index:3!important}body.suri-photo-
    var crop=document.createElement('canvas');crop.width=cw;crop.height=ch;var cx=crop.getContext('2d');cx.setTransform(dpr,0,0,dpr,-bx,-by);cx.drawImage(photo,ox,oy,rw,rh);cx.drawImage(result,0,0,w,h);
    var id=cx.getImageData(0,0,cw,ch),hard=new Uint8Array(cw*ch);
    for(var yy=0;yy<ch;yy++)for(var xx=0;xx<cw;xx++)if(md[((by+yy)*W+bx+xx)*4+3]>20)hard[yy*cw+xx]=1;
-   eraseStep='피부 채우기 계산';var res=suriFillMask(id.data,hard,cw,ch,Math.max(3,Math.min(16,Math.round(brushPx*.35))));
-   var od=new Uint8ClampedArray(cw*ch*4);
-   for(var i=0;i<cw*ch;i++){od[i*4]=res.rgba[i*4];od[i*4+1]=res.rgba[i*4+1];od[i*4+2]=res.rgba[i*4+2];od[i*4+3]=Math.round(res.alpha[i]*255)}
-   eraseStep='결과 이미지 생성';var fc=document.createElement('canvas');fc.width=cw;fc.height=ch;fc.getContext('2d').putImageData(new ImageData(od,cw,ch),0,0);
-   eraseStep='결과 적용';result.getContext('2d').drawImage(fc,bx/dpr,by/dpr,cw/dpr,ch/dpr);
+   eraseStep='AI 피부 복원';var fc=await window.suriLamaInpaint(crop,hard,function(msg){st.textContent=msg});
+   eraseStep='AI 결과 적용';result.getContext('2d').drawImage(fc,bx/dpr,by/dpr,cw/dpr,ch/dpr);
    clearMask();st.textContent='완료';
   }catch(err){st.textContent='지우기 오류 ['+eraseStep+']: '+(err&&err.name?err.name:'Error')+' / '+(err&&err.message?err.message:'알 수 없는 오류');console.error('brow erase failed at',eraseStep,err)}
  }
