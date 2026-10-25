@@ -57,9 +57,80 @@ const palettes={'톤업':[['피치톤업','#f5b9a6'],['핑크톤업','#efb0b9'],
 let panelOpen=false;let group='톤업',selected={'톤업':0,'베이스':0,'포인트':0},photoURL=null;
 function render(){document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(panelOpen&&t.dataset.group===group)));$('color-panel').setAttribute('aria-labelledby',document.querySelector('.tab[data-group="'+group+'"]').id);$('selection').textContent=group+' · '+palettes[group][selected[group]][0];$('colors').replaceChildren(...palettes[group].map(([name,color],i)=>{let b=document.createElement('button');b.className='swatch';b.setAttribute('aria-label',name);b.setAttribute('aria-pressed',String(i===selected[group]));let chip=document.createElement('span');chip.className='chip';chip.style.setProperty('--c',color);let label=document.createElement('span');label.textContent=name;b.append(chip,label);b.onclick=()=>{selected[group]=i;render()};return b}));}
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{group=t.dataset.group;panelOpen=true;$('color-panel').hidden=false;render();$('colors').scrollLeft=0});render();
-$('upload').onclick=()=>{$('picker').hidden=false};$('cancelPick').onclick=()=>{$('picker').hidden=true};$('picker').onclick=e=>{if(e.target===$('picker'))$('picker').hidden=true};
-for(const [button,input] of [['pickPhotos','photos'],['pickFiles','files']]){$(button).onclick=()=>{$('picker').hidden=true;$(input).click()};$(input).onchange=()=>{const f=$(input).files[0];if(f)showPhoto(f);$(input).value=''};}
-function showPhoto(blob){const u=URL.createObjectURL(blob);const img=$('photo');img.onload=()=>{if(photoURL)URL.revokeObjectURL(photoURL);photoURL=u;resetView();img.style.display='block';$('empty').hidden=true;$('photoLabel').hidden=false};img.onerror=()=>{URL.revokeObjectURL(u);alert('사진을 열 수 없어요. 다른 사진을 선택해 주세요.')};img.src=u;}
+const P=$('photo');
+function releasePreviousPhotoURL(){
+ if(photoURL){URL.revokeObjectURL(photoURL);photoURL=null}
+}
+function photoErrorMessage(f,detail){
+ const type=(f.type||'알 수 없음'),name=(f.name||'사진'),size=Math.round((f.size||0)/1024);
+ alert('사진을 불러오지 못했어요.\\n파일: '+name+'\\n형식: '+type+' / '+size+'KB\\n단계: '+detail+'\\n갤럭시에서 JPG 또는 PNG로 저장한 사진으로 다시 시도해 주세요.');
+}
+async function loadHEICConverter(){
+ if(typeof window.heic2any==='function')return window.heic2any;
+ if(!window._heicConverterPromise){
+  window._heicConverterPromise=new Promise((resolve,reject)=>{
+   const script=document.createElement('script');
+   script.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+   script.onload=()=>typeof window.heic2any==='function'?resolve(window.heic2any):reject(new Error('변환기 초기화 실패'));
+   script.onerror=()=>reject(new Error('변환기 다운로드 실패 (네트워크 또는 카카오톡 브라우저 차단)'));
+   document.head.appendChild(script);
+  }).catch(err=>{window._heicConverterPromise=null;throw err});
+ }
+ return window._heicConverterPromise;
+}
+async function showBlob(f){
+ if(!f||!f.size){photoErrorMessage(f||{},'파일 데이터가 비어 있음');return}
+ const ext=(f.name||'').split('.').pop().toLowerCase();
+ if(['heic','heif'].includes(ext)||/heic|heif/i.test(f.type)){
+  try{
+   const convert=await loadHEICConverter();
+   const output=await convert({blob:f,toType:'image/jpeg',quality:0.92});
+   const jpeg=Array.isArray(output)?output[0]:output;
+   if(!jpeg||!jpeg.size)throw new Error('변환된 이미지가 비어 있음');
+   f=new File([jpeg],(f.name||'photo').replace(/\.(heic|heif)$/i,'')+'.jpg',{type:'image/jpeg'});
+  }catch(err){photoErrorMessage(f,'HEIC JPG 자동변환 실패: '+(err&&err.message||err));return}
+ }
+ const tempURL=URL.createObjectURL(f);
+ const probe=new Image();
+ probe.onload=()=>{
+  if(!probe.naturalWidth||!probe.naturalHeight){URL.revokeObjectURL(tempURL);photoErrorMessage(f,'이미지 크기 확인 실패');return}
+  const oldURL=photoURL;
+  P.onload=()=>{try{resetLoadedPhoto()}catch(err){alert('사진 표시 후 오류: '+(err&&err.message||err))}if(oldURL)URL.revokeObjectURL(oldURL)};
+  P.onerror=()=>{URL.revokeObjectURL(tempURL);photoErrorMessage(f,'화면 이미지 표시 실패')};
+  photoURL=tempURL;P.src=tempURL;
+ };
+ probe.onerror=()=>{
+  URL.revokeObjectURL(tempURL);
+  // Data URL fallback for Android in-app browsers.
+  const reader=new FileReader();
+  reader.onload=()=>{
+   const img=new Image();
+   img.onload=()=>{P.onload=()=>{try{resetLoadedPhoto()}catch(err){alert('사진 표시 후 오류: '+(err&&err.message||err))}releasePreviousPhotoURL()};P.onerror=()=>photoErrorMessage(f,'DataURL 화면 표시 실패');P.src=reader.result};
+   img.onerror=()=>photoErrorMessage(f,'Blob URL 및 DataURL 디코딩 실패');
+   img.src=reader.result;
+  };
+  reader.onerror=()=>photoErrorMessage(f,'파일 읽기 실패');
+  reader.readAsDataURL(f);
+ };
+ probe.src=tempURL;
+}
+async function load(f){if(!f)return;try{await showBlob(f)}catch(e){photoErrorMessage(f,'예외: '+(e&&e.message||e))}}
+$('upload').onclick=()=>{const i=$('photos');i.value='';try{if(typeof i.showPicker==='function'){i.showPicker();return}}catch(_){}i.click()};
+$('pickPhotos').onclick=async()=>{$('picker').hidden=true;
+ try{
+  if(window.showOpenFilePicker){
+   const [h]=await showOpenFilePicker({multiple:false,types:[{description:'사진',accept:{'image/*':['.jpg','.jpeg','.png','.heic','.webp']}}]});
+   if(h){const f=await h.getFile();load(f)}
+  }else{$('photos').click()}
+ }catch(e){if(e&&e.name!=='AbortError')$('photos').click()}
+};
+$('pickFiles').onclick=()=>{$('picker').hidden=true;const i=$('files');i.value='';try{if(typeof i.showPicker==='function'){i.showPicker();return}}catch(_){}i.click()};
+$('cancelPick').onclick=()=>{$('picker').hidden=true};$('photos').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)load(f);e.target.value=''};$('files').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)load(f);e.target.value=''};
+
+function resetLoadedPhoto(){resetView();P.style.display='block';$('empty').hidden=true;$('photoLabel').hidden=false;}
+function showPhoto(blob){return showBlob(blob)}
+$('picker').onclick=e=>{if(e.target===$('picker'))$('picker').hidden=true};
+
 let stream=null,facing='environment',camZoom=1,camPinch=null,currentDeviceId=null;const cv=$('camview'),video=$('camvideo'),grid=$('grid');
 function applyCamZoom(){video.style.transform='scale('+camZoom+')'}
 async function stopCamStream(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;await new Promise(r=>setTimeout(r,120))}
