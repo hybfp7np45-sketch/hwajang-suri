@@ -24,29 +24,103 @@ header{height:58px;gap:9px;padding:8px 13px;justify-content:flex-start;backgroun
 .colors{gap:12px;padding:5px 14px 12px}.swatch{color:#947a86}.swatch[aria-pressed=true]{color:#c66d8f}
 .swatch[aria-pressed=true] .chip{outline-color:#e39bb5}
 .note{display:none}.sheet button{background:#fff0f5}.sheet button:last-child{color:#997f8c}
+
+.camview{position:fixed;inset:0;background:#000;z-index:999999;display:none}
+.camview.show{display:block}
+.camview video,.camview canvas{width:100%;height:100%;object-fit:cover}
+.camview video{transform-origin:center center;will-change:transform}
+.camview{border:0!important;outline:0!important}
+.camview:after{display:none!important}
+.grid{position:absolute;inset:0;pointer-events:none;display:none;background:linear-gradient(to right,transparent calc(25% - .18px),rgba(255,255,255,.62) calc(25% - .18px),rgba(255,255,255,.62) calc(25% + .18px),transparent calc(25% + .18px),transparent calc(50% - .45px),rgba(255,255,255,.92) calc(50% - .45px),rgba(255,255,255,.92) calc(50% + .45px),transparent calc(50% + .45px),transparent calc(75% - .18px),rgba(255,255,255,.62) calc(75% - .18px),rgba(255,255,255,.62) calc(75% + .18px),transparent calc(75% + .18px)),linear-gradient(to bottom,transparent calc(33.333% - .18px),rgba(255,255,255,.62) calc(33.333% - .18px),rgba(255,255,255,.62) calc(33.333% + .18px),transparent calc(33.333% + .18px))}
+.grid.on{display:block}
+.grid:after{content:'';position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border:.7px solid rgba(255,255,255,.9);border-radius:50%}
+.camctl{position:absolute;left:0;right:0;bottom:calc(30px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:18px}
+.camctl button{width:58px;height:58px;border-radius:50%;border:2px solid #fff;background:#ffffff33;color:#fff;font-size:22px}
+.camctl .shot{background:#fff;border:6px solid #ffffff66}
+.camclose{position:absolute;top:22px;left:18px;border:0;background:#0006;color:#fff;border-radius:18px;padding:6px 10px;font-size:13px}
+.gridbtn{position:absolute;top:22px;right:18px;border:1px solid #fff8;background:#0006;color:#fff;border-radius:18px;padding:6px 10px;font-size:13px}
+.flipcam{position:absolute;right:22px;bottom:calc(35px + env(safe-area-inset-bottom));width:50px;height:50px;border-radius:50%;border:1px solid #fff8;background:#0006;color:#fff;font-size:24px}
+.stage{touch-action:none;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
+.stage img{transform-origin:center center;will-change:transform;pointer-events:none;-webkit-user-drag:none}
+.camview{touch-action:none;overscroll-behavior:none}
+.camview .camclose,.camview .gridbtn{top:calc(22px + env(safe-area-inset-top))}
+#color-panel{bottom:calc(76px + env(safe-area-inset-bottom))}
 </style></head><body>
 <main class="app"><header><button class="tool" id="camera" aria-label="촬영"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 7.3 8.7 5h6.6l1.5 2.3H19a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.3a2 2 0 0 1 2-2h2.2Z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button><button class="tool" id="upload" aria-label="사진 불러오기"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.2"/><path d="M5.7 19c.5-4 2.8-6 6.3-6s5.8 2 6.3 6"/></svg></button><button class="tool save" id="save" aria-label="저장"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m8.5 11.5 3.5 3.5 3.5-3.5"/><path d="M5 19h14"/></svg></button></header>
 <section class="stage" aria-label="사진 미리보기"><div class="empty" id="empty"><svg viewBox="0 0 64 64"><rect x="9" y="7" width="46" height="50" rx="9"/><circle cx="24" cy="23" r="5"/><path d="m10 48 15-15 10 10 9-9 11 12"/></svg>사진을 촬영하거나<br>사진을 불러오세요</div><img id="photo" alt="불러온 고객 사진"><span class="photo-label" id="photoLabel" hidden>원본 사진</span></section>
 <section class="panel"><div class="tabs" role="tablist" aria-label="입술 컬러 영역"><button class="tab" id="tab-tone" role="tab" aria-selected="false" aria-controls="color-panel" data-group="톤업">톤업</button><button class="tab" id="tab-base" role="tab" aria-selected="false" aria-controls="color-panel" data-group="베이스">베이스</button><button class="tab" id="tab-point" role="tab" aria-selected="false" aria-controls="color-panel" data-group="포인트">포인트</button></div><div id="color-panel" hidden role="tabpanel" aria-labelledby="tab-tone"><div class="selection"><strong id="selection"></strong><span>컬러를 선택해 보세요</span></div><div class="colors" id="colors"></div></div><p class="note">컬러 선택 화면 · 입술 색상 적용은 다음 단계에서 추가됩니다</p></section></main>
 <input type="file" accept="image/*" id="photos" hidden><input type="file" accept="image/*" id="files" hidden>
 <div class="overlay" id="picker" hidden><div class="sheet" role="dialog" aria-modal="true" aria-label="사진 불러오기"><button id="pickPhotos">사진 불러오기</button><button id="pickFiles">파일 불러오기</button><button id="cancelPick">취소</button></div></div>
-<div class="camera" id="camView" hidden><div class="cam-head"><button id="closeCam">닫기</button><span>촬영</span><button id="flipCam">전·후면 전환</button></div><video id="video" autoplay muted playsinline></video><div class="status" id="camStatus"></div><div class="cam-foot"><button id="shutter" aria-label="사진 촬영"></button></div></div>
-<script>
+<div class="camview" id="camview"><video id="camvideo" autoplay playsinline muted></video><div class="grid" id="grid"></div><button class="camclose" id="camclose">닫기</button><button class="gridbtn" id="gridbtn">Guide ON</button><button class="flipcam" id="flipcam" aria-label="카메라 전환">↻</button><div class="camctl"><button class="shot" id="shot" aria-label="촬영"></button></div><canvas id="camcanvas" hidden></canvas></div><script>
 const $=id=>document.getElementById(id);
 const palettes={'톤업':[['피치톤업','#f5b9a6'],['핑크톤업','#efb0b9'],['살몬톤업','#ee9c8e'],['코랄톤업','#f1a18a'],['로즈톤업','#d99aa5'],['누드톤업','#dfb4a7']],'베이스':[['립베이스','#eec3b8'],['연핑크','#d9899c'],['로즈','#b96176'],['살구','#da9484'],['코랄','#de8173'],['누드','#ba8b80'],['모브','#ac7a91']],'포인트':[['핑크','#d65c88'],['로즈레드','#bb405b'],['체리','#b92c4e'],['레드','#c73e45'],['코랄레드','#df6253'],['플럼','#843d60'],['버건디','#783247']]};
-let panelOpen=false;let group='톤업',selected={'톤업':0,'베이스':0,'포인트':0},photoURL=null,stream=null,facing='environment';
+let panelOpen=false;let group='톤업',selected={'톤업':0,'베이스':0,'포인트':0},photoURL=null;
 function render(){document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(panelOpen&&t.dataset.group===group)));$('color-panel').setAttribute('aria-labelledby',document.querySelector('.tab[data-group="'+group+'"]').id);$('selection').textContent=group+' · '+palettes[group][selected[group]][0];$('colors').replaceChildren(...palettes[group].map(([name,color],i)=>{let b=document.createElement('button');b.className='swatch';b.setAttribute('aria-label',name);b.setAttribute('aria-pressed',String(i===selected[group]));let chip=document.createElement('span');chip.className='chip';chip.style.setProperty('--c',color);let label=document.createElement('span');label.textContent=name;b.append(chip,label);b.onclick=()=>{selected[group]=i;render()};return b}));}
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{group=t.dataset.group;panelOpen=true;$('color-panel').hidden=false;render();$('colors').scrollLeft=0});render();
 $('upload').onclick=()=>{$('picker').hidden=false};$('cancelPick').onclick=()=>{$('picker').hidden=true};$('picker').onclick=e=>{if(e.target===$('picker'))$('picker').hidden=true};
 for(const [button,input] of [['pickPhotos','photos'],['pickFiles','files']]){$(button).onclick=()=>{$('picker').hidden=true;$(input).click()};$(input).onchange=()=>{const f=$(input).files[0];if(f)showPhoto(f);$(input).value=''};}
-function showPhoto(blob){const u=URL.createObjectURL(blob);const img=$('photo');img.onload=()=>{if(photoURL)URL.revokeObjectURL(photoURL);photoURL=u;img.style.display='block';$('empty').hidden=true;$('photoLabel').hidden=false};img.onerror=()=>{URL.revokeObjectURL(u);alert('사진을 열 수 없어요. 다른 사진을 선택해 주세요.')};img.src=u;}
-function stopStream(){if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;$('video').srcObject=null;}
-async function startCamera(target){stopStream();let next;try{next=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{exact:target},width:{ideal:1280},height:{ideal:1600}}})}catch(e){next=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:target},width:{ideal:1280},height:{ideal:1600}}})}stream=next;$('video').srcObject=stream;await $('video').play();facing=target;}
-function closeCamera(){stopStream();$('camView').hidden=true;}
-$('camera').onclick=async()=>{$('camView').hidden=false;$('camStatus').textContent='카메라를 여는 중…';try{await startCamera(facing);$('camStatus').textContent=''}catch(e){closeCamera();alert('카메라를 열 수 없어요. 카메라 권한을 확인해 주세요.')}};
-$('closeCam').onclick=closeCamera;$('flipCam').onclick=async()=>{try{await startCamera(facing==='user'?'environment':'user')}catch(e){$('camStatus').textContent='카메라 전환을 완료하지 못했어요.'}};
-$('shutter').onclick=()=>{const v=$('video');if(!v.videoWidth)return;const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);c.toBlob(b=>{if(b){showPhoto(b);closeCamera()}},'image/jpeg',.98)};
+function showPhoto(blob){const u=URL.createObjectURL(blob);const img=$('photo');img.onload=()=>{if(photoURL)URL.revokeObjectURL(photoURL);photoURL=u;resetView();img.style.display='block';$('empty').hidden=true;$('photoLabel').hidden=false};img.onerror=()=>{URL.revokeObjectURL(u);alert('사진을 열 수 없어요. 다른 사진을 선택해 주세요.')};img.src=u;}
+let stream=null,facing='environment',camZoom=1,camPinch=null,currentDeviceId=null;const cv=$('camview'),video=$('camvideo'),grid=$('grid');
+function applyCamZoom(){video.style.transform='scale('+camZoom+')'}
+async function stopCamStream(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;await new Promise(r=>setTimeout(r,120))}
+async function cameraDevices(){try{return (await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput')}catch(_){return[]}}
+async function requestFacing(target){
+ await stopCamStream();
+ let s=null;
+ try{s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:target},width:{ideal:1280},height:{ideal:1600}},audio:false})}catch(_){}
+ if(!s){try{s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:target},width:{ideal:1280},height:{ideal:1600}},audio:false})}catch(_){}}
+ return s
+}
+async function openCam(){
+ cv.style.display='block';cv.classList.add('show');$('gridbtn').textContent=grid.classList.contains('on')?'Guide OFF':'Guide ON';
+ try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('mediaDevices unavailable');stream=await requestFacing(facing);if(!stream)throw new Error('camera unavailable');video.srcObject=stream;video.setAttribute('playsinline','');video.muted=true;await video.play();currentDeviceId=stream.getVideoTracks()[0]?.getSettings?.().deviceId||null;camZoom=1;applyCamZoom()}catch(err){alert('카메라를 열 수 없어요. 카메라 권한을 확인해 주세요.');closeCam()}
+}
+$('camera').onclick=openCam;
+$('flipcam').onclick=async e=>{e.preventDefault();e.stopPropagation();const target=facing==='environment'?'user':'environment';try{
+ const oldId=currentDeviceId;let next=await requestFacing(target);
+ if(next){let id=next.getVideoTracks()[0]?.getSettings?.().deviceId||null;if(id&&oldId&&id===oldId){next.getTracks().forEach(t=>t.stop());next=null}}
+ if(!next){const devs=await cameraDevices();const candidates=devs.filter(d=>d.deviceId&&d.deviceId!==oldId);if(candidates.length){const wanted=candidates.find(d=>target==='user'?/front|user|전면/i.test(d.label):/back|rear|environment|후면/i.test(d.label))||candidates[0];next=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:wanted.deviceId},width:{ideal:1280},height:{ideal:1600}},audio:false})}}
+ if(!next)throw new Error('no alternate camera');stream=next;facing=target;video.srcObject=stream;await video.play();currentDeviceId=stream.getVideoTracks()[0]?.getSettings?.().deviceId||null;camZoom=1;applyCamZoom()
+ }catch(err){alert('이 기기에서 전·후면 카메라 전환을 완료하지 못했어요. 카메라 권한을 확인해 주세요.')}}
+$('gridbtn').onclick=()=>{grid.classList.toggle('on');$('gridbtn').textContent=grid.classList.contains('on')?'Guide OFF':'Guide ON'};
+function closeCam(){cv.classList.remove('show');cv.style.display='none';video.style.transform='scale(1)';stopCamStream()}$('camclose').onclick=closeCam;
+video.addEventListener('touchstart',e=>{if(e.touches.length===2){const a=e.touches[0],b=e.touches[1];camPinch={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),z:camZoom};e.preventDefault()}},{passive:false});
+video.addEventListener('touchmove',e=>{if(e.touches.length===2&&camPinch){const a=e.touches[0],b=e.touches[1],d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);camZoom=Math.max(1,Math.min(4,camPinch.z*d/camPinch.d));applyCamZoom();e.preventDefault()}},{passive:false});
+video.addEventListener('touchend',e=>{if(e.touches.length<2)camPinch=null},{passive:false});
+$('shot').onclick=()=>{const c=$('camcanvas'),ctx=c.getContext('2d'),vw=video.videoWidth,vh=video.videoHeight;c.width=vw;c.height=vh;const sw=vw/camZoom,sh=vh/camZoom,sx=(vw-sw)/2,sy=(vh-sh)/2;ctx.drawImage(video,sx,sy,sw,sh,0,0,vw,vh);c.toBlob(blob=>{showPhoto(blob);closeCam()},'image/jpeg',.94)};
+
 $('save').onclick=async()=>{if(!photoURL){alert('사진을 먼저 불러오거나 촬영해 주세요.');return}const blob=await fetch(photoURL).then(r=>r.blob());const name='hwajang-suri-lip-'+Date.now()+'.jpg';const f=new File([blob],name,{type:blob.type});if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]})}catch(e){if(e.name!=='AbortError')download()} }else download();function download(){const a=document.createElement('a');a.href=photoURL;a.download=name;a.click()}};
-$('photo').addEventListener('click',()=>{panelOpen=false;$('color-panel').hidden=true;render()});
-window.addEventListener('pagehide',stopStream);document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('picker').hidden=true;closeCamera()}});
+
+window.addEventListener('pagehide',()=>stopCamStream());document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('picker').hidden=true;closeCam()}});
+
+const stage=document.querySelector('.stage'),touches=new Map(),gestureMoved=new Map();
+let zoom=1,panX=0,panY=0,pinch=null,lastTap=0;
+function setWorld(){$('photo').style.transform='translate('+panX+'px,'+panY+'px) scale('+zoom+')'}
+function resetView(){zoom=1;panX=0;panY=0;pinch=null;touches.clear();gestureMoved.clear();setWorld()}
+stage.addEventListener('pointerdown',e=>{
+ if(!photoURL)return;
+ touches.set(e.pointerId,{x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY});gestureMoved.set(e.pointerId,false);
+ try{stage.setPointerCapture(e.pointerId)}catch(_){}
+ if(touches.size===2){
+ const p=[...touches.values()],dx=p[1].x-p[0].x,dy=p[1].y-p[0].y;
+ pinch={dist:Math.max(1,Math.hypot(dx,dy)),zoom,panX,panY,cx:(p[0].x+p[1].x)/2,cy:(p[0].y+p[1].y)/2};lastTap=0;e.preventDefault();
+ }
+});
+stage.addEventListener('pointermove',e=>{
+ const t=touches.get(e.pointerId);if(!t)return;t.x=e.clientX;t.y=e.clientY;
+ if(Math.hypot(t.x-t.startX,t.y-t.startY)>7)gestureMoved.set(e.pointerId,true);
+ if(touches.size===2&&pinch){
+ const p=[...touches.values()],dist=Math.max(1,Math.hypot(p[1].x-p[0].x,p[1].y-p[0].y));
+ const cx=(p[0].x+p[1].x)/2,cy=(p[0].y+p[1].y)/2;
+ zoom=Math.max(1,Math.min(4,pinch.zoom*dist/pinch.dist));panX=pinch.panX+(cx-pinch.cx);panY=pinch.panY+(cy-pinch.cy);setWorld();e.preventDefault();
+ }
+});
+function endPhotoPointer(e){
+ const wasTwo=!!pinch||touches.size>1,moved=gestureMoved.get(e.pointerId);
+ touches.delete(e.pointerId);gestureMoved.delete(e.pointerId);if(touches.size<2)pinch=null;
+ if(!wasTwo&&!moved&&e.type!=='pointercancel'){const now=Date.now();if(now-lastTap<330){panelOpen=false;$('color-panel').hidden=true;render();lastTap=0}else lastTap=now}else lastTap=0;
+}
+stage.addEventListener('pointerup',endPhotoPointer);stage.addEventListener('pointercancel',endPhotoPointer);
+stage.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+['contextmenu','selectstart','dragstart'].forEach(ev=>stage.addEventListener(ev,e=>e.preventDefault()));
 </script></body></html>
