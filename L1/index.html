@@ -105,7 +105,7 @@ async function showBlob(f){
   const reader=new FileReader();
   reader.onload=()=>{
    const img=new Image();
-   img.onload=()=>{P.onload=()=>{try{resetLoadedPhoto()}catch(err){alert('사진 표시 후 오류: '+(err&&err.message||err))}releasePreviousPhotoURL()};P.onerror=()=>photoErrorMessage(f,'DataURL 화면 표시 실패');P.src=reader.result};
+   img.onload=()=>{P.onload=()=>{try{resetLoadedPhoto()}catch(err){alert('사진 표시 후 오류: '+(err&&err.message||err))}releasePreviousPhotoURL();photoURL=P.src};P.onerror=()=>photoErrorMessage(f,'DataURL 화면 표시 실패');P.src=reader.result};
    img.onerror=()=>photoErrorMessage(f,'Blob URL 및 DataURL 디코딩 실패');
    img.src=reader.result;
   };
