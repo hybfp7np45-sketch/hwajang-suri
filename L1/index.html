@@ -45,6 +45,18 @@ header{height:58px;gap:9px;padding:8px 13px;justify-content:flex-start;backgroun
 .camview{touch-action:none;overscroll-behavior:none}
 .camview .camclose,.camview .gridbtn{top:calc(22px + env(safe-area-inset-top))}
 #color-panel{bottom:calc(76px + env(safe-area-inset-bottom))}
+
+/* L1 top-pinned lip controls: expand colors downward over the upper photo. */
+.app{padding-bottom:env(safe-area-inset-bottom)}
+header{order:0;flex-shrink:0}
+.panel{order:1;flex-shrink:0;height:48px;padding:0;z-index:5;border-bottom:1px solid #f1e5eb}
+.tabs{height:48px;gap:0;padding:0 13px;align-items:stretch}
+.tab{flex:1;min-width:0;width:auto;height:48px;border:0;border-radius:0;background:#fff;color:#9d8790;font-size:14px;padding:0 10px;position:relative}
+.tab[aria-selected=true]{background:#fff;color:#d57d9f;border:0}
+.tab[aria-selected=true]:after{display:block;content:"";position:absolute;left:32%;right:32%;bottom:0;height:3px;border-radius:3px;background:#e7a1bc}
+#color-panel{top:100%;bottom:auto;left:0;right:0;border-radius:0 0 22px 22px;box-shadow:0 8px 22px #7b4c5d14;padding-top:9px}
+#color-panel:before{display:none}
+.stage{order:2;max-height:calc(100% - 122px);width:min(calc(100vw - 16px),calc((100dvh - 122px - env(safe-area-inset-top) - env(safe-area-inset-bottom))*.8))}
 </style></head><body>
 <main class="app"><header><button class="tool" id="camera" aria-label="촬영"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 7.3 8.7 5h6.6l1.5 2.3H19a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.3a2 2 0 0 1 2-2h2.2Z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button><button class="tool" id="upload" aria-label="사진 불러오기"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.2"/><path d="M5.7 19c.5-4 2.8-6 6.3-6s5.8 2 6.3 6"/></svg></button><button class="tool save" id="save" aria-label="저장"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m8.5 11.5 3.5 3.5 3.5-3.5"/><path d="M5 19h14"/></svg></button></header>
 <section class="stage" aria-label="사진 미리보기"><div class="empty" id="empty"><svg viewBox="0 0 64 64"><rect x="9" y="7" width="46" height="50" rx="9"/><circle cx="24" cy="23" r="5"/><path d="m10 48 15-15 10 10 9-9 11 12"/></svg>사진을 촬영하거나<br>사진을 불러오세요</div><img id="photo" alt="불러온 고객 사진"><span class="photo-label" id="photoLabel" hidden>원본 사진</span></section>
