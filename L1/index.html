@@ -354,6 +354,14 @@ function blendLipOutline(rgba,w,h,outside,inside){
  }
  return result;
 }
+function softenLipAlphaAgain(rgba,w,h,sigma){
+ const radius=Math.max(1,Math.ceil(sigma*3)),kernel=new Float32Array(radius*2+1),tmp=new Float32Array(w*h),out=new Uint8ClampedArray(rgba);let sum=0;
+ for(let k=-radius;k<=radius;k++){const v=Math.exp(-(k*k)/(2*sigma*sigma));kernel[k+radius]=v;sum+=v}
+ for(let i=0;i<kernel.length;i++)kernel[i]/=sum;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){let v=0;for(let k=-radius;k<=radius;k++){const xx=x+k;if(xx>=0&&xx<w)v+=rgba[(y*w+xx)*4+3]*kernel[k+radius]}tmp[y*w+x]=v}
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){let v=0;for(let k=-radius;k<=radius;k++){const yy=y+k;if(yy>=0&&yy<h)v+=tmp[yy*w+x]*kernel[k+radius]}out[(y*w+x)*4+3]=Math.round(v)}
+ return out;
+}
 function paintLips(){
  if(!lipState.points||!P.naturalWidth)return;
  const w=P.naturalWidth,h=P.naturalHeight,points=lipState.points,out=$('lipOverlay'),ctx=out.getContext('2d');ctx.clearRect(0,0,w,h);
@@ -364,8 +372,8 @@ function paintLips(){
  const makeMask=()=>{const c=document.createElement('canvas');c.width=rw;c.height=rh;return c};
  const outer=makeMask(),m=outer.getContext('2d');m.beginPath();lipPolygon(m,LIP_OUTER,points,w,h,x0,y0);m.fillStyle='#fff';m.fill();
  const rawOuter=m.getImageData(0,0,rw,rh).data;
- const outsideFade=Math.max(1,Math.min(lipWidth*.018,lipHeight*.085)),insideFade=Math.max(1,Math.min(lipWidth*.008,lipHeight*.04));
- const softOuter=blendLipOutline(rawOuter,rw,rh,outsideFade,insideFade);
+ const outsideFade=Math.max(1,Math.min(lipWidth*.0306,lipHeight*.1445)),insideFade=Math.max(1,Math.min(lipWidth*.0136,lipHeight*.068));
+ const softOuter=softenLipAlphaAgain(blendLipOutline(rawOuter,rw,rh,outsideFade,insideFade),rw,rh,Math.max(1,Math.min(lipWidth*.004,lipHeight*.018)));
  const inner=makeMask(),ic=inner.getContext('2d');ic.fillStyle='#fff';ic.fillRect(0,0,rw,rh);ic.globalCompositeOperation='destination-out';ic.beginPath();lipPolygon(ic,LIP_INNER,points,w,h,x0,y0);ic.fill();
  const softInner=featherLipMask(ic.getImageData(0,0,rw,rh).data,rw,rh,Math.max(1,lipWidth*.007));
  const c=makeMask(),z=c.getContext('2d');z.drawImage(P,x0,y0,rw,rh,0,0,rw,rh);const pixels=z.getImageData(0,0,rw,rh),data=pixels.data;
