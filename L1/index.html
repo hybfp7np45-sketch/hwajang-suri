@@ -98,7 +98,7 @@ header{order:0;flex-shrink:0}
 #colors .swatch{flex:0 0 calc((100% - 40px)/6);min-width:0;gap:5px;font-size:9px;line-height:1.35}
 #colors .chip{width:100%;height:auto;aspect-ratio:1;border-radius:12px}
 #colors .swatch>span:last-child{display:block;width:100%;min-width:0}
-#colors .swatch>span:last-child>span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:9px;line-height:1.45}
+#colors .swatch>span:last-child>span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:8px;line-height:1.4;letter-spacing:-.2px}
 #colors .swatch[aria-pressed=true] .chip:after{font-size:23px}
 .selection{padding:10px 14px 8px}
 </style><style>
@@ -427,14 +427,16 @@ function paintLips(){
   let alpha=softOuter[i+3]/255*softInner[i+3]/255;if(alpha===0){data[i+3]=0;continue}
   const lum=data[i]*.2126+data[i+1]*.7152+data[i+2]*.0722;
   for(const {kind,rgb,y} of layers){
-   let amount=strength*(kind==='토너'?.46:kind==='베이스'?.76:.86);
+   // Every tab reaches full pigment coverage at 100%, including toner.
+   const coverage=kind==='토너'?.62:kind==='베이스'?.82:.9;
+   let amount=strength*(coverage+(.98-coverage)*strength*strength);
    if(kind==='포인트'){const py=Math.floor(i/4/rw)+y0,cy=(points[13].y+points[14].y)*h/2;amount*=Math.max(.3,1-Math.abs(py-cy)/Math.max(1,lipHeight*.7))}
    // Preserve fine luminance differences and specular highlights from the original.
    // Keep the photo's shading and temper very bright pigment swatches.
-   const pigmentLum=mean+(y-mean)*.55;
+   const pigmentLum=mean+(y-mean)*.88;
    const targetLum=Math.max(0,Math.min(255,pigmentLum+(lum-mean)*.96));
-   const chromaScale=.82;
-   const highlight=Math.max(0,Math.min(1,(lum-mean-24)/65));amount*=1-highlight*.38;
+   const chromaScale=.74;
+   const highlight=Math.max(0,Math.min(1,(lum-mean-24)/65));amount*=1-highlight*.16;
    for(let k=0;k<3;k++){const target=Math.max(0,Math.min(255,(rgb[k]-y)*chromaScale+targetLum));data[i+k]=Math.round(data[i+k]*(1-amount)+target*amount)}
   }
   data[i+3]=Math.round(alpha*255);
