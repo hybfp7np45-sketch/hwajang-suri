@@ -152,6 +152,22 @@ header{order:0;flex-shrink:0}
 </style><style id="palette-brand-headings">
 #catalog .catalog-brand{grid-column:1/-1;margin:8px 0 0;padding:9px 2px 6px;border-bottom:1px solid #efdde5;color:#a96e88;font-size:14px;font-weight:700;line-height:1.4}
 #catalog .catalog-brand:first-child{margin-top:0}
+</style><style id="blend-compact">
+.lip-blend-dialog{gap:4px;padding-top:calc(6px + env(safe-area-inset-top))}
+.lip-blend-dialog header{justify-content:space-between;height:38px}
+.blend-header-actions{display:flex;gap:6px;margin-left:auto}
+.blend-top{padding:3px 0;gap:6px}
+#blendEmpty{margin:4px 0;line-height:1.4}
+.blend-ratio{font-size:11px;min-height:0;line-height:1.3;margin:0}
+.blend-ratio:empty,#blendMessage:empty{display:none}
+.blend-drop-editor{padding:6px 8px}
+.blend-drop-editor>span{margin-bottom:3px}
+.blend-drop-editor>div{gap:6px}
+.blend-palette-title{padding-top:6px;display:flex;align-items:center;gap:8px}
+.blend-palette-title small{display:inline;margin:0}
+#blendPalette{padding:2px;gap:10px 7px}
+#blendChosen .swatch{gap:2px}
+#blendChosen small{line-height:1.2}
 </style></head><body>
 <main class="app"><header><button class="tool" id="camera" aria-label="촬영"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 7.3 8.7 5h6.6l1.5 2.3H19a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.3a2 2 0 0 1 2-2h2.2Z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button><button class="tool" id="upload" aria-label="사진 불러오기"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.2"/><path d="M5.7 19c.5-4 2.8-6 6.3-6s5.8 2 6.3 6"/></svg></button><button class="tool save" id="save" aria-label="저장"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m8.5 11.5 3.5 3.5 3.5-3.5"/><path d="M5 19h14"/></svg></button></header>
 <section class="stage" aria-label="사진 미리보기"><div class="empty" id="empty"><svg viewBox="0 0 64 64"><rect x="9" y="7" width="46" height="50" rx="9"/><circle cx="24" cy="23" r="5"/><path d="m10 48 15-15 10 10 9-9 11 12"/></svg>사진을 촬영하거나<br>사진을 불러오세요</div><img id="photo" alt="불러온 고객 사진"><div id="photoGrid" class="grid"></div><canvas id="lipOverlay" aria-hidden="true"></canvas><svg id="lipBoundary" aria-label="입술 경계 조정" xmlns="http://www.w3.org/2000/svg"></svg><button class="lip-retry" id="lipRetry" hidden>다시 인식</button><button class="lip-compare" id="lipCompare" hidden aria-pressed="false">원본 비교</button><span class="photo-label" id="photoLabel" hidden>원본 사진</span></section>
@@ -731,15 +747,16 @@ const sampleStage=document.querySelector('.stage');sampleStage.addEventListener(
 $('photoGridToggle').onclick=()=>{const on=$('photoGrid').classList.toggle('on');$('photoGridToggle').textContent='격자 '+(on?'ON':'OFF');$('photoGridToggle').setAttribute('aria-pressed',String(on))};syncMyPalette();
 
 </script><section id="lipBlendDialog" class="lip-blend-dialog" hidden role="dialog" aria-modal="true" aria-label="컬러 블랜딩">
- <header><strong>블랜딩</strong><button id="blendClose">닫기</button></header>
+ <header><strong>블랜딩</strong><div class="blend-header-actions"><button id="blendClose">닫기</button><button id="blendComplete">완료</button></div></header>
  <div class="blend-top"><div class="blend-chosen-wrap"><div id="blendChosen"></div><p id="blendEmpty">아래 내 팔레트에서<br>컬러를 선택해 주세요</p></div><span class="blend-equals">＝</span><button id="blendResult" class="blend-result" disabled><span class="chip"></span><span>완성 · 적용</span></button></div>
  <div id="blendRatio" class="blend-ratio"></div>
  <div id="blendDropEditor" class="blend-drop-editor" hidden><span id="blendDropName"></span><div><button id="blendDropMinus" aria-label="한 방울 빼기">−</button><input id="blendDropCount" type="number" min="1" max="99" inputmode="numeric" aria-label="방울 수"><span>방울</span><button id="blendDropPlus" aria-label="한 방울 추가">＋</button><button id="blendDropDone">완료</button></div></div>
- <strong class="blend-palette-title">내 팔레트 <small>최대 4색 · 선택한 색을 누르면 방울 수 조절</small></strong><p id="blendMessage" role="status"></p><div id="blendPalette"></div>
+ <strong class="blend-palette-title">내 팔레트 <small>최대 4색 선택</small></strong><p id="blendMessage" role="status"></p><div id="blendPalette"></div>
  </section>
  <script>
  $('blendClose').onclick=()=>{$('lipBlendDialog').hidden=true};
  $('blendResult').onclick=saveBlendResult;
+ $('blendComplete').onclick=saveBlendResult;
  $('blendDropMinus').onclick=()=>changeBlendDrops(blendDraft[dropEditor]?.drops-1);
  $('blendDropPlus').onclick=()=>changeBlendDrops(blendDraft[dropEditor]?.drops+1);
  $('blendDropCount').onchange=e=>changeBlendDrops(e.target.value);
