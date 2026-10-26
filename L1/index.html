@@ -101,6 +101,8 @@ header{order:0;flex-shrink:0}
 #colors .swatch>span:last-child>span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:8px;line-height:1.4;letter-spacing:-.2px}
 #colors .swatch[aria-pressed=true] .chip:after{font-size:23px}
 .selection{padding:10px 14px 8px}
+#lipBlending{border:1px solid #ecd2de;border-radius:14px;background:#fff3f8;color:#b66c8c;padding:4px 11px;font-size:10px;line-height:1.4}
+#lipCompare{font-size:10px;padding:6px 10px;min-height:0;border-radius:18px;right:10px;bottom:10px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 </style><style>
 [hidden]{display:none!important}.palette-tools{display:flex;justify-content:center;gap:12px;padding:12px}.palette-tools button,.pal button:not(.swatch){border:0;border-radius:12px;padding:12px;background:#fcebf2;color:#85566c}.pal{position:fixed;z-index:50;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,560px);background:white;border-radius:22px 22px 0 0;padding:15px 15px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -5px 30px #0003;max-height:72dvh;display:flex;flex-direction:column;gap:12px}.pal header{height:auto;background:white;padding:0;gap:8px}.pal header strong{flex:1}.pal-list{overflow:auto;min-height:80px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 8px;padding:8px}.pal .swatch{width:100%;font-size:10px;overflow-wrap:anywhere}.pal-picked{display:flex;overflow:auto;gap:12px;padding:8px;min-height:100px;border-top:1px solid #eee}.pal-picked .swatch{min-width:75px;width:75px}.pal select,.pal input:not([type=color]){padding:10px;border:1px solid #e4cdd6;border-radius:9px;width:100%;font:inherit}.pal-row{display:flex;gap:8px;align-items:center}.pal input[type=color]{height:46px;width:90px}.pal small{color:#947080}#customMaker{z-index:51;max-height:45dvh}#paletteBuilder{height:70dvh}#makerPhoto{max-width:100%;max-height:90px;object-fit:contain;cursor:crosshair}body.sampling .stage{outline:3px solid #d080a0;outline-offset:-3px}#photoGrid{z-index:2}.pal-status{font-size:12px;color:#9b4769}
 </style><style id="palette-layout-v2">
@@ -132,7 +134,7 @@ header{order:0;flex-shrink:0}
 </style></head><body>
 <main class="app"><header><button class="tool" id="camera" aria-label="촬영"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 7.3 8.7 5h6.6l1.5 2.3H19a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.3a2 2 0 0 1 2-2h2.2Z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button><button class="tool" id="upload" aria-label="사진 불러오기"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.2"/><path d="M5.7 19c.5-4 2.8-6 6.3-6s5.8 2 6.3 6"/></svg></button><button class="tool save" id="save" aria-label="저장"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m8.5 11.5 3.5 3.5 3.5-3.5"/><path d="M5 19h14"/></svg></button></header>
 <section class="stage" aria-label="사진 미리보기"><div class="empty" id="empty"><svg viewBox="0 0 64 64"><rect x="9" y="7" width="46" height="50" rx="9"/><circle cx="24" cy="23" r="5"/><path d="m10 48 15-15 10 10 9-9 11 12"/></svg>사진을 촬영하거나<br>사진을 불러오세요</div><img id="photo" alt="불러온 고객 사진"><div id="photoGrid" class="grid"></div><canvas id="lipOverlay" aria-hidden="true"></canvas><svg id="lipBoundary" aria-label="입술 경계 조정" xmlns="http://www.w3.org/2000/svg"></svg><button class="lip-retry" id="lipRetry" hidden>다시 인식</button><button class="lip-compare" id="lipCompare" hidden aria-pressed="false">원본 비교</button><span class="photo-label" id="photoLabel" hidden>원본 사진</span></section>
-<section class="panel"><div class="tabs" role="tablist" aria-label="입술 컬러 영역"><button class="tab" id="tab-tone" role="tab" aria-selected="false" aria-controls="color-panel" data-group="토너">토너</button><button class="tab" id="tab-base" role="tab" aria-selected="false" aria-controls="color-panel" data-group="베이스">베이스</button><button class="tab" id="tab-point" role="tab" aria-selected="false" aria-controls="color-panel" data-group="포인트">포인트</button></div><div id="color-panel" hidden role="tabpanel" aria-labelledby="tab-tone"><div class="selection"><strong id="selection"></strong><span>컬러를 선택해 보세요</span></div><div class="colors" id="colors"></div><label class="lip-strength">진하기 <input id="lipStrength" type="range" min="0" max="100" value="65" aria-label="입술 컬러 진하기"><output id="lipStrengthValue">65%</output></label></div></section><div class="lip-detection" id="lipDetection" role="status" aria-live="polite" hidden></div><div class="boundary-tools" id="boundaryTools" hidden><button id="boundaryToggle">입술 영역 조정</button><button id="manualLip" hidden>직접 영역 지정</button><button id="boundaryUndo" hidden>되돌리기</button><button id="boundaryReset" hidden>자동 경계</button></div><div class="boundary-footer" id="boundaryFooter" hidden><p>점을 움직여 입술 경계를 맞춰 주세요</p><div><button id="boundaryCancel" aria-label="경계 조정 취소">×</button><strong>입술 경계 조정</strong><button id="boundaryDone" aria-label="경계 조정 완료">✓</button></div></div><div class="palette-tools"><button id="openPalette">내 팔레트 만들기</button><button id="photoGridToggle" aria-pressed="false">격자 OFF</button></div></main>
+<section class="panel"><div class="tabs" role="tablist" aria-label="입술 컬러 영역"><button class="tab" id="tab-tone" role="tab" aria-selected="false" aria-controls="color-panel" data-group="토너">토너</button><button class="tab" id="tab-base" role="tab" aria-selected="false" aria-controls="color-panel" data-group="베이스">베이스</button><button class="tab" id="tab-point" role="tab" aria-selected="false" aria-controls="color-panel" data-group="포인트">포인트</button></div><div id="color-panel" hidden role="tabpanel" aria-labelledby="tab-tone"><div class="selection"><strong id="selection"></strong><button id="lipBlending" type="button" aria-label="블랜딩">블랜딩</button></div><div class="colors" id="colors"></div><label class="lip-strength">진하기 <input id="lipStrength" type="range" min="0" max="100" value="65" aria-label="입술 컬러 진하기"><output id="lipStrengthValue">65%</output></label></div></section><div class="lip-detection" id="lipDetection" role="status" aria-live="polite" hidden></div><div class="boundary-tools" id="boundaryTools" hidden><button id="boundaryToggle">입술 영역 조정</button><button id="manualLip" hidden>직접 영역 지정</button><button id="boundaryUndo" hidden>되돌리기</button><button id="boundaryReset" hidden>자동 경계</button></div><div class="boundary-footer" id="boundaryFooter" hidden><p>점을 움직여 입술 경계를 맞춰 주세요</p><div><button id="boundaryCancel" aria-label="경계 조정 취소">×</button><strong>입술 경계 조정</strong><button id="boundaryDone" aria-label="경계 조정 완료">✓</button></div></div><div class="palette-tools"><button id="openPalette">내 팔레트 만들기</button><button id="photoGridToggle" aria-pressed="false">격자 OFF</button></div></main>
 <input type="file" accept="image/*" id="photos" hidden><input type="file" accept="image/*" id="files" hidden>
 <div class="overlay" id="picker" hidden><div class="sheet" role="dialog" aria-modal="true" aria-label="사진 불러오기"><button id="pickPhotos">사진 불러오기</button><button id="pickFiles">파일 불러오기</button><button id="cancelPick">취소</button></div></div>
 <div class="camview" id="camview"><video id="camvideo" autoplay playsinline muted></video><div class="grid" id="grid"></div><button class="camclose" id="camclose">닫기</button><button class="gridbtn" id="gridbtn">Guide ON</button><button class="flipcam" id="flipcam" aria-label="카메라 전환">↻</button><div class="camctl"><button class="shot" id="shot" aria-label="촬영"></button></div><canvas id="camcanvas" hidden></canvas></div><script>
@@ -432,12 +434,13 @@ function paintLips(){
    let amount=strength*(coverage+(.98-coverage)*strength*strength);
    if(kind==='포인트'){const py=Math.floor(i/4/rw)+y0,cy=(points[13].y+points[14].y)*h/2;amount*=Math.max(.3,1-Math.abs(py-cy)/Math.max(1,lipHeight*.7))}
    // Preserve fine luminance differences and specular highlights from the original.
-   // Keep the photo's shading and temper very bright pigment swatches.
-   const pigmentLum=mean+(y-mean)*.88;
-   const targetLum=Math.max(0,Math.min(255,pigmentLum+(lum-mean)*.96));
-   const chromaScale=.74;
-   const highlight=Math.max(0,Math.min(1,(lum-mean-24)/65));amount*=1-highlight*.16;
-   for(let k=0;k<3;k++){const target=Math.max(0,Math.min(255,(rgb[k]-y)*chromaScale+targetLum));data[i+k]=Math.round(data[i+k]*(1-amount)+target*amount)}
+   // Shade the selected pigment itself, without adding a bright neutral/pink base.
+   const shade=Math.max(.55,Math.min(1.16,1+(lum-mean)/Math.max(60,mean)*.72));
+   const highlight=Math.max(0,Math.min(1,(lum-mean-24)/65));amount*=1-highlight*.08;
+   for(let k=0;k<3;k++){
+    const target=Math.max(0,Math.min(255,rgb[k]*shade));
+    data[i+k]=Math.round(data[i+k]*(1-amount)+target*amount);
+   }
   }
   data[i+3]=Math.round(alpha*255);
  }
@@ -445,7 +448,18 @@ function paintLips(){
 }
 $('lipRetry').onclick=()=>detectLips();
 $('lipStrength').oninput=e=>{lipState.strength=Number(e.target.value);$('lipStrengthValue').value=lipState.strength+'%';paintLips()};
-$('lipCompare').onclick=()=>{lipState.compare=!lipState.compare;$('lipOverlay').style.visibility=lipState.compare?'hidden':'visible';$('lipCompare').setAttribute('aria-pressed',String(lipState.compare));$('lipCompare').textContent=lipState.compare?'컬러 보기':'원본 비교'};
+function showLipOriginal(on){
+ lipState.compare=on;$('lipOverlay').style.visibility=on?'hidden':'visible';
+ $('lipCompare').setAttribute('aria-pressed',String(on));
+}
+$('lipCompare').onpointerdown=e=>{e.preventDefault();$('lipCompare').setPointerCapture(e.pointerId);showLipOriginal(true)};
+for(const event of ['pointerup','pointercancel','lostpointercapture'])$('lipCompare').addEventListener(event,()=>showLipOriginal(false));
+$('lipCompare').onkeydown=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();showLipOriginal(true)}};
+$('lipCompare').onkeyup=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();showLipOriginal(false)}};
+$('lipCompare').onblur=()=>showLipOriginal(false);
+window.addEventListener('blur',()=>showLipOriginal(false));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)showLipOriginal(false)});
+$('lipCompare').oncontextmenu=e=>e.preventDefault();
 
 function syncBoundaryButtons(){
  $('boundaryToggle').textContent=lipState.editing?'경계 완료':'입술 영역 조정';
