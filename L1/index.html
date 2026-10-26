@@ -587,6 +587,7 @@ function paintLips(){
   else if(rawOuter[i+3]===0){skinR+=data[i]-data[i+1];skinB+=data[i+2]-data[i+1];skinN++}
  }
  const mean=sum/Math.max(1,count),strength=lipState.strength/100;
+ const lipTop=Math.min(...ps.map(p=>p.y))*h,lipBottom=Math.max(...ps.map(p=>p.y))*h,lipCenterX=(points[61].x+points[291].x)*w/2;
  lipR/=Math.max(1,count);lipB/=Math.max(1,count);skinR/=Math.max(1,skinN);skinB/=Math.max(1,skinN);
  const separation=Math.hypot(lipR-skinR,lipB-skinB);
  const layers=active.map(o=>({...o,y:o.rgb[0]*.2126+o.rgb[1]*.7152+o.rgb[2]*.0722}));
@@ -596,9 +597,10 @@ function paintLips(){
   for(const {kind,rgb,y,profile} of layers){
    // Every tab reaches full pigment coverage at 100%, including toner.
    const coverage=kind==='톤업'?.62:kind==='베이스'?.82:.9;
-   let amount=strength*(coverage+(profile.coverage-coverage)*strength*strength);
+   const layerStrength=(lipStrengths[kind]??lipState.strength)/100;
+   let amount=layerStrength*(coverage+(profile.coverage-coverage)*layerStrength*layerStrength);
    amount*=lipLayerVisibility(kind,x0+(i/4)%rw,y0+Math.floor(i/4/rw),w,h);
-   if(kind==='포인트'){const px=x0+(i/4)%rw,py=Math.floor(i/4/rw)+y0,cy=(points[13].y+points[14].y)*h/2,top=Math.min(...ps.map(p=>p.y))*h,bottom=Math.max(...ps.map(p=>p.y))*h,cx=(points[61].x+points[291].x)*w/2;const v=Math.abs(py-cy)/Math.max(1,(py<cy?cy-top:bottom-cy)*.72),u=Math.abs(px-cx)/Math.max(1,lipWidth*.48);const fade=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};amount*=fade((1-v)/.45)*fade((1-u)/.3)}
+   if(kind==='포인트'){const px=x0+(i/4)%rw,py=Math.floor(i/4/rw)+y0,cy=(points[13].y+points[14].y)*h/2,top=lipTop,bottom=lipBottom,cx=lipCenterX;const v=Math.abs(py-cy)/Math.max(1,(py<cy?cy-top:bottom-cy)*.72),u=Math.abs(px-cx)/Math.max(1,lipWidth*.48);const fade=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};amount*=fade((1-v)/.45)*fade((1-u)/.3)}
    // Restore the approved Date Night shading; temper each pigment separately.
    const pigmentLum=mean+(y-mean)*profile.lightness;
    const targetLum=Math.max(0,Math.min(255,pigmentLum+(lum-mean)*.96));
