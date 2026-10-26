@@ -542,13 +542,15 @@ function blendLipOutline(rgba,w,h,outside,inside){
   const signed=rgba[i*4+3]>=128?toOutside[i]-.5:-(toInside[i]-.5);
   // Independent boundary coverage: 10%; widths are fractions of lip height.
   const boundaryCoverage=.10;
-  // Inward coverage anchors: 15% of lip height = 80%, 25% = 95%.
-  // Fit one continuous monotone curve, retaining 10% at the boundary.
-  const inwardRate=Math.log((1-boundaryCoverage)/(1-.80));
-  const inwardPower=Math.log(Math.log((1-boundaryCoverage)/(1-.95))/inwardRate)/Math.log(25/15);
+  // Smooth monotone Hermite anchors: boundary 10%, inward 15% -> 80%, 25% -> 100%.
   const t=Math.max(0,signed<0?Math.min(1,1+signed/outside):signed/inside);
-  const eased=signed<0?t*t*(3-2*t):1-Math.exp(-inwardRate*Math.pow(t,inwardPower));
-  const alpha=signed<0?boundaryCoverage*eased:boundaryCoverage+(1-boundaryCoverage)*eased;
+  let alpha;
+  if(signed<0)alpha=boundaryCoverage*t*t*(3-2*t);
+  else if(t<=1)alpha=boundaryCoverage+(.80-boundaryCoverage)*t*t*(3-2*t)+.45*t*t*(t-1);
+  else{
+   const u=Math.min(1,(t-1)/(25/15-1));
+   alpha=.80+.20*u*u*(3-2*u)+.30*u*(u-1)*(u-1);
+  }
   result[i*4+3]=Math.round(255*alpha);
  }
  return result;
