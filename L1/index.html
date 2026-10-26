@@ -98,7 +98,7 @@ header{order:0;flex-shrink:0}
 <div class="overlay" id="picker" hidden><div class="sheet" role="dialog" aria-modal="true" aria-label="사진 불러오기"><button id="pickPhotos">사진 불러오기</button><button id="pickFiles">파일 불러오기</button><button id="cancelPick">취소</button></div></div>
 <div class="camview" id="camview"><video id="camvideo" autoplay playsinline muted></video><div class="grid" id="grid"></div><button class="camclose" id="camclose">닫기</button><button class="gridbtn" id="gridbtn">Guide ON</button><button class="flipcam" id="flipcam" aria-label="카메라 전환">↻</button><div class="camctl"><button class="shot" id="shot" aria-label="촬영"></button></div><canvas id="camcanvas" hidden></canvas></div><script>
 const $=id=>document.getElementById(id);
-let lipState={token:0,points:null,originalPoints:null,editing:false,history:[],applied:{},strength:65,compare:false,model:null,promise:null};
+let lipState={token:0,manualCorners:null,points:null,originalPoints:null,editing:false,history:[],applied:{},strength:65,compare:false,model:null,promise:null};
 const palettes={'톤업':[['피치톤업','#f5b9a6'],['핑크톤업','#efb0b9'],['살몬톤업','#ee9c8e'],['코랄톤업','#f1a18a'],['로즈톤업','#d99aa5'],['누드톤업','#dfb4a7']],'베이스':[['립베이스','#eec3b8'],['연핑크','#d9899c'],['로즈','#b96176'],['살구','#da9484'],['코랄','#de8173'],['누드','#ba8b80'],['모브','#ac7a91']],'포인트':[['핑크','#d65c88'],['로즈레드','#bb405b'],['체리','#b92c4e'],['레드','#c73e45'],['코랄레드','#df6253'],['플럼','#843d60'],['버건디','#783247']]};
 let panelOpen=false;let group='톤업',selected={'톤업':0,'베이스':0,'포인트':0},photoURL=null;
 function render(){document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(panelOpen&&t.dataset.group===group)));$('color-panel').setAttribute('aria-labelledby',document.querySelector('.tab[data-group="'+group+'"]').id);$('selection').textContent=group+' · '+palettes[group][selected[group]][0];$('colors').replaceChildren(...palettes[group].map(([name,color],i)=>{let b=document.createElement('button');b.className='swatch';b.setAttribute('aria-label',name);b.setAttribute('aria-pressed',String(i===selected[group]));let chip=document.createElement('span');chip.className='chip';chip.style.setProperty('--c',color);let label=document.createElement('span');label.textContent=name;b.append(chip,label);b.onclick=()=>{selected[group]=i;lipState.applied[group]=palettes[group][i][1];render();paintLips()};return b}));}
@@ -264,16 +264,16 @@ async function getLipModel(){
  return lipState.promise;
 }
 async function detectLips(){
- const token=++lipState.token,source=P.src;lipState.points=null;lipState.originalPoints=null;lipState.history=[];lipState.editing=false;$('boundaryTools').hidden=true;$('lipBoundary').replaceChildren();lipState.compare=false;$('lipCompare').hidden=true;$('lipCompare').setAttribute('aria-pressed','false');$('lipRetry').hidden=true;
+ const token=++lipState.token,source=P.src;lipState.points=null;lipState.originalPoints=null;lipState.history=[];lipState.editing=false;$('boundaryTools').hidden=false;$('lipBoundary').replaceChildren();lipState.compare=false;$('lipCompare').hidden=true;$('lipCompare').setAttribute('aria-pressed','false');$('lipRetry').hidden=true;
  const overlay=$('lipOverlay');overlay.width=P.naturalWidth;overlay.height=P.naturalHeight;overlay.style.visibility='visible';lipStatus('입술을 찾는 중이에요. 첫 실행은 조금 걸릴 수 있어요.');
  try{
  const model=await getLipModel();if(token!==lipState.token||source!==P.src)return;
  const input=document.createElement('canvas'),ratio=Math.min(1,1280/Math.max(P.naturalWidth,P.naturalHeight));input.width=Math.round(P.naturalWidth*ratio);input.height=Math.round(P.naturalHeight*ratio);input.getContext('2d').drawImage(P,0,0,input.width,input.height);
  await new Promise(r=>requestAnimationFrame(r));if(token!==lipState.token||source!==P.src)return;
- const result=model.detect(input);if(token!==lipState.token||source!==P.src)return;
+ let result;try{result=model.detect(input)}catch(err){try{lipState.model?.close()}catch(_){}lipState.model=null;lipState.promise=null;throw err}if(token!==lipState.token||source!==P.src)return;
  const points=result.faceLandmarks[0];if(!points)throw new Error('NO_FACE');
- lipState.points=points;lipState.originalPoints=points.map(p=>({...p}));$('boundaryTools').hidden=false;syncBoundaryButtons();$('lipCompare').hidden=false;lipStatus('입술 인식 완료 · 위에서 컬러를 선택해 주세요.');paintLips();
- }catch(e){if(token!==lipState.token)return;lipState.points=null;lipStatus(e.message==='NO_FACE'?'입술을 찾지 못했어요. 입술이 선명하게 보이는 얼굴 사진으로 다시 시도해 주세요.':'입술 인식 기능을 불러오지 못했어요. 인터넷 연결을 확인한 뒤 다시 인식해 주세요.');$('lipRetry').hidden=false;console.warn('Lip detection:',e)}
+ lipState.points=points;lipState.originalPoints=points.map(p=>({...p}));$('boundaryTools').hidden=false;syncBoundaryButtons();$('lipCompare').hidden=false;lipStatus('입술 인식 완료 · 위에서 컬러를 선택해 주세요.');try{paintLips()}catch(err){console.error('입술 컬러 표시 오류',err);lipStatus('입술은 인식했어요. 컬러를 다시 선택해 주세요.')}
+ }catch(e){if(token!==lipState.token)return;lipState.points=null;$('boundaryTools').hidden=false;syncBoundaryButtons();lipStatus(e.message==='NO_FACE'?'입술을 찾지 못했어요. 입술이 선명하게 보이는 얼굴 사진으로 다시 시도해 주세요.':'입술 인식 기능을 불러오지 못했어요. 인터넷 연결을 확인한 뒤 다시 인식해 주세요.');$('lipRetry').hidden=false;console.warn('Lip detection:',e)}
 }
 function lipCurveSegments(ids,points,w,h,ox=0,oy=0){
  const p=ids.map(id=>({x:points[id].x*w-ox,y:points[id].y*h-oy})),n=p.length;
@@ -355,7 +355,8 @@ function finishBoundary(accept){
  syncBoundaryButtons();setWorld();paintLips();boundaryBackup=null;
 }
 $('boundaryToggle').onclick=()=>{
- if(!lipState.points)return;
+ if(lipState.manualCorners){lipState.manualCorners=null;syncBoundaryButtons();lipStatus('직접 지정을 취소했어요. 다시 인식하거나 입술 영역 조정을 눌러 주세요.');return}
+ if(!lipState.points){beginManualLip();return}
  boundaryBackup=lipState.points.map(p=>({...p}));boundaryView={zoom,panX,panY};lipState.editing=true;lipState.history=[];
  document.querySelector('.app').classList.add('boundary-edit');$('boundaryFooter').hidden=false;syncBoundaryButtons();
  requestAnimationFrame(()=>{const ps=LIP_OUTER.map(i=>lipState.points[i]),cx=(Math.min(...ps.map(p=>p.x))+Math.max(...ps.map(p=>p.x)))/2,cy=(Math.min(...ps.map(p=>p.y))+Math.max(...ps.map(p=>p.y)))/2;
@@ -392,4 +393,32 @@ function renderLipLens(){
 document.addEventListener('touchstart',e=>{if(e.touches.length>1)hideLipLens()},{passive:true});
 document.addEventListener('touchcancel',hideLipLens,{passive:true});
 window.addEventListener('blur',hideLipLens);
+
+function beginManualLip(){
+ lipState.manualCorners=[];panelOpen=false;$('color-panel').hidden=true;render();resetView();
+ lipStatus('자동 인식 대신 직접 지정해요. 사진에서 왼쪽 입꼬리를 한 번 눌러 주세요.');
+ $('boundaryToggle').textContent='지정 취소';
+}
+function manualPhotoPoint(e){
+ const rect=stage.getBoundingClientRect(),sw=stage.clientWidth,sh=stage.clientHeight,fit=Math.min(sw/P.naturalWidth,sh/P.naturalHeight),rw=P.naturalWidth*fit,rh=P.naturalHeight*fit;
+ return {x:Math.max(0,Math.min(1,((e.clientX-rect.left-sw/2-panX)/zoom+sw/2-(sw-rw)/2)/rw)),y:Math.max(0,Math.min(1,((e.clientY-rect.top-sh/2-panY)/zoom+sh/2-(sh-rh)/2)/rh))};
+}
+let manualTouch=null,manualMultitouch=false;
+stage.addEventListener('pointerdown',e=>{if(!lipState.manualCorners)return;if(touches.size>1){manualMultitouch=true;manualTouch=null}else{manualMultitouch=false;manualTouch={id:e.pointerId,x:e.clientX,y:e.clientY}}});
+stage.addEventListener('pointercancel',()=>{manualTouch=null;manualMultitouch=true});
+stage.addEventListener('pointerup',e=>{
+ if(!lipState.manualCorners||manualMultitouch||!manualTouch||manualTouch.id!==e.pointerId||Math.hypot(e.clientX-manualTouch.x,e.clientY-manualTouch.y)>7)return;
+ manualTouch=null;
+ const p=manualPhotoPoint(e),corners=lipState.manualCorners;
+ if(!corners.length){corners.push(p);lipStatus('이제 반대쪽 입꼬리를 한 번 눌러 주세요.');return}
+ const a=corners[0],w=P.naturalWidth,h=P.naturalHeight,dx=(p.x-a.x)*w,dy=(p.y-a.y)*h;
+ if(Math.hypot(dx,dy)<20){lipStatus('입꼬리 두 곳을 조금 더 떨어지게 지정해 주세요.');return}
+ const template=[[0,0],[.07,-.12],[.16,-.23],[.26,-.32],[.39,-.39],[.5,-.30],[.61,-.39],[.74,-.32],[.84,-.23],[.93,-.12],[1,0],[.94,.15],[.84,.29],[.73,.40],[.61,.46],[.5,.48],[.39,.46],[.27,.40],[.16,.29],[.06,.15]];
+ const points=Array.from({length:478},()=>({x:.5,y:.5,z:0}));
+ const make=(u,v)=>({x:a.x+(dx*u-dy*v)/w,y:a.y+(dy*u+dx*v)/h,z:0});
+ LIP_OUTER.forEach((id,i)=>{points[id]=make(template[i][0],template[i][1])});
+ LIP_INNER.forEach((id,i)=>{const t=Math.PI+i*Math.PI*2/LIP_INNER.length;points[id]=make(.5+.49*Math.cos(t),.035*Math.sin(t))});
+ lipState.points=points;lipState.originalPoints=points.map(p=>({...p}));lipState.manualCorners=null;lipState.token++;$('lipRetry').hidden=true;$('lipCompare').hidden=false;syncBoundaryButtons();paintLips();$('boundaryToggle').click();
+});
+
 </script></body></html>
