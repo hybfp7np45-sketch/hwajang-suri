@@ -610,7 +610,7 @@ function makeInnerLipAccent(points,w,h,x0,y0,rw,rh){
    const py=y0+y+.5,above=py<(inner.top[x]+inner.bottom[x])/2,seam=above?inner.top[x]:inner.bottom[x],edge=above?outer.top[x]:outer.bottom[x];
    const depth=Math.max(0,(above?seam-py:py-seam)/Math.max(1,Math.abs(edge-seam)));
    // Upper accent stays narrow; the thicker lower lip carries pigment farther down.
-   const solidDepth=above?.08:.18,fadeEnd=above?.65:.80;
+   const solidDepth=above?.08:.18,fadeEnd=above?.65:.90;
    mask[y*rw+x]=side*(1-smooth((depth-solidDepth)/(fadeEnd-solidDepth)));
   }
  }
