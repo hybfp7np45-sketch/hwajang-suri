@@ -610,8 +610,10 @@ function makeInnerLipAccent(points,w,h,x0,y0,rw,rh){
    const py=y0+y+.5,above=py<(inner.top[x]+inner.bottom[x])/2,seam=above?inner.top[x]:inner.bottom[x],edge=above?outer.top[x]:outer.bottom[x];
    const depth=Math.max(0,(above?seam-py:py-seam)/Math.max(1,Math.abs(edge-seam)));
    // Upper accent stays narrow; the thicker lower lip carries pigment farther down.
-   const solidDepth=above?.08:.18,fadeEnd=above?.65:.90;
-   mask[y*rw+x]=side*(1-smooth((depth-solidDepth)/(fadeEnd-solidDepth)));
+   // Upper lip: no solid band; spread the fade across the entire 65% extent.
+   // Lower lip retains its approved 18% core and 90% extent.
+   const pointFade=above?Math.pow(Math.max(0,1-depth/.65),1.35):1-smooth((depth-.18)/(.90-.18));
+   mask[y*rw+x]=side*pointFade;
   }
  }
  return mask;
@@ -619,7 +621,7 @@ function makeInnerLipAccent(points,w,h,x0,y0,rw,rh){
 function paintLips(){
  if(!lipState.points||!P.naturalWidth)return;
  const w=P.naturalWidth,h=P.naturalHeight,points=lipState.points,out=$('lipOverlay'),ctx=out.getContext('2d');ctx.clearRect(0,0,w,h);
- const active=Object.entries(lipState.applied).map(([kind,hex])=>({kind,rgb:hexRGB(hex),profile:pigmentProfile(hex)}));if(!active.length){lipStatus('입술 영역 준비 완료 · 위에서 컬러를 선택해 주세요.');return}
+ const active=['톤업','베이스','포인트'].filter(kind=>lipState.applied[kind]).map(kind=>{const hex=lipState.applied[kind];return {kind,rgb:hexRGB(hex),profile:pigmentProfile(hex)}});if(!active.length){lipStatus('입술 영역 준비 완료 · 위에서 컬러를 선택해 주세요.');return}
  const ps=LIP_OUTER.map(i=>points[i]),lipWidth=(Math.max(...ps.map(p=>p.x))-Math.min(...ps.map(p=>p.x)))*w,lipHeight=(Math.max(...ps.map(p=>p.y))-Math.min(...ps.map(p=>p.y)))*h;
  const pad=Math.max(8,Math.ceil(lipWidth*.08)),x0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.x))*w)-pad),y0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.y))*h)-pad);
  const rw=Math.min(w-x0,Math.ceil(Math.max(...ps.map(p=>p.x))*w)-x0+pad),rh=Math.min(h-y0,Math.ceil(Math.max(...ps.map(p=>p.y))*h)-y0+pad);if(rw<2||rh<2)return;
