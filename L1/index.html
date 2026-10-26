@@ -582,6 +582,38 @@ function pigmentProfile(hex){
  const profile={chroma:sat>.8?.58:.74,lightness:sat>.8?.74:.88,coverage:.98,status:'initial',...lipPigmentProfiles[name]};
  lipProfileCache.set(key,profile);return profile;
 }
+function makeInnerLipAccent(points,w,h,x0,y0,rw,rh){
+ // Follow the curved mouth seam and the local upper/lower lip thickness.
+ const bounds=ids=>{
+  const top=new Float32Array(rw).fill(Infinity),bottom=new Float32Array(rw).fill(-Infinity);
+  for(const q of lipCurveSegments(ids,points,w,h)){
+   let prev=q.a;
+   for(let j=1;j<=32;j++){
+    const t=j/32,v=1-t,next={x:v*v*v*q.a.x+3*v*v*t*q.c1.x+3*v*t*t*q.c2.x+t*t*t*q.b.x,y:v*v*v*q.a.y+3*v*v*t*q.c1.y+3*v*t*t*q.c2.y+t*t*t*q.b.y};
+    const lo=Math.max(0,Math.ceil(Math.min(prev.x,next.x)-x0-.5)),hi=Math.min(rw-1,Math.floor(Math.max(prev.x,next.x)-x0-.5));
+    for(let x=lo;x<=hi;x++){
+     const u=Math.abs(next.x-prev.x)<1e-6?.5:(x0+x+.5-prev.x)/(next.x-prev.x),y=prev.y+(next.y-prev.y)*u;
+     top[x]=Math.min(top[x],y);bottom[x]=Math.max(bottom[x],y);
+    }
+    prev=next;
+   }
+  }
+  return {top,bottom};
+ };
+ const outer=bounds(LIP_OUTER),inner=bounds(LIP_INNER),mask=new Float32Array(rw*rh);
+ const left=Math.min(...LIP_INNER.map(i=>points[i].x))*w,right=Math.max(...LIP_INNER.map(i=>points[i].x))*w;
+ const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};
+ for(let x=0;x<rw;x++){
+  if(!Number.isFinite(inner.top[x])||!Number.isFinite(outer.top[x]))continue;
+  const side=smooth(Math.min(x0+x+.5-left,right-x0-x-.5)/Math.max(1,(right-left)*.15));
+  for(let y=0;y<rh;y++){
+   const py=y0+y+.5,above=py<(inner.top[x]+inner.bottom[x])/2,seam=above?inner.top[x]:inner.bottom[x],edge=above?outer.top[x]:outer.bottom[x];
+   const depth=Math.max(0,(above?seam-py:py-seam)/Math.max(1,Math.abs(edge-seam)));
+   mask[y*rw+x]=side*(1-smooth((depth-.12)/.66));
+  }
+ }
+ return mask;
+}
 function paintLips(){
  if(!lipState.points||!P.naturalWidth)return;
  const w=P.naturalWidth,h=P.naturalHeight,points=lipState.points,out=$('lipOverlay'),ctx=out.getContext('2d');ctx.clearRect(0,0,w,h);
@@ -609,6 +641,7 @@ function paintLips(){
  lipR/=Math.max(1,count);lipB/=Math.max(1,count);skinR/=Math.max(1,skinN);skinB/=Math.max(1,skinN);
  const separation=Math.hypot(lipR-skinR,lipB-skinB);
  const layers=active.map(o=>({...o,y:o.rgb[0]*.2126+o.rgb[1]*.7152+o.rgb[2]*.0722}));
+ const innerAccent=active.some(o=>o.kind==='포인트')?makeInnerLipAccent(points,w,h,x0,y0,rw,rh):null;
  for(let i=0;i<data.length;i+=4){
   let alpha=softOuter[i+3]/255*softInner[i+3]/255;if(alpha===0){data[i+3]=0;continue}
   const lum=data[i]*.2126+data[i+1]*.7152+data[i+2]*.0722;
@@ -618,7 +651,7 @@ function paintLips(){
    const layerStrength=(lipStrengths[kind]??lipState.strength)/100;
    let amount=layerStrength*(coverage+(profile.coverage-coverage)*layerStrength*layerStrength);
    amount*=lipLayerVisibility(kind,x0+(i/4)%rw,y0+Math.floor(i/4/rw),w,h);
-   if(kind==='포인트'){const px=x0+(i/4)%rw,py=Math.floor(i/4/rw)+y0,cy=(points[13].y+points[14].y)*h/2,top=lipTop,bottom=lipBottom,cx=lipCenterX;const v=Math.abs(py-cy)/Math.max(1,(py<cy?cy-top:bottom-cy)*.72),u=Math.abs(px-cx)/Math.max(1,lipWidth*.48);const fade=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};amount*=fade((1-v)/.45)*fade((1-u)/.3)}
+   if(kind==='포인트')amount*=innerAccent[i/4];
    // Restore the approved Date Night shading; temper each pigment separately.
    const pigmentLum=mean+(y-mean)*profile.lightness;
    const targetLum=Math.max(0,Math.min(255,pigmentLum+(lum-mean)*.96));
