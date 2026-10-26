@@ -542,10 +542,12 @@ function blendLipOutline(rgba,w,h,outside,inside){
   const signed=rgba[i*4+3]>=128?toOutside[i]-.5:-(toInside[i]-.5);
   // Independent boundary coverage: 10%; widths are fractions of lip height.
   const boundaryCoverage=.10;
-  // Gentle inward rolloff: remove the short smoothstep ramp and its full-density cutoff.
-  // At 1x inside width: 55% coverage; 2x: 95%; deep interior tends to 100%.
+  // Inward coverage anchors: 19% of lip height = 80%, 25% = 95%.
+  // Fit one continuous monotone curve, retaining 10% at the boundary.
+  const inwardRate=Math.log((1-boundaryCoverage)/(1-.80));
+  const inwardPower=Math.log(Math.log((1-boundaryCoverage)/(1-.95))/inwardRate)/Math.log(25/19);
   const t=Math.max(0,signed<0?Math.min(1,1+signed/outside):signed/inside);
-  const eased=signed<0?t*t*(3-2*t):1-Math.exp(-.7*t*t);
+  const eased=signed<0?t*t*(3-2*t):1-Math.exp(-inwardRate*Math.pow(t,inwardPower));
   const alpha=signed<0?boundaryCoverage*eased:boundaryCoverage+(1-boundaryCoverage)*eased;
   result[i*4+3]=Math.round(255*alpha);
  }
