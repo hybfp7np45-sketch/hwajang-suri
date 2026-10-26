@@ -103,6 +103,7 @@ header{order:0;flex-shrink:0}
 .selection{padding:10px 14px 8px}
 #lipBlending{border:1px solid #ecd2de;border-radius:14px;background:#fff3f8;color:#b66c8c;padding:4px 11px;font-size:10px;line-height:1.4}
 #lipCompare{font-size:10px;padding:6px 10px;min-height:0;border-radius:18px;right:10px;bottom:10px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#lipCompare{font-size:9px;padding:4px 7px;line-height:1.25;border-width:1px;right:8px;bottom:8px}
 </style><style>
 [hidden]{display:none!important}.palette-tools{display:flex;justify-content:center;gap:12px;padding:12px}.palette-tools button,.pal button:not(.swatch){border:0;border-radius:12px;padding:12px;background:#fcebf2;color:#85566c}.pal{position:fixed;z-index:50;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,560px);background:white;border-radius:22px 22px 0 0;padding:15px 15px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -5px 30px #0003;max-height:72dvh;display:flex;flex-direction:column;gap:12px}.pal header{height:auto;background:white;padding:0;gap:8px}.pal header strong{flex:1}.pal-list{overflow:auto;min-height:80px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 8px;padding:8px}.pal .swatch{width:100%;font-size:10px;overflow-wrap:anywhere}.pal-picked{display:flex;overflow:auto;gap:12px;padding:8px;min-height:100px;border-top:1px solid #eee}.pal-picked .swatch{min-width:75px;width:75px}.pal select,.pal input:not([type=color]){padding:10px;border:1px solid #e4cdd6;border-radius:9px;width:100%;font:inherit}.pal-row{display:flex;gap:8px;align-items:center}.pal input[type=color]{height:46px;width:90px}.pal small{color:#947080}#customMaker{z-index:51;max-height:45dvh}#paletteBuilder{height:70dvh}#makerPhoto{max-width:100%;max-height:90px;object-fit:contain;cursor:crosshair}body.sampling .stage{outline:3px solid #d080a0;outline-offset:-3px}#photoGrid{z-index:2}.pal-status{font-size:12px;color:#9b4769}
 </style><style id="palette-layout-v2">
@@ -401,10 +402,26 @@ function softenLipAlphaAgain(rgba,w,h,sigma){
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){let v=0;for(let k=-radius;k<=radius;k++){const yy=y+k;if(yy>=0&&yy<h)v+=tmp[yy*w+x]*kernel[k+radius]}out[(y*w+x)*4+3]=Math.round(v)}
  return out;
 }
+// Per-pigment render profiles; chart HEX values stay unchanged.
+const lipPigmentProfiles={
+ 'passion red':{chroma:.58,lightness:.72,coverage:.98,status:'reference-adjusted'},
+ 'date night':{chroma:.74,lightness:.88,coverage:.98,status:'approved-baseline'},
+ 'nude':{chroma:.68,lightness:.94,coverage:.98,status:'initial'},
+ 'pink rose':{chroma:.66,lightness:.92,coverage:.98,status:'initial'}
+};
+const lipProfileCache=new Map();
+function pigmentProfile(hex){
+ const key=hex.toUpperCase();if(lipProfileCache.has(key))return lipProfileCache.get(key);
+ const item=myColors.find(c=>c.hex.toUpperCase()===key)||pigmentCatalog.find(c=>c.hex.toUpperCase()===key);
+ const name=(item?.name||'').split(' (')[0].toLowerCase();
+ const rgb=hexRGB(hex),hi=Math.max(...rgb),lo=Math.min(...rgb),sat=hi?(hi-lo)/hi:0;
+ const profile={chroma:sat>.8?.58:.74,lightness:sat>.8?.74:.88,coverage:.98,status:'initial',...lipPigmentProfiles[name]};
+ lipProfileCache.set(key,profile);return profile;
+}
 function paintLips(){
  if(!lipState.points||!P.naturalWidth)return;
  const w=P.naturalWidth,h=P.naturalHeight,points=lipState.points,out=$('lipOverlay'),ctx=out.getContext('2d');ctx.clearRect(0,0,w,h);
- const active=Object.entries(lipState.applied).map(([kind,hex])=>({kind,rgb:hexRGB(hex)}));if(!active.length){lipStatus('입술 영역 준비 완료 · 위에서 컬러를 선택해 주세요.');return}
+ const active=Object.entries(lipState.applied).map(([kind,hex])=>({kind,rgb:hexRGB(hex),profile:pigmentProfile(hex)}));if(!active.length){lipStatus('입술 영역 준비 완료 · 위에서 컬러를 선택해 주세요.');return}
  const ps=LIP_OUTER.map(i=>points[i]),lipWidth=(Math.max(...ps.map(p=>p.x))-Math.min(...ps.map(p=>p.x)))*w,lipHeight=(Math.max(...ps.map(p=>p.y))-Math.min(...ps.map(p=>p.y)))*h;
  const pad=Math.max(8,Math.ceil(lipWidth*.08)),x0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.x))*w)-pad),y0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.y))*h)-pad);
  const rw=Math.min(w-x0,Math.ceil(Math.max(...ps.map(p=>p.x))*w)-x0+pad),rh=Math.min(h-y0,Math.ceil(Math.max(...ps.map(p=>p.y))*h)-y0+pad);if(rw<2||rh<2)return;
@@ -428,17 +445,17 @@ function paintLips(){
  for(let i=0;i<data.length;i+=4){
   let alpha=softOuter[i+3]/255*softInner[i+3]/255;if(alpha===0){data[i+3]=0;continue}
   const lum=data[i]*.2126+data[i+1]*.7152+data[i+2]*.0722;
-  for(const {kind,rgb,y} of layers){
+  for(const {kind,rgb,y,profile} of layers){
    // Every tab reaches full pigment coverage at 100%, including toner.
    const coverage=kind==='토너'?.62:kind==='베이스'?.82:.9;
-   let amount=strength*(coverage+(.98-coverage)*strength*strength);
+   let amount=strength*(coverage+(profile.coverage-coverage)*strength*strength);
    if(kind==='포인트'){const py=Math.floor(i/4/rw)+y0,cy=(points[13].y+points[14].y)*h/2;amount*=Math.max(.3,1-Math.abs(py-cy)/Math.max(1,lipHeight*.7))}
-   // Preserve fine luminance differences and specular highlights from the original.
-   // Shade the selected pigment itself, without adding a bright neutral/pink base.
-   const shade=Math.max(.55,Math.min(1.16,1+(lum-mean)/Math.max(60,mean)*.72));
-   const highlight=Math.max(0,Math.min(1,(lum-mean-24)/65));amount*=1-highlight*.08;
+   // Restore the approved Date Night shading; temper each pigment separately.
+   const pigmentLum=mean+(y-mean)*profile.lightness;
+   const targetLum=Math.max(0,Math.min(255,pigmentLum+(lum-mean)*.96));
+   const highlight=Math.max(0,Math.min(1,(lum-mean-24)/65));amount*=1-highlight*.16;
    for(let k=0;k<3;k++){
-    const target=Math.max(0,Math.min(255,rgb[k]*shade));
+    const target=Math.max(0,Math.min(255,(rgb[k]-y)*profile.chroma+targetLum));
     data[i+k]=Math.round(data[i+k]*(1-amount)+target*amount);
    }
   }
@@ -575,7 +592,7 @@ const pigmentCatalog=[{"id":"perma:Orange Crush","brand":"perma","name":"Orange 
 
 const paletteKey='suri.L1.myPalette.v1';let myColors=[],draft=[],sampling=false,makerURL=null;
 try{const v=JSON.parse(localStorage.getItem(paletteKey)||'[]');if(Array.isArray(v))myColors=v.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&/^#[0-9a-f]{6}$/i.test(x.hex))}catch(e){}
-function syncMyPalette(){for(const key of Object.keys(palettes)){palettes[key]=myColors.map(x=>[x.name,x.hex]);selected[key]=Math.min(selected[key],Math.max(0,myColors.length-1))}render()}
+function syncMyPalette(){lipProfileCache.clear();for(const key of Object.keys(palettes)){palettes[key]=myColors.map(x=>[x.name,x.hex]);selected[key]=Math.min(selected[key],Math.max(0,myColors.length-1))}render()}
 function drawCatalog(){
  const catalog=$('catalog'),scroll=catalog.scrollTop;
  catalog.replaceChildren();
