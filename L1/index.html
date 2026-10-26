@@ -124,6 +124,7 @@ header{order:0;flex-shrink:0}
 #blendPalette{overflow:auto;flex:1;min-height:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:15px 7px;align-content:start;padding:5px}
 #blendPalette .swatch{width:100%;min-width:0;gap:5px;font-size:8px}#blendPalette .chip{width:100%;height:auto;aspect-ratio:1;border-radius:12px}
 #blendPalette .swatch>span:last-child{width:100%}#blendPalette .swatch>span:last-child>span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:8px;line-height:1.4}
+#blendComplete:disabled{opacity:.4;cursor:default}
 </style><style>
 [hidden]{display:none!important}.palette-tools{display:flex;justify-content:center;gap:12px;padding:12px}.palette-tools button,.pal button:not(.swatch){border:0;border-radius:12px;padding:12px;background:#fcebf2;color:#85566c}.pal{position:fixed;z-index:50;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,560px);background:white;border-radius:22px 22px 0 0;padding:15px 15px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -5px 30px #0003;max-height:72dvh;display:flex;flex-direction:column;gap:12px}.pal header{height:auto;background:white;padding:0;gap:8px}.pal header strong{flex:1}.pal-list{overflow:auto;min-height:80px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 8px;padding:8px}.pal .swatch{width:100%;font-size:10px;overflow-wrap:anywhere}.pal-picked{display:flex;overflow:auto;gap:12px;padding:8px;min-height:100px;border-top:1px solid #eee}.pal-picked .swatch{min-width:75px;width:75px}.pal select,.pal input:not([type=color]){padding:10px;border:1px solid #e4cdd6;border-radius:9px;width:100%;font:inherit}.pal-row{display:flex;gap:8px;align-items:center}.pal input[type=color]{height:46px;width:90px}.pal small{color:#947080}#customMaker{z-index:51;max-height:45dvh}#paletteBuilder{height:70dvh}#makerPhoto{max-width:100%;max-height:90px;object-fit:contain;cursor:crosshair}body.sampling .stage{outline:3px solid #d080a0;outline-offset:-3px}#photoGrid{z-index:2}.pal-status{font-size:12px;color:#9b4769}
 </style><style id="palette-layout-v2">
@@ -212,7 +213,7 @@ function drawLipBlend(){
   b.onclick=()=>{dropEditor=i;drawLipBlend()};chosen.append(b);
  });
  $('blendEmpty').hidden=!!blendDraft.length;
- const hex=mixtureHex(),result=$('blendResult');result.style.setProperty('--c',hex||'#fff');result.disabled=blendDraft.length<2;
+ const hex=mixtureHex(),result=$('blendResult');result.style.setProperty('--c',hex||'#fff');result.disabled=blendDraft.length<2;$('blendComplete').disabled=blendDraft.length<2;
  $('blendRatio').textContent=blendDraft.length?blendDraft.map(x=>x.drops).join(' : ')+' · 총 '+total+'방울':'컬러를 2~4개 선택해 주세요';
  myColors.forEach(x=>{
   const active=blendDraft.some(c=>c.id===x.id),b=makeColorButton(x.name,x.hex,active);
