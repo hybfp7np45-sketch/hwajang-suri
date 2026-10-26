@@ -87,6 +87,9 @@ header{order:0;flex-shrink:0}
 .boundary-tools{position:relative;order:3;left:auto;bottom:auto;flex-shrink:0;min-height:46px;align-items:center;justify-content:center;background:#fff;border-top:1px solid #f2e5eb}
 .boundary-tools #boundaryToggle{font-size:12px;padding:8px 20px;background:#fff0f5}
 .app.boundary-edit .boundary-tools{position:absolute;left:8px;bottom:calc(100px + env(safe-area-inset-bottom));min-height:0;border:0;background:transparent}
+
+#lipLens{position:fixed;display:none;pointer-events:none;z-index:2147483645;width:124px;height:124px;border:2px solid white;border-radius:50%;overflow:hidden;box-shadow:0 2px 9px #0007;background:white;transform:translate(-50%,-50%)}
+#lipLens canvas{width:120px;height:120px;display:block}
 </style></head><body>
 <main class="app"><header><button class="tool" id="camera" aria-label="촬영"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 7.3 8.7 5h6.6l1.5 2.3H19a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.3a2 2 0 0 1 2-2h2.2Z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button><button class="tool" id="upload" aria-label="사진 불러오기"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.2"/><path d="M5.7 19c.5-4 2.8-6 6.3-6s5.8 2 6.3 6"/></svg></button><button class="tool save" id="save" aria-label="저장"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m8.5 11.5 3.5 3.5 3.5-3.5"/><path d="M5 19h14"/></svg></button></header>
 <section class="stage" aria-label="사진 미리보기"><div class="empty" id="empty"><svg viewBox="0 0 64 64"><rect x="9" y="7" width="46" height="50" rx="9"/><circle cx="24" cy="23" r="5"/><path d="m10 48 15-15 10 10 9-9 11 12"/></svg>사진을 촬영하거나<br>사진을 불러오세요</div><img id="photo" alt="불러온 고객 사진"><canvas id="lipOverlay" aria-hidden="true"></canvas><svg id="lipBoundary" aria-label="입술 경계 조정" xmlns="http://www.w3.org/2000/svg"></svg><div class="lip-detection" id="lipDetection" role="status" aria-live="polite" hidden></div><button class="lip-retry" id="lipRetry" hidden>다시 인식</button><button class="lip-compare" id="lipCompare" hidden aria-pressed="false">원본 비교</button><span class="photo-label" id="photoLabel" hidden>원본 사진</span></section>
@@ -272,16 +275,30 @@ async function detectLips(){
  lipState.points=points;lipState.originalPoints=points.map(p=>({...p}));$('boundaryTools').hidden=false;syncBoundaryButtons();$('lipCompare').hidden=false;lipStatus('입술 인식 완료 · 위에서 컬러를 선택해 주세요.');paintLips();
  }catch(e){if(token!==lipState.token)return;lipState.points=null;lipStatus(e.message==='NO_FACE'?'입술을 찾지 못했어요. 입술이 선명하게 보이는 얼굴 사진으로 다시 시도해 주세요.':'입술 인식 기능을 불러오지 못했어요. 인터넷 연결을 확인한 뒤 다시 인식해 주세요.');$('lipRetry').hidden=false;console.warn('Lip detection:',e)}
 }
-function lipPolygon(ctx,ids,points,w,h,ox,oy){ids.forEach((id,i)=>{const p=points[id],x=p.x*w-ox,y=p.y*h-oy;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.closePath()}
+function lipCurveSegments(ids,points,w,h,ox=0,oy=0){
+ const p=ids.map(id=>({x:points[id].x*w-ox,y:points[id].y*h-oy})),n=p.length;
+ return p.map((a,i)=>{const prev=p[(i+n-1)%n],b=p[(i+1)%n],next=p[(i+2)%n],k=.65/6;
+ return {a,b,c1:{x:a.x+(b.x-prev.x)*k,y:a.y+(b.y-prev.y)*k},c2:{x:b.x-(next.x-a.x)*k,y:b.y-(next.y-a.y)*k}}});
+}
+function lipPolygon(ctx,ids,points,w,h,ox,oy){const parts=lipCurveSegments(ids,points,w,h,ox,oy);ctx.moveTo(parts[0].a.x,parts[0].a.y);for(const p of parts)ctx.bezierCurveTo(p.c1.x,p.c1.y,p.c2.x,p.c2.y,p.b.x,p.b.y);ctx.closePath()}
+function lipCurvePath(ids,points,w,h){const p=lipCurveSegments(ids,points,w,h);return 'M'+p[0].a.x+' '+p[0].a.y+p.map(q=>' C'+q.c1.x+' '+q.c1.y+' '+q.c2.x+' '+q.c2.y+' '+q.b.x+' '+q.b.y).join('')+' Z'}
+function featherLipMask(rgba,w,h,radius){
+ const d=new Float32Array(w*h),far=w+h,diag=Math.SQRT2;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;d[i]=(rgba[i*4+3]<128||x===0||y===0||x===w-1||y===h-1)?0:far}
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;let v=d[i];if(x)v=Math.min(v,d[i-1]+1);if(y){v=Math.min(v,d[i-w]+1);if(x)v=Math.min(v,d[i-w-1]+diag);if(x<w-1)v=Math.min(v,d[i-w+1]+diag)}d[i]=v}
+ for(let y=h-1;y>=0;y--)for(let x=w-1;x>=0;x--){const i=y*w+x;let v=d[i];if(x<w-1)v=Math.min(v,d[i+1]+1);if(y<h-1){v=Math.min(v,d[i+w]+1);if(x)v=Math.min(v,d[i+w-1]+diag);if(x<w-1)v=Math.min(v,d[i+w+1]+diag)}d[i]=v}
+ for(let i=0;i<d.length;i++){const t=Math.max(0,Math.min(1,d[i]/Math.max(1,radius)));rgba[i*4+3]=Math.round(rgba[i*4+3]*t*t*(3-2*t))}
+ return rgba;
+}
 function hexRGB(hex){return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16))}
 function paintLips(){
  if(!lipState.points||!P.naturalWidth)return;
  const w=P.naturalWidth,h=P.naturalHeight,points=lipState.points,out=$('lipOverlay'),ctx=out.getContext('2d');ctx.clearRect(0,0,w,h);
  const active=Object.entries(lipState.applied);if(!active.length){lipStatus('입술 인식 완료 · 위에서 컬러를 선택해 주세요.');return}
- const ps=LIP_OUTER.map(i=>points[i]),x0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.x))*w)-3),y0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.y))*h)-3);
- const rw=Math.min(w-x0,Math.ceil(Math.max(...ps.map(p=>p.x))*w)-x0+3),rh=Math.min(h-y0,Math.ceil(Math.max(...ps.map(p=>p.y))*h)-y0+3);if(rw<2||rh<2)return;
+ const ps=LIP_OUTER.map(i=>points[i]),lipWidth=(Math.max(...ps.map(p=>p.x))-Math.min(...ps.map(p=>p.x)))*w,pad=Math.max(6,Math.ceil(lipWidth*.04)),x0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.x))*w)-pad),y0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.y))*h)-pad);
+ const rw=Math.min(w-x0,Math.ceil(Math.max(...ps.map(p=>p.x))*w)-x0+pad),rh=Math.min(h-y0,Math.ceil(Math.max(...ps.map(p=>p.y))*h)-y0+pad);if(rw<2||rh<2)return;
  const mask=document.createElement('canvas');mask.width=rw;mask.height=rh;const m=mask.getContext('2d');m.beginPath();lipPolygon(m,LIP_OUTER,points,w,h,x0,y0);lipPolygon(m,LIP_INNER,points,w,h,x0,y0);m.fillStyle='#fff';m.fill('evenodd');
- const alpha=m.getImageData(0,0,rw,rh).data,c=document.createElement('canvas');c.width=rw;c.height=rh;const z=c.getContext('2d');z.drawImage(P,x0,y0,rw,rh,0,0,rw,rh);const pixels=z.getImageData(0,0,rw,rh),data=pixels.data;
+ const alpha=featherLipMask(m.getImageData(0,0,rw,rh).data,rw,rh,Math.max(2,lipWidth*.018)),c=document.createElement('canvas');c.width=rw;c.height=rh;const z=c.getContext('2d');z.drawImage(P,x0,y0,rw,rh,0,0,rw,rh);const pixels=z.getImageData(0,0,rw,rh),data=pixels.data;
  let sum=0,count=0;for(let i=0;i<data.length;i+=4)if(alpha[i+3]>128){sum+=data[i]*.2126+data[i+1]*.7152+data[i+2]*.0722;count++}
  const mean=sum/Math.max(1,count),strength=lipState.strength/100;
  for(let i=0;i<data.length;i+=4){
@@ -310,7 +327,7 @@ function drawBoundary(){
  const w=P.naturalWidth,h=P.naturalHeight,fit=Math.min(stage.clientWidth/w,stage.clientHeight/h),r=4.5/(fit*zoom);
  svg.setAttribute('viewBox','0 0 '+w+' '+h);svg.setAttribute('preserveAspectRatio','xMidYMid meet');svg.replaceChildren();
  for(const [ids,color,label] of [[LIP_OUTER,'#ed6f9e','바깥 입술선'],[LIP_INNER,'#58bad0','입 안쪽 경계']]){
- const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',ids.map((id,i)=>(i?'L':'M')+(lipState.points[id].x*w)+' '+(lipState.points[id].y*h)).join(' ')+'Z');path.setAttribute('fill','none');path.setAttribute('stroke','transparent');path.setAttribute('stroke-width',1.2/(fit*zoom));svg.append(path);
+ const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',lipCurvePath(ids,lipState.points,w,h));path.setAttribute('fill','none');path.setAttribute('stroke','transparent');path.setAttribute('stroke-width',1.2/(fit*zoom));svg.append(path);
  for(const id of ids){const node=document.createElementNS(svg.namespaceURI,'circle'),p=lipState.points[id];node.setAttribute('cx',p.x*w);node.setAttribute('cy',p.y*h);node.setAttribute('r',12/(fit*zoom));node.setAttribute('fill','transparent');node.setAttribute('stroke','none');node.setAttribute('class','lip-node');node.dataset.point=String(id);node.setAttribute('aria-label',label+' 조절점');svg.append(node);const dot=document.createElementNS(svg.namespaceURI,'circle');dot.setAttribute('cx',p.x*w);dot.setAttribute('cy',p.y*h);dot.setAttribute('r',2.8/(fit*zoom));dot.setAttribute('fill','#fff');dot.style.pointerEvents='none';svg.append(dot)}
  }
 }
@@ -318,7 +335,7 @@ let lipDrag=null,boundaryBackup=null,boundaryView=null;
 $('lipBoundary').addEventListener('pointerdown',e=>{
  const id=e.target.dataset.point;if(id===undefined)return;e.preventDefault();e.stopPropagation();
  lipState.history.push(lipState.points.map(p=>({...p})));if(lipState.history.length>30)lipState.history.shift();
- lipDrag={id:Number(id),pointer:e.pointerId};$('lipBoundary').setPointerCapture(e.pointerId);syncBoundaryButtons();
+ lipDrag={id:Number(id),pointer:e.pointerId};showLipLens(e);$('lipBoundary').setPointerCapture(e.pointerId);syncBoundaryButtons();
 });
 $('lipBoundary').addEventListener('pointermove',e=>{
  if(!lipDrag||lipDrag.pointer!==e.pointerId)return;e.preventDefault();e.stopPropagation();
@@ -326,11 +343,12 @@ $('lipBoundary').addEventListener('pointermove',e=>{
  const x=((e.clientX-rect.left-sw/2-panX)/zoom+sw/2-(sw-rw)/2)/rw;
  const y=((e.clientY-rect.top-sh/2-panY)/zoom+sh/2-(sh-rh)/2)/rh;
  lipState.points[lipDrag.id]={...lipState.points[lipDrag.id],x:Math.max(0,Math.min(1,x)),y:Math.max(0,Math.min(1,y))};
- drawBoundary();paintLips();
+ drawBoundary();scheduleLipPaint();showLipLens(e);
 });
-function endBoundary(e){if(lipDrag&&lipDrag.pointer===e.pointerId){lipDrag=null;e.stopPropagation()}}
+function endBoundary(e){if(lipDrag&&lipDrag.pointer===e.pointerId){lipDrag=null;hideLipLens();e.stopPropagation()}}
 $('lipBoundary').addEventListener('pointerup',endBoundary);$('lipBoundary').addEventListener('pointercancel',endBoundary);
 function finishBoundary(accept){
+ hideLipLens();
  if(!accept&&boundaryBackup)lipState.points=boundaryBackup.map(p=>({...p}));
  lipState.editing=false;document.querySelector('.app').classList.remove('boundary-edit');$('boundaryFooter').hidden=true;
  if(boundaryView){zoom=boundaryView.zoom;panX=boundaryView.panX;panY=boundaryView.panY}
@@ -351,4 +369,27 @@ $('boundaryDone').onclick=()=>finishBoundary(true);
 $('boundaryUndo').onclick=()=>{if(lipState.history.length){lipState.points=lipState.history.pop();drawBoundary();paintLips();syncBoundaryButtons()}};
 $('boundaryReset').onclick=()=>{if(lipState.originalPoints){lipState.history.push(lipState.points.map(p=>({...p})));lipState.points=lipState.originalPoints.map(p=>({...p}));drawBoundary();paintLips();syncBoundaryButtons()}};
 window.addEventListener('resize',drawBoundary);
+
+let lipPaintPending=false,lipLensFrame=0,lipLensTouch=null;
+function scheduleLipPaint(){if(lipPaintPending)return;lipPaintPending=true;requestAnimationFrame(()=>{lipPaintPending=false;paintLips();if(lipLensTouch)renderLipLens()})}
+const lipLens=document.createElement('div');lipLens.id='lipLens';const lipLensCanvas=document.createElement('canvas');lipLensCanvas.width=lipLensCanvas.height=288;lipLens.append(lipLensCanvas);document.body.append(lipLens);
+function hideLipLens(){lipLensTouch=null;lipLens.style.display='none';if(lipLensFrame){cancelAnimationFrame(lipLensFrame);lipLensFrame=0}}
+function showLipLens(e){lipLensTouch={clientX:e.clientX,clientY:e.clientY};if(!lipLensFrame)lipLensFrame=requestAnimationFrame(()=>{lipLensFrame=0;renderLipLens()})}
+function renderLipLens(){
+ if(!lipLensTouch||!lipDrag||!lipState.editing||!lipState.points){hideLipLens();return}
+ const t=lipLensTouch,p=lipState.points[lipDrag.id],w=P.naturalWidth,h=P.naturalHeight,fit=Math.min(stage.clientWidth/w,stage.clientHeight/h);
+ const ix=p.x*w,iy=p.y*h,src=60/(zoom*fit),n=lipLensCanvas.width,c=lipLensCanvas.getContext('2d');
+ c.clearRect(0,0,n,n);c.fillStyle='#fff';c.fillRect(0,0,n,n);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
+ c.drawImage(P,ix-src/2,iy-src/2,src,src,0,0,n,n);
+ if(!lipState.compare)c.drawImage($('lipOverlay'),ix-src/2,iy-src/2,src,src,0,0,n,n);
+ c.save();c.translate(n/2,n/2);c.scale(n/src,n/src);c.translate(-ix,-iy);c.strokeStyle='#e796b5';c.lineWidth=src/n*2.4;
+ for(const ids of [LIP_OUTER,LIP_INNER]){c.beginPath();lipPolygon(c,ids,lipState.points,w,h,0,0);c.stroke()}c.restore();
+ c.beginPath();c.arc(n/2,n/2,7,0,Math.PI*2);c.fillStyle='#fff';c.fill();c.strokeStyle='#d7759d';c.lineWidth=3;c.stroke();
+ // v18.8 lens placement and animation-frame tracking.
+ const lx=Math.min(innerWidth-64,Math.max(64,t.clientX+82)),ly=Math.min(innerHeight-64,Math.max(64,t.clientY-128));
+ lipLens.style.left=lx+'px';lipLens.style.top=ly+'px';lipLens.style.display='block';
+}
+document.addEventListener('touchstart',e=>{if(e.touches.length>1)hideLipLens()},{passive:true});
+document.addEventListener('touchcancel',hideLipLens,{passive:true});
+window.addEventListener('blur',hideLipLens);
 </script></body></html>
