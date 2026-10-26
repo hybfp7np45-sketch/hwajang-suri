@@ -284,17 +284,23 @@ async function alternativeLipDetect(input){
  const model=await alternativeLipPromise,faces=await model.estimateFaces(input,{flipHorizontal:false,staticImageMode:true});
  return faces[0]?.keypoints.map(p=>({x:p.x/input.width,y:p.y/input.height,z:(p.z||0)/input.width}));
 }
+let lipWorker=null,lipWorkerSeq=0;
+function stopLipWorker(){if(lipWorker){lipWorker.terminate();lipWorker=null}}
 async function automaticLipPoints(input,token){
- try{
- const model=await getLipModel();if(token!==lipState.token)return null;
- const result=model.detect(input),points=result.faceLandmarks?.[0];if(points)return points;
- }catch(e){console.warn('Primary lip recognition:',e);try{lipState.model?.close()}catch(_){}lipState.model=null;lipState.promise=null}
- if(token!==lipState.token)return null;lipStatus('다른 인식 방식으로 입술을 다시 찾고 있어요.');
- const points=await alternativeLipDetect(input);if(!points)throw new Error('NO_FACE');return points;
+ stopLipWorker();
+ const code="let detector=null;\nfunction init(){return (async()=>{\n importScripts('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js');\n try{importScripts('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.22.0/dist/tf-backend-wasm.js');tf.wasm.setWasmPaths('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.22.0/dist/');tf.env().set('WASM_HAS_MULTITHREAD_SUPPORT',false);await tf.setBackend('wasm')}catch(e){await tf.setBackend('cpu')}\n await tf.ready();\n importScripts('https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.3/dist/face-detection.min.js');\n importScripts('https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.6/dist/face-landmarks-detection.min.js');\n detector=await faceLandmarksDetection.createDetector(faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,{runtime:'tfjs',refineLandmarks:false,maxFaces:1,detectorModelUrl:'https://storage.googleapis.com/tfhub-lite-models/mediapipe/tfjs-model/face_detection/short/1/default/1/model.json',landmarkModelUrl:'https://storage.googleapis.com/tfhub-lite-models/mediapipe/tfjs-model/face_landmarks_detection/face_mesh/1/default/1/model.json'});\n })()}\nlet ready=null;\nself.onmessage=async e=>{const {id,width,height,pixels}=e.data;let tensor;\n try{if(!ready)ready=init();await ready;tensor=tf.tensor3d(new Uint8Array(pixels),[height,width,3],'int32');\n const faces=await detector.estimateFaces(tensor,{flipHorizontal:false,staticImageMode:true});\n const points=faces[0]?.keypoints.map(p=>({x:p.x/width,y:p.y/height,z:(p.z||0)/width}));\n self.postMessage({id,points:points||null});\n }catch(err){self.postMessage({id,error:String(err.message||err)});ready=null}finally{tensor?.dispose()}\n};",u=URL.createObjectURL(new Blob([code],{type:'text/javascript'}));lipWorker=new Worker(u);URL.revokeObjectURL(u);
+ const worker=lipWorker,id=++lipWorkerSeq,rgba=input.getContext('2d').getImageData(0,0,input.width,input.height).data,rgb=new Uint8Array(input.width*input.height*3);
+ for(let i=0,j=0;i<rgba.length;i+=4){rgb[j++]=rgba[i];rgb[j++]=rgba[i+1];rgb[j++]=rgba[i+2]}
+ return await new Promise((resolve,reject)=>{
+ const timer=setTimeout(()=>{worker.terminate();if(lipWorker===worker)lipWorker=null;reject(new Error('인식 시간 초과'))},25000);
+ worker.onmessage=e=>{if(e.data.id!==id)return;clearTimeout(timer);worker.terminate();if(lipWorker===worker)lipWorker=null;if(e.data.error)reject(new Error(e.data.error));else if(!e.data.points)reject(new Error('NO_FACE'));else resolve(e.data.points)};
+ worker.onerror=e=>{clearTimeout(timer);worker.terminate();if(lipWorker===worker)lipWorker=null;reject(new Error(e.message||'입술 인식 실행 실패'))};
+ worker.postMessage({id,width:input.width,height:input.height,pixels:rgb.buffer},[rgb.buffer]);
+ });
 }
 async function detectLips(){
- const token=++lipState.token,source=P.src;lipState.manualCorners=null;$('boundaryToggle').disabled=true;$('boundaryToggle').textContent='입술 인식 중…';$('manualLip').hidden=true;lipState.points=null;lipState.originalPoints=null;lipState.history=[];lipState.editing=false;$('boundaryTools').hidden=false;$('lipBoundary').replaceChildren();lipState.compare=false;$('lipCompare').hidden=true;$('lipCompare').setAttribute('aria-pressed','false');$('lipRetry').hidden=true;
- const overlay=$('lipOverlay');overlay.width=P.naturalWidth;overlay.height=P.naturalHeight;overlay.style.visibility='visible';lipStatus('입술을 찾는 중이에요. 첫 실행은 조금 걸릴 수 있어요.');
+ stopLipWorker();const token=++lipState.token,source=P.src;lipState.manualCorners=null;$('boundaryToggle').disabled=false;$('boundaryToggle').textContent='입술 영역 직접 지정';$('manualLip').hidden=false;lipState.points=null;lipState.originalPoints=null;lipState.history=[];lipState.editing=false;$('boundaryTools').hidden=false;$('lipBoundary').replaceChildren();lipState.compare=false;$('lipCompare').hidden=true;$('lipCompare').setAttribute('aria-pressed','false');$('lipRetry').hidden=true;
+ const overlay=$('lipOverlay');overlay.width=P.naturalWidth;overlay.height=P.naturalHeight;overlay.style.visibility='visible';lipStatus('입술 자동 인식 중 · 기다리지 않고 아래 버튼으로 직접 지정할 수도 있어요.');
  try{
  const input=document.createElement('canvas'),ratio=Math.min(1,800/Math.max(P.naturalWidth,P.naturalHeight));input.width=Math.round(P.naturalWidth*ratio);input.height=Math.round(P.naturalHeight*ratio);input.getContext('2d').drawImage(P,0,0,input.width,input.height);
  await new Promise(r=>requestAnimationFrame(r));
@@ -415,7 +421,7 @@ function finishBoundary(accept){
 }
 $('boundaryToggle').onclick=()=>{
  if(lipState.manualCorners){lipState.manualCorners=null;syncBoundaryButtons();lipStatus('직접 지정을 취소했어요. 다시 인식하거나 입술 영역 조정을 눌러 주세요.');return}
- if(!lipState.points){detectLips();return}
+ if(!lipState.points){beginManualLip();return}
  boundaryBackup=lipState.points.map(p=>({...p}));boundaryView={zoom,panX,panY};lipState.editing=true;lipState.history=[];
  document.querySelector('.app').classList.add('boundary-edit');$('boundaryFooter').hidden=false;syncBoundaryButtons();
  requestAnimationFrame(()=>{const ps=LIP_OUTER.map(i=>lipState.points[i]),cx=(Math.min(...ps.map(p=>p.x))+Math.max(...ps.map(p=>p.x)))/2,cy=(Math.min(...ps.map(p=>p.y))+Math.max(...ps.map(p=>p.y)))/2;
@@ -455,6 +461,7 @@ window.addEventListener('blur',hideLipLens);
 
 $('manualLip').onclick=beginManualLip;
 function beginManualLip(){
+ stopLipWorker();$('boundaryToggle').disabled=false;
  $('manualLip').hidden=true;
  lipState.token++;$('lipRetry').hidden=true;lipState.manualCorners=[];panelOpen=false;$('color-panel').hidden=true;render();resetView();
  lipStatus('자동 인식 대신 직접 지정해요. 사진에서 왼쪽 입꼬리를 한 번 눌러 주세요.');
