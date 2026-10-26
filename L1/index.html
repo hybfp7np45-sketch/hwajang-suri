@@ -500,9 +500,51 @@ async function detectLips(){
  await new Promise(r=>requestAnimationFrame(r));
  const points=await automaticLipPoints(input,token);if(token!==lipState.token||source!==P.src)return;if(!points)throw new Error('NO_FACE');
  let refinement={points,refined:false};try{refinement=refineDetectedLipContour(points,P)}catch(err){console.warn('입술 경계 정밀 보정 생략',err)}
- const expanded=expandDetectedLips(refinement.points,P.naturalWidth,P.naturalHeight,refinement.refined?.18:1);lipState.points=expanded;lipState.originalPoints=expanded.map(p=>({...p}));$('boundaryToggle').disabled=false;$('boundaryTools').hidden=false;syncBoundaryButtons();$('lipCompare').hidden=false;lipStatus('입술 인식 완료 · 위에서 컬러를 선택해 주세요.');try{paintLips()}catch(err){console.error('입술 컬러 표시 오류',err);lipStatus('입술은 인식했어요. 컬러를 다시 선택해 주세요.')}
+ let innerRefined=refinement.points;try{innerRefined=refineInnerLipContour(refinement.points,P)}catch(err){console.warn('입술 안쪽 경계 보정 생략',err)}
+ const expanded=expandDetectedLips(innerRefined,P.naturalWidth,P.naturalHeight,refinement.refined?.18:1);lipState.points=expanded;lipState.originalPoints=expanded.map(p=>({...p}));$('boundaryToggle').disabled=false;$('boundaryTools').hidden=false;syncBoundaryButtons();$('lipCompare').hidden=false;lipStatus('입술 인식 완료 · 위에서 컬러를 선택해 주세요.');try{paintLips()}catch(err){console.error('입술 컬러 표시 오류',err);lipStatus('입술은 인식했어요. 컬러를 다시 선택해 주세요.')}
  }catch(e){if(token!==lipState.token)return;lipState.points=null;$('boundaryToggle').disabled=false;$('manualLip').hidden=false;$('boundaryTools').hidden=false;syncBoundaryButtons();lipStatus(e.message==='NO_FACE'?'입술을 찾지 못했어요. 입술이 선명하게 보이는 얼굴 사진으로 다시 시도해 주세요.':'입술 인식 기능을 불러오지 못했어요. 인터넷 연결을 확인한 뒤 다시 인식해 주세요.');$('lipRetry').hidden=false;console.warn('Lip detection:',e)}
 }
+function refineInnerLipPixels(points,w,h,rgba){
+ const ids=LIP_INNER,p=ids.map(i=>({x:points[i].x*w,y:points[i].y*h})),outer=LIP_OUTER.map(i=>points[i].y*h),height=Math.max(...outer)-Math.min(...outer),left=Math.min(...p.map(q=>q.x)),right=Math.max(...p.map(q=>q.x));
+ if(height<12||right-left<25)return points;
+ const lum=(x,y)=>{let sum=0;for(const dx of [-1,0,1]){const ix=Math.max(0,Math.min(w-1,Math.round(x+dx*height*.008))),iy=Math.max(0,Math.min(h-1,Math.round(y))),k=(iy*w+ix)*4;sum+=rgba[k]*.2126+rgba[k+1]*.7152+rgba[k+2]*.0722}return sum/3};
+ const bounds=x=>{const ys=[];for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];if(x<Math.min(a.x,b.x)||x>Math.max(a.x,b.x)||Math.abs(b.x-a.x)<.001)continue;ys.push(a.y+(b.y-a.y)*(x-a.x)/(b.x-a.x))}return ys.length?[Math.min(...ys),Math.max(...ys)]:null};
+ const cols=61,states=41,step=height*.26/(states-1),rows=[],scores=[];
+ for(let c=0;c<cols;c++){
+  const x=left+(right-left)*(c+.5)/cols,b=bounds(x);if(!b)return points;const cy=(b[0]+b[1])/2;rows.push({x,b,cy});
+  scores.push(Array.from({length:states},(_,j)=>{const y=cy-height*.13+j*step,mid=lum(x,y),near=(lum(x,y-height*.065)+lum(x,y+height*.065))/2;return (near-mid)*.035-mid*.003-2*((y-cy)/height)**2}));
+ }
+ let prev=Float64Array.from(scores[0]);const back=[];
+ for(let c=1;c<cols;c++){const next=new Float64Array(states).fill(-Infinity),links=new Int16Array(states);for(let j=0;j<states;j++)for(let k=0;k<states;k++){const penalty=100*((j-k)*step/height)**2,v=prev[k]+scores[c][j]-penalty;if(v>next[j]){next[j]=v;links[j]=k}}back[c]=links;prev=next}
+ const path=new Int16Array(cols);path[cols-1]=prev.indexOf(Math.max(...prev));for(let c=cols-1;c>0;c--)path[c-1]=back[c][path[c]];
+ const edges=rows.map((r,c)=>{
+  const cy=r.cy-height*.13+path[c]*step,mid=lum(r.x,cy),near=(lum(r.x,cy-height*.065)+lum(r.x,cy+height*.065))/2;
+  if(near-mid<6)return {top:r.b[0],bottom:r.b[1],valid:false};
+  const threshold=mid+(near-mid)*.35,maxHalf=Math.max(height*.018,Math.min(height*.14,(r.b[1]-r.b[0])/2+height*.025));let top=cy,bottom=cy;
+  while(cy-top<maxHalf&&lum(r.x,top-1)<threshold)top--;
+  while(bottom-cy<maxHalf&&lum(r.x,bottom+1)<threshold)bottom++;
+  return {top:top-.5,bottom:bottom+.5,valid:true};
+ });
+ if(edges.filter(e=>e.valid).length<cols*.4)return points;
+ const result=points.map(p=>({...p}));
+ ids.forEach((id,i)=>{
+  // Mouth corners are shared endpoints; keep their original position.
+  if(i===0||i===10)return;
+  const pos=Math.max(0,Math.min(cols-1,(points[id].x*w-left)/(right-left)*cols-.5)),a=Math.floor(pos),b=Math.min(cols-1,a+1),t=pos-a,key=i<10?'top':'bottom';
+  if(!edges[a].valid||!edges[b].valid)return;
+  const y=edges[a][key]*(1-t)+edges[b][key]*t;
+  result[id]={...result[id],y:Math.max(0,Math.min(1,y/h))};
+ });
+ return result;
+}
+function refineInnerLipContour(points,photo){
+ const w=photo.naturalWidth,h=photo.naturalHeight,ps=LIP_OUTER.map(i=>points[i]),pad=(Math.max(...ps.map(p=>p.y))-Math.min(...ps.map(p=>p.y)))*h*.25,x0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.x))*w-pad)),y0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.y))*h-pad)),cw=Math.min(w-x0,Math.ceil(Math.max(...ps.map(p=>p.x))*w+pad)-x0),ch=Math.min(h-y0,Math.ceil(Math.max(...ps.map(p=>p.y))*h+pad)-y0),scale=Math.min(1,760/cw);
+ const c=document.createElement('canvas');c.width=Math.max(1,Math.round(cw*scale));c.height=Math.max(1,Math.round(ch*scale));const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(photo,x0,y0,cw,ch,0,0,c.width,c.height);
+ const local=points.map(p=>({...p,x:(p.x*w-x0)/cw,y:(p.y*h-y0)/ch})),r=refineInnerLipPixels(local,c.width,c.height,ctx.getImageData(0,0,c.width,c.height).data),result=points.map(p=>({...p}));
+ // Only inner points change; preserve the approved outer contour exactly.
+ LIP_INNER.forEach(id=>{result[id]={...result[id],y:(r[id].y*ch+y0)/h}});return result;
+}
+
 function refineLipContourPixels(points,w,h,rgba){
  const ids=LIP_OUTER,n=ids.length,p=ids.map(id=>({x:points[id].x*w,y:points[id].y*h}));
  const height=Math.max(...p.map(q=>q.y))-Math.min(...p.map(q=>q.y)),width=Math.max(...p.map(q=>q.x))-Math.min(...p.map(q=>q.x));
