@@ -93,12 +93,12 @@ header{order:0;flex-shrink:0}
 </style></head><body>
 <main class="app"><header><button class="tool" id="camera" aria-label="촬영"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 7.3 8.7 5h6.6l1.5 2.3H19a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.3a2 2 0 0 1 2-2h2.2Z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button><button class="tool" id="upload" aria-label="사진 불러오기"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.2"/><path d="M5.7 19c.5-4 2.8-6 6.3-6s5.8 2 6.3 6"/></svg></button><button class="tool save" id="save" aria-label="저장"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m8.5 11.5 3.5 3.5 3.5-3.5"/><path d="M5 19h14"/></svg></button></header>
 <section class="stage" aria-label="사진 미리보기"><div class="empty" id="empty"><svg viewBox="0 0 64 64"><rect x="9" y="7" width="46" height="50" rx="9"/><circle cx="24" cy="23" r="5"/><path d="m10 48 15-15 10 10 9-9 11 12"/></svg>사진을 촬영하거나<br>사진을 불러오세요</div><img id="photo" alt="불러온 고객 사진"><canvas id="lipOverlay" aria-hidden="true"></canvas><svg id="lipBoundary" aria-label="입술 경계 조정" xmlns="http://www.w3.org/2000/svg"></svg><div class="lip-detection" id="lipDetection" role="status" aria-live="polite" hidden></div><button class="lip-retry" id="lipRetry" hidden>다시 인식</button><button class="lip-compare" id="lipCompare" hidden aria-pressed="false">원본 비교</button><span class="photo-label" id="photoLabel" hidden>원본 사진</span></section>
-<section class="panel"><div class="tabs" role="tablist" aria-label="입술 컬러 영역"><button class="tab" id="tab-tone" role="tab" aria-selected="false" aria-controls="color-panel" data-group="톤업">톤업</button><button class="tab" id="tab-base" role="tab" aria-selected="false" aria-controls="color-panel" data-group="베이스">베이스</button><button class="tab" id="tab-point" role="tab" aria-selected="false" aria-controls="color-panel" data-group="포인트">포인트</button></div><div id="color-panel" hidden role="tabpanel" aria-labelledby="tab-tone"><div class="selection"><strong id="selection"></strong><span>컬러를 선택해 보세요</span></div><div class="colors" id="colors"></div><label class="lip-strength">진하기 <input id="lipStrength" type="range" min="0" max="100" value="65" aria-label="입술 컬러 진하기"><output id="lipStrengthValue">65%</output></label><label class="lip-strength">테두리 부드러움 <input id="lipSoftness" type="range" min="0" max="100" value="70" aria-label="입술 테두리 부드러움"><output id="lipSoftnessValue">70%</output></label></div><p class="note">컬러 선택 화면 · 입술 색상 적용은 다음 단계에서 추가됩니다</p></section><div class="boundary-tools" id="boundaryTools" hidden><button id="boundaryToggle">입술 영역 조정</button><button id="boundaryUndo" hidden>되돌리기</button><button id="boundaryReset" hidden>자동 경계</button></div><div class="boundary-footer" id="boundaryFooter" hidden><p>점을 움직여 입술 경계를 맞춰 주세요</p><div><button id="boundaryCancel" aria-label="경계 조정 취소">×</button><strong>입술 경계 조정</strong><button id="boundaryDone" aria-label="경계 조정 완료">✓</button></div></div></main>
+<section class="panel"><div class="tabs" role="tablist" aria-label="입술 컬러 영역"><button class="tab" id="tab-tone" role="tab" aria-selected="false" aria-controls="color-panel" data-group="톤업">톤업</button><button class="tab" id="tab-base" role="tab" aria-selected="false" aria-controls="color-panel" data-group="베이스">베이스</button><button class="tab" id="tab-point" role="tab" aria-selected="false" aria-controls="color-panel" data-group="포인트">포인트</button></div><div id="color-panel" hidden role="tabpanel" aria-labelledby="tab-tone"><div class="selection"><strong id="selection"></strong><span>컬러를 선택해 보세요</span></div><div class="colors" id="colors"></div><label class="lip-strength">진하기 <input id="lipStrength" type="range" min="0" max="100" value="65" aria-label="입술 컬러 진하기"><output id="lipStrengthValue">65%</output></label></div><p class="note">컬러 선택 화면 · 입술 색상 적용은 다음 단계에서 추가됩니다</p></section><div class="boundary-tools" id="boundaryTools" hidden><button id="boundaryToggle">입술 영역 조정</button><button id="boundaryUndo" hidden>되돌리기</button><button id="boundaryReset" hidden>자동 경계</button></div><div class="boundary-footer" id="boundaryFooter" hidden><p>점을 움직여 입술 경계를 맞춰 주세요</p><div><button id="boundaryCancel" aria-label="경계 조정 취소">×</button><strong>입술 경계 조정</strong><button id="boundaryDone" aria-label="경계 조정 완료">✓</button></div></div></main>
 <input type="file" accept="image/*" id="photos" hidden><input type="file" accept="image/*" id="files" hidden>
 <div class="overlay" id="picker" hidden><div class="sheet" role="dialog" aria-modal="true" aria-label="사진 불러오기"><button id="pickPhotos">사진 불러오기</button><button id="pickFiles">파일 불러오기</button><button id="cancelPick">취소</button></div></div>
 <div class="camview" id="camview"><video id="camvideo" autoplay playsinline muted></video><div class="grid" id="grid"></div><button class="camclose" id="camclose">닫기</button><button class="gridbtn" id="gridbtn">Guide ON</button><button class="flipcam" id="flipcam" aria-label="카메라 전환">↻</button><div class="camctl"><button class="shot" id="shot" aria-label="촬영"></button></div><canvas id="camcanvas" hidden></canvas></div><script>
 const $=id=>document.getElementById(id);
-let lipState={token:0,manualCorners:null,points:null,originalPoints:null,editing:false,history:[],applied:{},strength:65,softness:70,compare:false,model:null,promise:null};
+let lipState={token:0,manualCorners:null,points:null,originalPoints:null,editing:false,history:[],applied:{},strength:65,compare:false,model:null,promise:null};
 const palettes={'톤업':[['피치톤업','#f5b9a6'],['핑크톤업','#efb0b9'],['살몬톤업','#ee9c8e'],['코랄톤업','#f1a18a'],['로즈톤업','#d99aa5'],['누드톤업','#dfb4a7']],'베이스':[['립베이스','#eec3b8'],['연핑크','#d9899c'],['로즈','#b96176'],['살구','#da9484'],['코랄','#de8173'],['누드','#ba8b80'],['모브','#ac7a91']],'포인트':[['핑크','#d65c88'],['로즈레드','#bb405b'],['체리','#b92c4e'],['레드','#c73e45'],['코랄레드','#df6253'],['플럼','#843d60'],['버건디','#783247']]};
 let panelOpen=false;let group='톤업',selected={'톤업':0,'베이스':0,'포인트':0},photoURL=null;
 function render(){document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(panelOpen&&t.dataset.group===group)));$('color-panel').setAttribute('aria-labelledby',document.querySelector('.tab[data-group="'+group+'"]').id);$('selection').textContent=group+' · '+palettes[group][selected[group]][0];$('colors').replaceChildren(...palettes[group].map(([name,color],i)=>{let b=document.createElement('button');b.className='swatch';b.setAttribute('aria-label',name);b.setAttribute('aria-pressed',String(i===selected[group]));let chip=document.createElement('span');chip.className='chip';chip.style.setProperty('--c',color);let label=document.createElement('span');label.textContent=name;b.append(chip,label);b.onclick=()=>{selected[group]=i;lipState.applied[group]=palettes[group][i][1];render();paintLips()};return b}));}
@@ -291,6 +291,21 @@ function featherLipMask(rgba,w,h,radius){
  return rgba;
 }
 function hexRGB(hex){return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16))}
+function blendLipOutline(rgba,w,h,outside,inside){
+ function distanceTo(target){
+  const d=new Float32Array(w*h),far=w+h,diag=Math.SQRT2;
+  for(let i=0;i<d.length;i++)d[i]=((rgba[i*4+3]>=128)===target)?0:far;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;let v=d[i];if(x)v=Math.min(v,d[i-1]+1);if(y){v=Math.min(v,d[i-w]+1);if(x)v=Math.min(v,d[i-w-1]+diag);if(x<w-1)v=Math.min(v,d[i-w+1]+diag)}d[i]=v}
+  for(let y=h-1;y>=0;y--)for(let x=w-1;x>=0;x--){const i=y*w+x;let v=d[i];if(x<w-1)v=Math.min(v,d[i+1]+1);if(y<h-1){v=Math.min(v,d[i+w]+1);if(x)v=Math.min(v,d[i+w-1]+diag);if(x<w-1)v=Math.min(v,d[i+w+1]+diag)}d[i]=v}return d;
+ }
+ const toInside=distanceTo(true),toOutside=distanceTo(false),result=new Uint8ClampedArray(rgba);
+ for(let i=0;i<toInside.length;i++){
+  const signed=rgba[i*4+3]>=128?toOutside[i]-.5:-(toInside[i]-.5);
+  const t=Math.max(0,Math.min(1,(signed+outside)/(outside+inside)));
+  result[i*4+3]=Math.round(255*t*t*(3-2*t));
+ }
+ return result;
+}
 function paintLips(){
  if(!lipState.points||!P.naturalWidth)return;
  const w=P.naturalWidth,h=P.naturalHeight,points=lipState.points,out=$('lipOverlay'),ctx=out.getContext('2d');ctx.clearRect(0,0,w,h);
@@ -301,8 +316,8 @@ function paintLips(){
  const makeMask=()=>{const c=document.createElement('canvas');c.width=rw;c.height=rh;return c};
  const outer=makeMask(),m=outer.getContext('2d');m.beginPath();lipPolygon(m,LIP_OUTER,points,w,h,x0,y0);m.fillStyle='#fff';m.fill();
  const rawOuter=m.getImageData(0,0,rw,rh).data;
- const fade=Math.max(2,Math.min(lipWidth*(.02+.065*lipState.softness/100),lipHeight*.32));
- const softOuter=featherLipMask(new Uint8ClampedArray(rawOuter),rw,rh,fade);
+ const outsideFade=Math.max(1,Math.min(lipWidth*.015,lipHeight*.07)),insideFade=Math.max(1.5,Math.min(lipWidth*.018,lipHeight*.09));
+ const softOuter=blendLipOutline(rawOuter,rw,rh,outsideFade,insideFade);
  const inner=makeMask(),ic=inner.getContext('2d');ic.fillStyle='#fff';ic.fillRect(0,0,rw,rh);ic.globalCompositeOperation='destination-out';ic.beginPath();lipPolygon(ic,LIP_INNER,points,w,h,x0,y0);ic.fill();
  const softInner=featherLipMask(ic.getImageData(0,0,rw,rh).data,rw,rh,Math.max(1,lipWidth*.007));
  const c=makeMask(),z=c.getContext('2d');z.drawImage(P,x0,y0,rw,rh,0,0,rw,rh);const pixels=z.getImageData(0,0,rw,rh),data=pixels.data;
@@ -318,8 +333,6 @@ function paintLips(){
  for(let i=0;i<data.length;i+=4){
   let alpha=softOuter[i+3]/255*softInner[i+3]/255;if(alpha===0){data[i+3]=0;continue}
   const lum=data[i]*.2126+data[i+1]*.7152+data[i+2]*.0722;
-  // Attenuate skin-colored pixels near the outer edge without expanding the mask.
-  if(separation>9&&softOuter[i+3]<245){const cr=data[i]-data[i+1],cb=data[i+2]-data[i+1],dl=Math.hypot(cr-lipR,cb-lipB),ds=Math.hypot(cr-skinR,cb-skinB);alpha*=Math.max(.12,Math.min(1,.65+(ds-dl)/separation))}
   for(const {kind,rgb,y} of layers){
    let amount=strength*(kind==='톤업'?.46:kind==='베이스'?.76:.86);
    if(kind==='포인트'){const py=Math.floor(i/4/rw)+y0,cy=(points[13].y+points[14].y)*h/2;amount*=Math.max(.3,1-Math.abs(py-cy)/Math.max(1,lipHeight*.7))}
@@ -333,7 +346,6 @@ function paintLips(){
  ctx.putImageData(pixels,x0,y0);out.style.visibility=lipState.compare?'hidden':'visible';lipStatus('입술 영역에 컬러 적용 중');
 }
 $('lipRetry').onclick=()=>detectLips();
-$('lipSoftness').oninput=e=>{lipState.softness=Number(e.target.value);$('lipSoftnessValue').value=lipState.softness+'%';paintLips()};
 $('lipStrength').oninput=e=>{lipState.strength=Number(e.target.value);$('lipStrengthValue').value=lipState.strength+'%';paintLips()};
 $('lipCompare').onclick=()=>{lipState.compare=!lipState.compare;$('lipOverlay').style.visibility=lipState.compare?'hidden':'visible';$('lipCompare').setAttribute('aria-pressed',String(lipState.compare));$('lipCompare').textContent=lipState.compare?'컬러 보기':'원본 비교'};
 
