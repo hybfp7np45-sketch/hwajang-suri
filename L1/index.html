@@ -579,7 +579,9 @@ function paintLips(){
  const makeMask=()=>{const c=document.createElement('canvas');c.width=rw;c.height=rh;return c};
  const outer=makeMask(),m=outer.getContext('2d');m.beginPath();lipPolygon(m,LIP_OUTER,points,w,h,x0,y0);m.fillStyle='#fff';m.fill();
  const rawOuter=m.getImageData(0,0,rw,rh).data;
- const outsideFade=Math.max(1,Math.min(lipWidth*.0306,lipHeight*.1445)),insideFade=Math.max(1,Math.min(lipWidth*.0136,lipHeight*.068));
+ // Feather mostly inward, like one soft eraser pass along the outline.
+ // Keep a short outward tail and full pigment in the lip centre.
+ const outsideFade=Math.max(.7,Math.min(lipWidth*.009,lipHeight*.04)),insideFade=Math.max(2,Math.min(lipWidth*.036,lipHeight*.17));
  const softOuter=softenLipAlphaAgain(blendLipOutline(rawOuter,rw,rh,outsideFade,insideFade),rw,rh,Math.max(1,Math.min(lipWidth*.004,lipHeight*.018)));
  const inner=makeMask(),ic=inner.getContext('2d');ic.fillStyle='#fff';ic.fillRect(0,0,rw,rh);ic.globalCompositeOperation='destination-out';ic.beginPath();lipPolygon(ic,LIP_INNER,points,w,h,x0,y0);ic.fill();
  const softInner=featherLipMask(ic.getImageData(0,0,rw,rh).data,rw,rh,Math.max(1,lipWidth*.007));
