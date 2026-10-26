@@ -125,6 +125,25 @@ header{order:0;flex-shrink:0}
 #blendPalette .swatch{width:100%;min-width:0;gap:5px;font-size:8px}#blendPalette .chip{width:100%;height:auto;aspect-ratio:1;border-radius:12px}
 #blendPalette .swatch>span:last-child{width:100%}#blendPalette .swatch>span:last-child>span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:8px;line-height:1.4}
 #blendComplete:disabled{opacity:.4;cursor:default}
+
+#manualLip{display:none!important}
+.boundary-tools{justify-content:center;gap:8px}
+#lipErasePanel{flex:none;background:#fff;border:1px solid #efd9e3;border-radius:15px;padding:10px;margin:0 8px 8px;color:#ad6c89;z-index:8}
+#lipErasePreview{height:56px;display:grid;place-items:center;background:#fff9fc;border-radius:10px;margin-bottom:4px}
+#lipEraseDot{border-radius:50%;flex-shrink:0}
+#lipErasePanel .r{display:grid;grid-template-columns:76px 1fr 44px;gap:7px;align-items:center;margin:7px 0;font-size:11px}
+#lipErasePanel input[type=range]{width:100%;accent-color:#d98bab;touch-action:none}
+#lipErasePanel .a{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:7px}
+#lipErasePanel .a button{height:31px;min-width:0;padding:0 3px;border:1px solid #ebccda;background:#fff3f8;color:#b47391;border-radius:9px;font-size:12px;font-weight:700;white-space:nowrap}
+#lipErasePanel .a button.selected{background:#f9dfeb;border:2px solid #d98bab;color:#b36086}
+#lipEraseCursor{position:fixed;pointer-events:none;z-index:90;transform:translate(-50%,-50%);border:1.5px solid #d98bab;box-shadow:0 0 0 1px #fffd;border-radius:50%;display:none;box-sizing:border-box}
+#lipEraseLens{position:fixed;width:160px;height:160px;border:2px solid white;border-radius:50%;overflow:hidden;pointer-events:none;z-index:91;transform:translate(-50%,-50%);box-shadow:0 2px 8px #0006;background:white;display:none}
+#lipEraseLens canvas{display:block;width:160px;height:160px}
+#lipGlobalUndo{position:absolute;z-index:5;bottom:8px;left:8px;padding:4px 7px;border:1px solid #ecd2de;background:#fff9fc;color:#b47391;border-radius:18px;font-size:9px;line-height:1.25}
+#lipGlobalUndo:disabled{opacity:.45}
+.app.lip-erasing #color-panel,.app.lip-erasing .palette-tools,.app.lip-erasing #boundaryTools{display:none!important}
+.app.lip-erasing #lipBoundary{pointer-events:none!important}
+.app.lip-erasing .stage{touch-action:none}
 </style><style>
 [hidden]{display:none!important}.palette-tools{display:flex;justify-content:center;gap:12px;padding:12px}.palette-tools button,.pal button:not(.swatch){border:0;border-radius:12px;padding:12px;background:#fcebf2;color:#85566c}.pal{position:fixed;z-index:50;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,560px);background:white;border-radius:22px 22px 0 0;padding:15px 15px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -5px 30px #0003;max-height:72dvh;display:flex;flex-direction:column;gap:12px}.pal header{height:auto;background:white;padding:0;gap:8px}.pal header strong{flex:1}.pal-list{overflow:auto;min-height:80px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 8px;padding:8px}.pal .swatch{width:100%;font-size:10px;overflow-wrap:anywhere}.pal-picked{display:flex;overflow:auto;gap:12px;padding:8px;min-height:100px;border-top:1px solid #eee}.pal-picked .swatch{min-width:75px;width:75px}.pal select,.pal input:not([type=color]){padding:10px;border:1px solid #e4cdd6;border-radius:9px;width:100%;font:inherit}.pal-row{display:flex;gap:8px;align-items:center}.pal input[type=color]{height:46px;width:90px}.pal small{color:#947080}#customMaker{z-index:51;max-height:45dvh}#paletteBuilder{height:70dvh}#makerPhoto{max-width:100%;max-height:90px;object-fit:contain;cursor:crosshair}body.sampling .stage{outline:3px solid #d080a0;outline-offset:-3px}#photoGrid{z-index:2}.pal-status{font-size:12px;color:#9b4769}
 </style><style id="palette-layout-v2">
@@ -171,8 +190,13 @@ header{order:0;flex-shrink:0}
 #blendChosen small{line-height:1.2}
 </style></head><body>
 <main class="app"><header><button class="tool" id="camera" aria-label="촬영"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 7.3 8.7 5h6.6l1.5 2.3H19a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.3a2 2 0 0 1 2-2h2.2Z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button><button class="tool" id="upload" aria-label="사진 불러오기"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.2"/><path d="M5.7 19c.5-4 2.8-6 6.3-6s5.8 2 6.3 6"/></svg></button><button class="tool save" id="save" aria-label="저장"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m8.5 11.5 3.5 3.5 3.5-3.5"/><path d="M5 19h14"/></svg></button></header>
-<section class="stage" aria-label="사진 미리보기"><div class="empty" id="empty"><svg viewBox="0 0 64 64"><rect x="9" y="7" width="46" height="50" rx="9"/><circle cx="24" cy="23" r="5"/><path d="m10 48 15-15 10 10 9-9 11 12"/></svg>사진을 촬영하거나<br>사진을 불러오세요</div><img id="photo" alt="불러온 고객 사진"><div id="photoGrid" class="grid"></div><canvas id="lipOverlay" aria-hidden="true"></canvas><svg id="lipBoundary" aria-label="입술 경계 조정" xmlns="http://www.w3.org/2000/svg"></svg><button class="lip-retry" id="lipRetry" hidden>다시 인식</button><button class="lip-compare" id="lipCompare" hidden aria-pressed="false">원본 비교</button><span class="photo-label" id="photoLabel" hidden>원본 사진</span></section>
-<section class="panel"><div class="tabs" role="tablist" aria-label="입술 컬러 영역"><button class="tab" id="tab-tone" role="tab" aria-selected="false" aria-controls="color-panel" data-group="톤업">톤업</button><button class="tab" id="tab-base" role="tab" aria-selected="false" aria-controls="color-panel" data-group="베이스">베이스</button><button class="tab" id="tab-point" role="tab" aria-selected="false" aria-controls="color-panel" data-group="포인트">포인트</button></div><div id="color-panel" hidden role="tabpanel" aria-labelledby="tab-tone"><div class="colors" id="colors"></div><label class="lip-strength">진하기 <input id="lipStrength" type="range" min="0" max="100" value="65" aria-label="입술 컬러 진하기"><output id="lipStrengthValue">65%</output></label></div></section><div class="lip-detection" id="lipDetection" role="status" aria-live="polite" hidden></div><div class="boundary-tools" id="boundaryTools" hidden><button id="boundaryToggle">입술 영역 조정</button><button id="manualLip" hidden>직접 영역 지정</button><button id="boundaryUndo" hidden>되돌리기</button><button id="boundaryReset" hidden>자동 경계</button></div><div class="boundary-footer" id="boundaryFooter" hidden><p>점을 움직여 입술 경계를 맞춰 주세요</p><div><button id="boundaryCancel" aria-label="경계 조정 취소">×</button><strong>입술 경계 조정</strong><button id="boundaryDone" aria-label="경계 조정 완료">✓</button></div></div><div class="palette-tools"><button id="openPalette">내 팔레트 만들기</button><button id="photoGridToggle" aria-pressed="false">격자 OFF</button></div></main>
+<section class="stage" aria-label="사진 미리보기"><div class="empty" id="empty"><svg viewBox="0 0 64 64"><rect x="9" y="7" width="46" height="50" rx="9"/><circle cx="24" cy="23" r="5"/><path d="m10 48 15-15 10 10 9-9 11 12"/></svg>사진을 촬영하거나<br>사진을 불러오세요</div><img id="photo" alt="불러온 고객 사진"><div id="photoGrid" class="grid"></div><canvas id="lipOverlay" aria-hidden="true"></canvas><svg id="lipBoundary" aria-label="입술 경계 조정" xmlns="http://www.w3.org/2000/svg"></svg><button class="lip-retry" id="lipRetry" hidden>다시 인식</button><button id="lipGlobalUndo" class="lip-global-undo" hidden>되돌리기</button><button class="lip-compare" id="lipCompare" hidden aria-pressed="false">원본 비교</button><span class="photo-label" id="photoLabel" hidden>원본 사진</span></section>
+<section class="panel"><div class="tabs" role="tablist" aria-label="입술 컬러 영역"><button class="tab" id="tab-tone" role="tab" aria-selected="false" aria-controls="color-panel" data-group="톤업">톤업</button><button class="tab" id="tab-base" role="tab" aria-selected="false" aria-controls="color-panel" data-group="베이스">베이스</button><button class="tab" id="tab-point" role="tab" aria-selected="false" aria-controls="color-panel" data-group="포인트">포인트</button></div><div id="color-panel" hidden role="tabpanel" aria-labelledby="tab-tone"><div class="colors" id="colors"></div><label class="lip-strength">진하기 <input id="lipStrength" type="range" min="0" max="100" value="65" aria-label="입술 컬러 진하기"><output id="lipStrengthValue">65%</output></label></div></section><div class="lip-detection" id="lipDetection" role="status" aria-live="polite" hidden></div><div class="boundary-tools" id="boundaryTools" hidden><button id="boundaryToggle">입술 영역 조정</button><button id="lipEraseToggle">입술 영역 지우기</button><button id="manualLip" hidden>직접 영역 지정</button><button id="boundaryUndo" hidden>되돌리기</button><button id="boundaryReset" hidden>자동 경계</button></div><div class="boundary-footer" id="boundaryFooter" hidden><p>점을 움직여 입술 경계를 맞춰 주세요</p><div><button id="boundaryCancel" aria-label="경계 조정 취소">×</button><strong>입술 경계 조정</strong><button id="boundaryDone" aria-label="경계 조정 완료">✓</button></div></div><section id="lipErasePanel" hidden aria-label="입술 영역 지우기">
+<div id="lipErasePreview"><div id="lipEraseDot"></div></div>
+<div class="r"><span>브러시 크기</span><input id="les" aria-label="브러시 크기" type="range" min="1" max="50" step="1" value="40"><b id="lest">40px</b></div>
+<div class="r"><span>가장자리 강도</span><input id="leh" aria-label="가장자리 강도" type="range" min="0" max="100" value="55"><b id="leht">55%</b></div>
+<div class="r"><span>투명도</span><input id="leo" aria-label="지우개 투명도" type="range" min="10" max="100" value="100"><b id="leot">100%</b></div>
+<div class="a" role="group" aria-label="입술 지우기 도구"><button id="leErase" class="selected" aria-pressed="true">지우기</button><button id="leRestore" aria-pressed="false">복원</button><button id="leUndo">되돌리기</button><button id="leDone">완료</button></div></section><div class="palette-tools"><button id="openPalette">내 팔레트 만들기</button><button id="photoGridToggle" aria-pressed="false">격자 OFF</button></div></main>
 <input type="file" accept="image/*" id="photos" hidden><input type="file" accept="image/*" id="files" hidden>
 <div class="overlay" id="picker" hidden><div class="sheet" role="dialog" aria-modal="true" aria-label="사진 불러오기"><button id="pickPhotos">사진 불러오기</button><button id="pickFiles">파일 불러오기</button><button id="cancelPick">취소</button></div></div>
 <div class="camview" id="camview"><video id="camvideo" autoplay playsinline muted></video><div class="grid" id="grid"></div><button class="camclose" id="camclose">닫기</button><button class="gridbtn" id="gridbtn">Guide ON</button><button class="flipcam" id="flipcam" aria-label="카메라 전환">↻</button><div class="camctl"><button class="shot" id="shot" aria-label="촬영"></button></div><canvas id="camcanvas" hidden></canvas></div><script>
@@ -191,7 +215,7 @@ function render(){
  $('lipStrength').closest('label').hidden=!list.length&&!slot;
  list.forEach(([name,color],i)=>{
   const button=makeColorButton(name,color,i===selected[group]);button.dataset.paletteIndex=i;
-  button.onclick=()=>{if(suppressPaletteClick)return;selected[group]=i;lipState.applied[group]=color;render();paintLips()};
+  button.onclick=()=>{if(suppressPaletteClick)return;pushLipUndo();selected[group]=i;lipState.applied[group]=color;render();paintLips()};
   installPaletteReorder(button,i);colors.append(button);
  });colors.scrollLeft=left;
 }
@@ -233,7 +257,7 @@ function changeBlendDrops(value){
 }
 function saveBlendResult(){
  const hex=mixtureHex();if(!hex||blendDraft.length<2)return;
- blendSlots[blendGroup]={hex,ingredients:blendDraft.map(x=>({...x}))};
+ pushLipUndo();blendSlots[blendGroup]={hex,ingredients:blendDraft.map(x=>({...x}))};
  selected[blendGroup]=-1;lipState.applied[blendGroup]=hex;$('lipBlendDialog').hidden=true;render();paintLips();
 }
 function installPaletteReorder(button,index){
@@ -573,7 +597,8 @@ function paintLips(){
    // Every tab reaches full pigment coverage at 100%, including toner.
    const coverage=kind==='톤업'?.62:kind==='베이스'?.82:.9;
    let amount=strength*(coverage+(profile.coverage-coverage)*strength*strength);
-   if(kind==='포인트'){const py=Math.floor(i/4/rw)+y0,cy=(points[13].y+points[14].y)*h/2;amount*=Math.max(.3,1-Math.abs(py-cy)/Math.max(1,lipHeight*.7))}
+   amount*=lipLayerVisibility(kind,x0+(i/4)%rw,y0+Math.floor(i/4/rw),w,h);
+   if(kind==='포인트'){const px=x0+(i/4)%rw,py=Math.floor(i/4/rw)+y0,cy=(points[13].y+points[14].y)*h/2,top=Math.min(...ps.map(p=>p.y))*h,bottom=Math.max(...ps.map(p=>p.y))*h,cx=(points[61].x+points[291].x)*w/2;const v=Math.abs(py-cy)/Math.max(1,(py<cy?cy-top:bottom-cy)*.72),u=Math.abs(px-cx)/Math.max(1,lipWidth*.48);const fade=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};amount*=fade((1-v)/.45)*fade((1-u)/.3)}
    // Restore the approved Date Night shading; temper each pigment separately.
    const pigmentLum=mean+(y-mean)*profile.lightness;
    const targetLum=Math.max(0,Math.min(255,pigmentLum+(lum-mean)*.96));
@@ -619,7 +644,7 @@ function drawBoundary(){
 let lipDrag=null,boundaryBackup=null,boundaryView=null;
 $('lipBoundary').addEventListener('pointerdown',e=>{
  const id=e.target.dataset.point;if(id===undefined)return;e.preventDefault();e.stopPropagation();
- lipState.history.push(lipState.points.map(p=>({...p})));if(lipState.history.length>30)lipState.history.shift();
+ pushLipUndo();lipState.history.push(lipState.points.map(p=>({...p})));if(lipState.history.length>30)lipState.history.shift();
  lipDrag={id:Number(id),pointer:e.pointerId};showLipLens(e);$('lipBoundary').setPointerCapture(e.pointerId);syncBoundaryButtons();
 });
 $('lipBoundary').addEventListener('pointermove',e=>{
@@ -763,4 +788,83 @@ $('photoGridToggle').onclick=()=>{const on=$('photoGrid').classList.toggle('on')
  $('blendDropCount').onchange=e=>changeBlendDrops(e.target.value);
  $('blendDropDone').onclick=()=>{dropEditor=null;drawLipBlend()};
  document.addEventListener('keydown',e=>{if(e.key==='Escape')$('lipBlendDialog').hidden=true});
- </script></body></html>
+ </script>
+<script id="lip-layer-eraser">
+const lipErase={on:false,mode:'erase',group:'톤업',masks:{},history:[],pointers:new Map(),stroke:null,last:null,pinch:null,lensFrame:0,lensPoint:null};
+const lipMaskSize=1024;
+function makeLipMask(){const ratio=Math.min(1,lipMaskSize/Math.max(P.naturalWidth,P.naturalHeight));const w=Math.max(1,Math.round(P.naturalWidth*ratio)),h=Math.max(1,Math.round(P.naturalHeight*ratio));return {w,h,data:new Uint8Array(w*h).fill(255)}}
+function ensureLipMask(kind){return lipErase.masks[kind]||(lipErase.masks[kind]=makeLipMask())}
+function lipLayerVisibility(kind,x,y,w,h){const m=lipErase.masks[kind];return m?m.data[Math.min(m.h-1,Math.max(0,Math.floor(y/h*m.h)))*m.w+Math.min(m.w-1,Math.max(0,Math.floor(x/w*m.w)))]/255:1}
+const lipWorkHistory=[],lipStrengths={'톤업':65,'베이스':65,'포인트':65};
+function captureLipWork(){return {applied:{...lipState.applied},selected:{...selected},strength:lipState.strength,strengths:{...lipStrengths},points:lipState.points?.map(p=>({...p})),slots:JSON.parse(JSON.stringify(blendSlots)),masks:Object.fromEntries(Object.entries(lipErase.masks).map(([k,m])=>[k,{w:m.w,h:m.h,data:m.data.slice()}]))}}
+function pushLipUndo(){lipWorkHistory.push(captureLipWork());let bytes=0;for(let i=lipWorkHistory.length-1;i>=0;i--){bytes+=Object.values(lipWorkHistory[i].masks).reduce((n,m)=>n+m.data.length,0);if(i<lipWorkHistory.length-1&&(bytes>24*1024*1024||lipWorkHistory.length-i>30)){lipWorkHistory.splice(0,i+1);break}}syncLipUndo()}
+function syncLipUndo(){const b=$('lipGlobalUndo');b.hidden=!P.naturalWidth;b.disabled=!lipWorkHistory.length}
+function undoLipWork(){if(lipErase.on){undoLipErase();return}const st=lipWorkHistory.pop();if(!st)return;lipState.applied={...st.applied};Object.assign(selected,st.selected);Object.assign(lipStrengths,st.strengths);lipState.strength=lipStrengths[group];lipState.points=st.points?.map(p=>({...p}));Object.assign(blendSlots,st.slots);lipErase.masks=st.masks;$('lipStrength').value=lipState.strength;$('lipStrengthValue').value=lipState.strength+'%';render();drawBoundary();paintLips();syncLipUndo()}
+$('lipGlobalUndo').onclick=undoLipWork;
+function lipEdgeProfile(t){const h=+$('leh').value/100,soft=Math.max(0,1-t),hardWidth=.85*(1-h)+.002*h,hard=t<=1-hardWidth?1:Math.max(0,(1-t)/hardWidth),blend=h<=.5?0:h<=.7?.25*(h-.5)/.2:.25+.75*(h-.7)/.3;return soft*(1-blend)+hard*blend}
+function lipBrushUI(){const d=+$('les').value,a=+$('leo').value/100;for(const [id,text] of [['lest',d+'px'],['leht',$('leh').value+'%'],['leot',$('leo').value+'%']])$(id).textContent=text;const stops=[];for(let i=0;i<=100;i+=2)stops.push('rgba(217,139,171,'+(a*.7*lipEdgeProfile(i/100)).toFixed(5)+') '+i+'%');const dot=$('lipEraseDot');dot.style.width=dot.style.height=d+'px';dot.style.background='radial-gradient(circle closest-side,'+stops.join(',')+')';dot.style.border=lipErase.mode==='restore'?'1.5px solid #d779a8':'none'}
+for(const id of ['les','leh','leo'])$(id).oninput=lipBrushUI;
+function setLipBrushMode(mode){lipErase.mode=mode;for(const [id,m] of [['leErase','erase'],['leRestore','restore']]){$(id).classList.toggle('selected',mode===m);$(id).setAttribute('aria-pressed',String(mode===m))}lipBrushUI()}
+$('leErase').onclick=()=>setLipBrushMode('erase');$('leRestore').onclick=()=>setLipBrushMode('restore');
+function openLipErase(){
+ if(!lipState.points){lipStatus('먼저 사진의 입술 영역을 잡아 주세요.');return}
+ if(!lipState.applied[group]){lipStatus('먼저 '+group+' 컬러를 선택해 주세요.');return}
+ if(lipState.editing)finishBoundary(true);
+ lipErase.on=true;lipErase.group=group;lipErase.history=[];lipErase.pointers.clear();lipErase.stroke=null;lipErase.last=null;lipErase.pinch=null;ensureLipMask(group);
+ document.querySelector('.app').classList.add('lip-erasing');$('lipErasePanel').hidden=false;setLipBrushMode('erase');$('leUndo').disabled=true;
+}
+function closeLipErase(){endLipEraseStroke();lipErase.on=false;lipErase.pointers.clear();lipErase.pinch=null;document.querySelector('.app').classList.remove('lip-erasing');$('lipErasePanel').hidden=true;hideLipEraseLens();syncLipUndo()}
+$('lipEraseToggle').onclick=openLipErase;$('leDone').onclick=closeLipErase;
+function undoLipErase(){endLipEraseStroke();const st=lipErase.history.pop();if(st){lipErase.masks[lipErase.group]=st;paintLips()}$('leUndo').disabled=!lipErase.history.length;hideLipEraseLens()}
+$('leUndo').onclick=undoLipErase;
+function erasePhotoPoint(e){const rect=stage.getBoundingClientRect(),sw=stage.clientWidth,sh=stage.clientHeight,w=P.naturalWidth,h=P.naturalHeight,fit=Math.min(sw/w,sh/h),rw=w*fit,rh=h*fit;return{x:((e.clientX-rect.left-sw/2-panX)/zoom+sw/2-(sw-rw)/2)/rw,y:((e.clientY-rect.top-sh/2-panY)/zoom+sh/2-(sh-rh)/2)/rh,cx:e.clientX,cy:e.clientY}}
+function beginLipEraseStroke(e){pushLipUndo();const m=ensureLipMask(lipErase.group),saved={w:m.w,h:m.h,data:m.data.slice()};lipErase.history.push(saved);if(lipErase.history.length>20)lipErase.history.shift();lipErase.stroke={base:m.data.slice()};lipErase.last=null;$('leUndo').disabled=false;lipEraseLine(erasePhotoPoint(e));showLipEraseLens(e)}
+function lipEraseDab(p){
+ const m=ensureLipMask(lipErase.group),base=lipErase.stroke?.base;if(!base)return;
+ const fit=Math.min(stage.clientWidth/P.naturalWidth,stage.clientHeight/P.naturalHeight),rx=+$('les').value/2/zoom/fit/P.naturalWidth*m.w,ry=+$('les').value/2/zoom/fit/P.naturalHeight*m.h,px=p.x*m.w,py=p.y*m.h;
+ const x0=Math.max(0,Math.floor(px-rx)),x1=Math.min(m.w,Math.ceil(px+rx)),y0=Math.max(0,Math.floor(py-ry)),y1=Math.min(m.h,Math.ceil(py+ry)),opacity=+$('leo').value/100;
+ for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){const r=Math.hypot((x+.5-px)/rx,(y+.5-py)/ry);if(r>=1)continue;const i=y*m.w+x,t=opacity*lipEdgeProfile(r);if(lipErase.mode==='restore')m.data[i]=Math.max(m.data[i],Math.round(base[i]+(255-base[i])*t));else m.data[i]=Math.min(m.data[i],Math.round(base[i]*(1-t)))}
+}
+function lipEraseLine(p){const q=lipErase.last;if(!q)lipEraseDab(p);else{const n=Math.max(1,Math.ceil(Math.hypot(p.cx-q.cx,p.cy-q.cy)/Math.max(1,+$('les').value*.18)));for(let i=1;i<=n;i++){const t=i/n;lipEraseDab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t})}}lipErase.last=p;scheduleLipPaint()}
+function endLipEraseStroke(){lipErase.stroke=null;lipErase.last=null;hideLipEraseLens()}
+stage.addEventListener('pointerdown',e=>{
+ if(!lipErase.on||e.target.closest('button'))return;e.preventDefault();e.stopImmediatePropagation();
+ lipErase.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});stage.setPointerCapture(e.pointerId);
+ if(lipErase.pointers.size===1){beginLipEraseStroke(e)}
+ else{
+  // Roll back the first touch when a two-finger zoom starts.
+  if(lipErase.stroke){const prev=lipErase.history.pop();if(prev)lipErase.masks[lipErase.group]=prev;lipWorkHistory.pop();paintLips()}
+  endLipEraseStroke();const p=[...lipErase.pointers.values()];lipErase.pinch={distance:Math.max(1,Math.hypot(p[1].x-p[0].x,p[1].y-p[0].y)),zoom,panX,panY,x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2};
+ }
+},true);
+stage.addEventListener('pointermove',e=>{
+ if(!lipErase.on||!lipErase.pointers.has(e.pointerId))return;e.preventDefault();e.stopImmediatePropagation();lipErase.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(lipErase.pointers.size>=2&&lipErase.pinch){const p=[...lipErase.pointers.values()],st=lipErase.pinch;zoom=Math.max(1,Math.min(8,st.zoom*Math.hypot(p[1].x-p[0].x,p[1].y-p[0].y)/st.distance));panX=st.panX+(p[0].x+p[1].x)/2-st.x;panY=st.panY+(p[0].y+p[1].y)/2-st.y;setWorld();return}
+ if(lipErase.stroke){lipEraseLine(erasePhotoPoint(e));showLipEraseLens(e)}
+},true);
+function endLipErasePointer(e){if(!lipErase.on||!lipErase.pointers.has(e.pointerId))return;e.preventDefault();e.stopImmediatePropagation();lipErase.pointers.delete(e.pointerId);endLipEraseStroke();if(!lipErase.pointers.size)lipErase.pinch=null}
+stage.addEventListener('pointerup',endLipErasePointer,true);stage.addEventListener('pointercancel',endLipErasePointer,true);
+const eraseCursor=document.createElement('div');eraseCursor.id='lipEraseCursor';document.body.append(eraseCursor);
+const eraseLens=document.createElement('div');eraseLens.id='lipEraseLens';const eraseLensCanvas=document.createElement('canvas');eraseLensCanvas.width=eraseLensCanvas.height=480;eraseLens.append(eraseLensCanvas);document.body.append(eraseLens);
+function hideLipEraseLens(){eraseCursor.style.display=eraseLens.style.display='none';lipErase.lensPoint=null}
+function showLipEraseLens(e){lipErase.lensPoint={clientX:e.clientX,clientY:e.clientY};if(!lipErase.lensFrame)lipErase.lensFrame=requestAnimationFrame(()=>{lipErase.lensFrame=0;renderLipEraseLens()})}
+function renderLipEraseLens(){
+ const t=lipErase.lensPoint;if(!t||!lipErase.on||!lipErase.stroke)return;
+ const p=erasePhotoPoint(t),fit=Math.min(stage.clientWidth/P.naturalWidth,stage.clientHeight/P.naturalHeight),src=80/(zoom*fit),n=480,c=eraseLensCanvas.getContext('2d'),ix=p.x*P.naturalWidth,iy=p.y*P.naturalHeight;
+ c.clearRect(0,0,n,n);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(P,ix-src/2,iy-src/2,src,src,0,0,n,n);c.drawImage($('lipOverlay'),ix-src/2,iy-src/2,src,src,0,0,n,n);
+ const d=+$('les').value;c.beginPath();c.arc(n/2,n/2,d*3,0,Math.PI*2);c.strokeStyle='#fff';c.lineWidth=5;c.stroke();c.strokeStyle='#d98bab';c.lineWidth=2.5;c.stroke();
+ eraseCursor.style.width=eraseCursor.style.height=d+'px';eraseCursor.style.left=t.clientX+'px';eraseCursor.style.top=t.clientY+'px';eraseCursor.style.display='block';
+ eraseLens.style.left=Math.max(82,Math.min(innerWidth-82,t.clientX+100))+'px';eraseLens.style.top=Math.max(82,Math.min(innerHeight-82,t.clientY-128))+'px';eraseLens.style.display='block';
+}
+const originalScheduleLipPaint=scheduleLipPaint;
+scheduleLipPaint=function(){originalScheduleLipPaint();if(lipErase.on&&lipErase.lensPoint)showLipEraseLens(lipErase.lensPoint)};
+const previousDetectLips=detectLips;detectLips=async function(){if(lipErase.on)closeLipErase();lipErase.masks={};lipErase.history=[];lipWorkHistory.length=0;syncLipUndo();return previousDetectLips()};
+const previousStrengthInput=$('lipStrength').oninput;let strengthUndoPending=false;
+$('lipStrength').addEventListener('pointerdown',()=>{if(!strengthUndoPending){pushLipUndo();strengthUndoPending=true}});
+$('lipStrength').oninput=e=>{previousStrengthInput(e);lipStrengths[group]=lipState.strength};
+$('lipStrength').addEventListener('change',()=>{strengthUndoPending=false});
+document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>{if(lipErase.on)closeLipErase();lipState.strength=lipStrengths[group];$('lipStrength').value=lipState.strength;$('lipStrengthValue').value=lipState.strength+'%';paintLips()}));
+const oldSyncBoundaryButtons=syncBoundaryButtons;syncBoundaryButtons=function(){oldSyncBoundaryButtons();$('manualLip').hidden=true;$('lipEraseToggle').hidden=lipState.editing;syncLipUndo()};
+window.addEventListener('blur',()=>{endLipEraseStroke();lipErase.pointers.clear()});
+lipBrushUI();syncLipUndo();
+</script></body></html>
