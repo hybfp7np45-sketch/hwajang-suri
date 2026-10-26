@@ -540,8 +540,8 @@ function blendLipOutline(rgba,w,h,outside,inside){
  const toInside=distanceTo(true),toOutside=distanceTo(false),result=new Uint8ClampedArray(rgba);
  for(let i=0;i<toInside.length;i++){
   const signed=rgba[i*4+3]>=128?toOutside[i]-.5:-(toInside[i]-.5);
-  // Independent boundary coverage: 15%; widths are fractions of lip height.
-  const boundaryCoverage=.15;
+  // Independent boundary coverage: 10%; widths are fractions of lip height.
+  const boundaryCoverage=.10;
   const t=Math.max(0,Math.min(1,signed<0?1+signed/outside:signed/inside));
   const eased=t*t*(3-2*t);
   const alpha=signed<0?boundaryCoverage*eased:boundaryCoverage+(1-boundaryCoverage)*eased;
