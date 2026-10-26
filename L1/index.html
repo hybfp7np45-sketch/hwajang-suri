@@ -147,6 +147,9 @@ header{order:0;flex-shrink:0}
 /* Match the two lip tools and keep brush controls above the mouth. */
 .boundary-tools #boundaryToggle,.boundary-tools #lipEraseToggle{box-sizing:border-box;width:110px;height:32px;padding:8px 10px;font-size:10px;line-height:14px;border:1px solid #e6c4d2;border-radius:15px;background:#fffefa;color:#bf7190;font-weight:400;white-space:nowrap}
 #lipErasePanel{top:calc(env(safe-area-inset-top) + 66px);bottom:auto;max-height:calc(100dvh - 100px - env(safe-area-inset-top));overflow-y:auto}
+/* Boundary editing owns touch gestures and shows only its local undo. */
+.app.boundary-edit #lipGlobalUndo{display:none!important}
+#lipBoundary,#lipBoundary .lip-node{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 </style><style>
 [hidden]{display:none!important}.palette-tools{display:flex;justify-content:center;gap:12px;padding:12px}.palette-tools button,.pal button:not(.swatch){border:0;border-radius:12px;padding:12px;background:#fcebf2;color:#85566c}.pal{position:fixed;z-index:50;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,560px);background:white;border-radius:22px 22px 0 0;padding:15px 15px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -5px 30px #0003;max-height:72dvh;display:flex;flex-direction:column;gap:12px}.pal header{height:auto;background:white;padding:0;gap:8px}.pal header strong{flex:1}.pal-list{overflow:auto;min-height:80px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 8px;padding:8px}.pal .swatch{width:100%;font-size:10px;overflow-wrap:anywhere}.pal-picked{display:flex;overflow:auto;gap:12px;padding:8px;min-height:100px;border-top:1px solid #eee}.pal-picked .swatch{min-width:75px;width:75px}.pal select,.pal input:not([type=color]){padding:10px;border:1px solid #e4cdd6;border-radius:9px;width:100%;font:inherit}.pal-row{display:flex;gap:8px;align-items:center}.pal input[type=color]{height:46px;width:90px}.pal small{color:#947080}#customMaker{z-index:51;max-height:45dvh}#paletteBuilder{height:70dvh}#makerPhoto{max-width:100%;max-height:90px;object-fit:contain;cursor:crosshair}body.sampling .stage{outline:3px solid #d080a0;outline-offset:-3px}#photoGrid{z-index:2}.pal-status{font-size:12px;color:#9b4769}
 </style><style id="palette-layout-v2">
@@ -417,7 +420,7 @@ let zoom=1,panX=0,panY=0,pinch=null,lastTap=0;
 function setWorld(){const t='translate('+panX+'px,'+panY+'px) scale('+zoom+')';$('photo').style.transform=t;$('lipOverlay').style.transform=t;$('lipBoundary').style.transform=t;drawBoundary()}
 function resetView(){zoom=1;panX=0;panY=0;pinch=null;touches.clear();gestureMoved.clear();setWorld()}
 stage.addEventListener('pointerdown',e=>{
- if(!photoURL)return;
+ if(!photoURL||lipState.editing&&e.target.closest('.lip-node'))return;
  touches.set(e.pointerId,{x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY});gestureMoved.set(e.pointerId,false);
  try{stage.setPointerCapture(e.pointerId)}catch(_){}
  if(touches.size===2){
@@ -431,7 +434,7 @@ stage.addEventListener('pointermove',e=>{
  if(touches.size===2&&pinch){
  const p=[...touches.values()],dist=Math.max(1,Math.hypot(p[1].x-p[0].x,p[1].y-p[0].y));
  const cx=(p[0].x+p[1].x)/2,cy=(p[0].y+p[1].y)/2;
- zoom=Math.max(1,Math.min(4,pinch.zoom*dist/pinch.dist));panX=pinch.panX+(cx-pinch.cx);panY=pinch.panY+(cy-pinch.cy);setWorld();e.preventDefault();
+ zoom=Math.max(1,Math.min(lipState.editing?12:4,pinch.zoom*dist/pinch.dist));panX=pinch.panX+(cx-pinch.cx);panY=pinch.panY+(cy-pinch.cy);setWorld();e.preventDefault();
  }
 });
 function endPhotoPointer(e){
@@ -659,9 +662,16 @@ function drawBoundary(){
  }
 }
 let lipDrag=null,boundaryBackup=null,boundaryView=null;
+// Cancel native WebKit sheet/scroll gestures before a node drag can start.
+for(const eventName of ['touchstart','touchmove']){
+ $('lipBoundary').addEventListener(eventName,e=>{
+  if(lipState.editing&&(lipDrag||e.target.closest('.lip-node'))&&e.cancelable)e.preventDefault();
+ },{passive:false,capture:true});
+}
 $('lipBoundary').addEventListener('pointerdown',e=>{
  const id=e.target.dataset.point;if(id===undefined)return;e.preventDefault();e.stopPropagation();
  pushLipUndo();lipState.history.push(lipState.points.map(p=>({...p})));if(lipState.history.length>30)lipState.history.shift();
+ touches.clear();gestureMoved.clear();pinch=null;
  lipDrag={id:Number(id),pointer:e.pointerId};showLipLens(e);$('lipBoundary').setPointerCapture(e.pointerId);syncBoundaryButtons();
 });
 $('lipBoundary').addEventListener('pointermove',e=>{
@@ -672,10 +682,10 @@ $('lipBoundary').addEventListener('pointermove',e=>{
  lipState.points[lipDrag.id]={...lipState.points[lipDrag.id],x:Math.max(0,Math.min(1,x)),y:Math.max(0,Math.min(1,y))};
  drawBoundary();scheduleLipPaint();showLipLens(e);
 });
-function endBoundary(e){if(lipDrag&&lipDrag.pointer===e.pointerId){lipDrag=null;hideLipLens();e.stopPropagation()}}
+function endBoundary(e){if(lipDrag&&lipDrag.pointer===e.pointerId){if(e.cancelable)e.preventDefault();lipDrag=null;hideLipLens();e.stopPropagation()}}
 $('lipBoundary').addEventListener('pointerup',endBoundary);$('lipBoundary').addEventListener('pointercancel',endBoundary);
 function finishBoundary(accept){
- hideLipLens();
+ hideLipLens();lipDrag=null;touches.clear();gestureMoved.clear();pinch=null;
  if(!accept&&boundaryBackup)lipState.points=boundaryBackup.map(p=>({...p}));
  lipState.editing=false;document.querySelector('.app').classList.remove('boundary-edit');$('boundaryFooter').hidden=true;
  if(boundaryView){zoom=boundaryView.zoom;panX=boundaryView.panX;panY=boundaryView.panY}
@@ -688,7 +698,8 @@ $('boundaryToggle').onclick=()=>{
  document.querySelector('.app').classList.add('boundary-edit');$('boundaryFooter').hidden=false;syncBoundaryButtons();
  requestAnimationFrame(()=>{const ps=LIP_OUTER.map(i=>lipState.points[i]),cx=(Math.min(...ps.map(p=>p.x))+Math.max(...ps.map(p=>p.x)))/2,cy=(Math.min(...ps.map(p=>p.y))+Math.max(...ps.map(p=>p.y)))/2;
  const sw=stage.clientWidth,sh=stage.clientHeight,fit=Math.min(sw/P.naturalWidth,sh/P.naturalHeight),rw=P.naturalWidth*fit,rh=P.naturalHeight*fit;
- zoom=Math.max(1,Math.min(4,sw*.72/Math.max(1,(Math.max(...ps.map(p=>p.x))-Math.min(...ps.map(p=>p.x)))*rw)));
+ const lipW=Math.max(1,(Math.max(...ps.map(p=>p.x))-Math.min(...ps.map(p=>p.x)))*rw),lipH=Math.max(1,(Math.max(...ps.map(p=>p.y))-Math.min(...ps.map(p=>p.y)))*rh);
+ zoom=Math.max(1,Math.min(12,sw*.82/lipW,sh*.55/lipH));
  panX=-(cx-.5)*rw*zoom;panY=-(cy-.5)*rh*zoom;setWorld();
  });
 };
