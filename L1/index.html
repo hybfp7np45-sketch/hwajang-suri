@@ -305,8 +305,23 @@ async function detectLips(){
  const input=document.createElement('canvas'),ratio=Math.min(1,800/Math.max(P.naturalWidth,P.naturalHeight));input.width=Math.round(P.naturalWidth*ratio);input.height=Math.round(P.naturalHeight*ratio);input.getContext('2d').drawImage(P,0,0,input.width,input.height);
  await new Promise(r=>requestAnimationFrame(r));
  const points=await automaticLipPoints(input,token);if(token!==lipState.token||source!==P.src)return;if(!points)throw new Error('NO_FACE');
- lipState.points=points;lipState.originalPoints=points.map(p=>({...p}));$('boundaryToggle').disabled=false;$('boundaryTools').hidden=false;syncBoundaryButtons();$('lipCompare').hidden=false;lipStatus('입술 인식 완료 · 위에서 컬러를 선택해 주세요.');try{paintLips()}catch(err){console.error('입술 컬러 표시 오류',err);lipStatus('입술은 인식했어요. 컬러를 다시 선택해 주세요.')}
+ const expanded=expandDetectedLips(points,P.naturalWidth,P.naturalHeight);lipState.points=expanded;lipState.originalPoints=expanded.map(p=>({...p}));$('boundaryToggle').disabled=false;$('boundaryTools').hidden=false;syncBoundaryButtons();$('lipCompare').hidden=false;lipStatus('입술 인식 완료 · 위에서 컬러를 선택해 주세요.');try{paintLips()}catch(err){console.error('입술 컬러 표시 오류',err);lipStatus('입술은 인식했어요. 컬러를 다시 선택해 주세요.')}
  }catch(e){if(token!==lipState.token)return;lipState.points=null;$('boundaryToggle').disabled=false;$('manualLip').hidden=false;$('boundaryTools').hidden=false;syncBoundaryButtons();lipStatus(e.message==='NO_FACE'?'입술을 찾지 못했어요. 입술이 선명하게 보이는 얼굴 사진으로 다시 시도해 주세요.':'입술 인식 기능을 불러오지 못했어요. 인터넷 연결을 확인한 뒤 다시 인식해 주세요.');$('lipRetry').hidden=false;console.warn('Lip detection:',e)}
+}
+function expandDetectedLips(points,w,h){
+ const result=points.map(p=>({...p})),p=LIP_OUTER.map(id=>({x:points[id].x*w,y:points[id].y*h})),n=p.length;
+ const width=Math.max(...p.map(q=>q.x))-Math.min(...p.map(q=>q.x)),height=Math.max(...p.map(q=>q.y))-Math.min(...p.map(q=>q.y));
+ const offset=Math.max(0,Math.min(width*.018,height*.085));if(offset===0)return result;
+ let area=0;for(let i=0;i<n;i++){const a=p[i],b=p[(i+1)%n];area+=a.x*b.y-b.x*a.y}
+ const orientation=area>=0?1:-1;
+ for(let i=0;i<n;i++){
+  const before=p[(i+n-1)%n],here=p[i],after=p[(i+1)%n],d1=Math.max(.001,Math.hypot(here.x-before.x,here.y-before.y)),d2=Math.max(.001,Math.hypot(after.x-here.x,after.y-here.y));
+  let nx=orientation*((here.y-before.y)/d1+(after.y-here.y)/d2),ny=-orientation*((here.x-before.x)/d1+(after.x-here.x)/d2),len=Math.hypot(nx,ny);
+  if(len<.001)continue;nx/=len;ny/=len;
+  const id=LIP_OUTER[i],corner=id===61||id===291? .35:1,d=offset*corner;
+  result[id]={...result[id],x:Math.max(0,Math.min(1,(here.x+nx*d)/w)),y:Math.max(0,Math.min(1,(here.y+ny*d)/h))};
+ }
+ return result;
 }
 function lipCurveSegments(ids,points,w,h,ox=0,oy=0){
  const p=ids.map(id=>({x:points[id].x*w-ox,y:points[id].y*h-oy})),n=p.length;
@@ -349,7 +364,7 @@ function paintLips(){
  const makeMask=()=>{const c=document.createElement('canvas');c.width=rw;c.height=rh;return c};
  const outer=makeMask(),m=outer.getContext('2d');m.beginPath();lipPolygon(m,LIP_OUTER,points,w,h,x0,y0);m.fillStyle='#fff';m.fill();
  const rawOuter=m.getImageData(0,0,rw,rh).data;
- const outsideFade=Math.max(1,Math.min(lipWidth*.015,lipHeight*.07)),insideFade=Math.max(1.5,Math.min(lipWidth*.018,lipHeight*.09));
+ const outsideFade=Math.max(1,Math.min(lipWidth*.018,lipHeight*.085)),insideFade=Math.max(1,Math.min(lipWidth*.008,lipHeight*.04));
  const softOuter=blendLipOutline(rawOuter,rw,rh,outsideFade,insideFade);
  const inner=makeMask(),ic=inner.getContext('2d');ic.fillStyle='#fff';ic.fillRect(0,0,rw,rh);ic.globalCompositeOperation='destination-out';ic.beginPath();lipPolygon(ic,LIP_INNER,points,w,h,x0,y0);ic.fill();
  const softInner=featherLipMask(ic.getImageData(0,0,rw,rh).data,rw,rh,Math.max(1,lipWidth*.007));
@@ -486,7 +501,7 @@ stage.addEventListener('pointerup',e=>{
  const make=(u,v)=>({x:a.x+(dx*u-dy*v)/w,y:a.y+(dy*u+dx*v)/h,z:0});
  LIP_OUTER.forEach((id,i)=>{points[id]=make(template[i][0],template[i][1])});
  LIP_INNER.forEach((id,i)=>{const t=Math.PI+i*Math.PI*2/LIP_INNER.length;points[id]=make(.5+.49*Math.cos(t),.035*Math.sin(t))});
- lipState.points=points;lipState.originalPoints=points.map(p=>({...p}));lipState.manualCorners=null;lipState.token++;$('lipRetry').hidden=true;$('lipCompare').hidden=false;syncBoundaryButtons();paintLips();$('boundaryToggle').click();
+ const expanded=expandDetectedLips(points,P.naturalWidth,P.naturalHeight);lipState.points=expanded;lipState.originalPoints=expanded.map(p=>({...p}));lipState.manualCorners=null;lipState.token++;$('lipRetry').hidden=true;$('lipCompare').hidden=false;syncBoundaryButtons();paintLips();$('boundaryToggle').click();
 });
 
 </script></body></html>
