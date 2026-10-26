@@ -118,6 +118,9 @@ header{order:0;flex-shrink:0}
 #catalog .swatch,#picked .swatch{overflow:visible}
 #catalog .swatch>span:last-child>span,#picked .swatch>span:last-child>span{overflow:hidden;text-overflow:ellipsis;line-height:1.5}
 #catalog .swatch:focus-visible,#picked .swatch:focus-visible{outline:2px solid #d87fa0;outline-offset:2px}
+</style><style id="palette-brand-headings">
+#catalog .catalog-brand{grid-column:1/-1;margin:8px 0 0;padding:9px 2px 6px;border-bottom:1px solid #efdde5;color:#a96e88;font-size:14px;font-weight:700;line-height:1.4}
+#catalog .catalog-brand:first-child{margin-top:0}
 </style></head><body>
 <main class="app"><header><button class="tool" id="camera" aria-label="촬영"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 7.3 8.7 5h6.6l1.5 2.3H19a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.3a2 2 0 0 1 2-2h2.2Z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button><button class="tool" id="upload" aria-label="사진 불러오기"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.2"/><path d="M5.7 19c.5-4 2.8-6 6.3-6s5.8 2 6.3 6"/></svg></button><button class="tool save" id="save" aria-label="저장"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m8.5 11.5 3.5 3.5 3.5-3.5"/><path d="M5 19h14"/></svg></button></header>
 <section class="stage" aria-label="사진 미리보기"><div class="empty" id="empty"><svg viewBox="0 0 64 64"><rect x="9" y="7" width="46" height="50" rx="9"/><circle cx="24" cy="23" r="5"/><path d="m10 48 15-15 10 10 9-9 11 12"/></svg>사진을 촬영하거나<br>사진을 불러오세요</div><img id="photo" alt="불러온 고객 사진"><div id="photoGrid" class="grid"></div><canvas id="lipOverlay" aria-hidden="true"></canvas><svg id="lipBoundary" aria-label="입술 경계 조정" xmlns="http://www.w3.org/2000/svg"></svg><button class="lip-retry" id="lipRetry" hidden>다시 인식</button><button class="lip-compare" id="lipCompare" hidden aria-pressed="false">원본 비교</button><span class="photo-label" id="photoLabel" hidden>원본 사진</span></section>
@@ -546,7 +549,21 @@ const pigmentCatalog=[{"id": "perma:Orange Crush", "brand": "perma", "name": "Or
 const paletteKey='suri.L1.myPalette.v1';let myColors=[],draft=[],sampling=false,makerURL=null;
 try{const v=JSON.parse(localStorage.getItem(paletteKey)||'[]');if(Array.isArray(v))myColors=v.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&/^#[0-9a-f]{6}$/i.test(x.hex))}catch(e){}
 function syncMyPalette(){for(const key of Object.keys(palettes)){palettes[key]=myColors.map(x=>[x.name,x.hex]);selected[key]=Math.min(selected[key],Math.max(0,myColors.length-1))}render()}
-function drawCatalog(){const brand=$('brandFilter').value;$('catalog').replaceChildren();pigmentCatalog.filter(x=>brand==='all'||x.brand===brand).forEach(x=>{const b=makeColorButton(x.name,x.hex,draft.some(c=>c.id===x.id));b.title=x.category;b.onclick=()=>{const i=draft.findIndex(c=>c.id===x.id);if(i<0)draft.push({...x});else draft.splice(i,1);drawCatalog()};$('catalog').append(b)});$('picked').replaceChildren();draft.forEach((x,i)=>{const b=makeColorButton(x.name,x.hex);b.onclick=()=>{draft.splice(i,1);drawCatalog()};$('picked').append(b)})}
+function drawCatalog(){
+ const catalog=$('catalog'),scroll=catalog.scrollTop;
+ catalog.replaceChildren();
+ for(const [brand,label] of [['perma','펄마'],['evenflo','이븐플로'],['luxe','럭스']]){
+  const title=document.createElement('h2');title.className='catalog-brand';title.textContent=label;catalog.append(title);
+  pigmentCatalog.filter(x=>x.brand===brand).forEach(x=>{
+   const button=makeColorButton(x.name,x.hex,draft.some(c=>c.id===x.id));button.title=x.name;
+   button.onclick=()=>{const i=draft.findIndex(c=>c.id===x.id);if(i<0)draft.push({...x});else draft.splice(i,1);drawCatalog()};
+   catalog.append(button);
+  });
+ }
+ catalog.scrollTop=scroll;
+ $('picked').replaceChildren();
+ draft.forEach((x,i)=>{const button=makeColorButton(x.name,x.hex);button.onclick=()=>{draft.splice(i,1);drawCatalog()};$('picked').append(button)});
+}
 $('openPalette').onclick=()=>{draft=myColors.map(x=>({...x}));$('paletteBuilder').hidden=false;$('paletteStatus').textContent='';drawCatalog()};$('brandFilter').onchange=drawCatalog;$('closePalette').onclick=()=>{$('paletteBuilder').hidden=true};
 $('applyPalette').onclick=()=>{try{localStorage.setItem(paletteKey,JSON.stringify(draft))}catch(e){$('paletteStatus').textContent='저장 공간을 확인해 주세요. 팔레트를 저장하지 못했어요.';return}myColors=draft.map(x=>({...x}));syncMyPalette();$('paletteBuilder').hidden=true};
 function stopSampling(){sampling=false;document.body.classList.remove('sampling');$('sampleColor').setAttribute('aria-pressed','false')}
