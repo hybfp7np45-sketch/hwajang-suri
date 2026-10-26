@@ -93,6 +93,14 @@ header{order:0;flex-shrink:0}
 
 .lip-detection{position:relative;order:3;top:auto;left:auto;right:auto;flex-shrink:0;margin:0;padding:8px 14px;border-radius:0;text-align:center;background:#fff4f8;color:#a86582;font-size:11px;min-height:32px;z-index:6}
 .lip-detection[hidden]{display:none}.boundary-tools button:disabled{opacity:.6}
+/* Compact preview palette; the brand catalogue retains eight columns. */
+#colors{gap:8px;padding:5px 12px 9px}
+#colors .swatch{flex:0 0 calc((100% - 40px)/6);min-width:0;gap:5px;font-size:9px;line-height:1.35}
+#colors .chip{width:100%;height:auto;aspect-ratio:1;border-radius:12px}
+#colors .swatch>span:last-child{display:block;width:100%;min-width:0}
+#colors .swatch>span:last-child>span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:9px;line-height:1.45}
+#colors .swatch[aria-pressed=true] .chip:after{font-size:23px}
+.selection{padding:10px 14px 8px}
 </style><style>
 [hidden]{display:none!important}.palette-tools{display:flex;justify-content:center;gap:12px;padding:12px}.palette-tools button,.pal button:not(.swatch){border:0;border-radius:12px;padding:12px;background:#fcebf2;color:#85566c}.pal{position:fixed;z-index:50;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,560px);background:white;border-radius:22px 22px 0 0;padding:15px 15px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -5px 30px #0003;max-height:72dvh;display:flex;flex-direction:column;gap:12px}.pal header{height:auto;background:white;padding:0;gap:8px}.pal header strong{flex:1}.pal-list{overflow:auto;min-height:80px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 8px;padding:8px}.pal .swatch{width:100%;font-size:10px;overflow-wrap:anywhere}.pal-picked{display:flex;overflow:auto;gap:12px;padding:8px;min-height:100px;border-top:1px solid #eee}.pal-picked .swatch{min-width:75px;width:75px}.pal select,.pal input:not([type=color]){padding:10px;border:1px solid #e4cdd6;border-radius:9px;width:100%;font:inherit}.pal-row{display:flex;gap:8px;align-items:center}.pal input[type=color]{height:46px;width:90px}.pal small{color:#947080}#customMaker{z-index:51;max-height:45dvh}#paletteBuilder{height:70dvh}#makerPhoto{max-width:100%;max-height:90px;object-fit:contain;cursor:crosshair}body.sampling .stage{outline:3px solid #d080a0;outline-offset:-3px}#photoGrid{z-index:2}.pal-status{font-size:12px;color:#9b4769}
 </style><style id="palette-layout-v2">
@@ -133,7 +141,7 @@ let lipState={token:0,manualCorners:null,points:null,originalPoints:null,editing
 const palettes={'토너':[],'베이스':[],'포인트':[]};
 let panelOpen=false;let group='토너',selected={'토너':0,'베이스':0,'포인트':0},photoURL=null;
 function render(){document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(panelOpen&&t.dataset.group===group)));$('selection').textContent=group;const list=palettes[group];$('colors').replaceChildren();$('lipStrength').closest('label').hidden=!list.length;if(!list.length){$('colors').textContent='내 팔레트를 만들어 주세요';return}list.forEach(([name,color],i)=>{const b=makeColorButton(name,color,i===selected[group]);b.onclick=()=>{selected[group]=i;lipState.applied[group]=color;render();paintLips()};$('colors').append(b)})}
-function makeColorButton(name,color,active=false){const b=document.createElement('button');b.className='swatch';b.setAttribute('aria-pressed',String(active));const c=document.createElement('span');c.className='chip';c.style.setProperty('--c',color);const n=document.createElement('span');const parts=name.match(/^(.*?) \((.*?)\)$/);if(parts){const en=document.createElement('span'),ko=document.createElement('span');en.textContent=parts[1];ko.textContent=parts[2];n.append(en,ko)}else n.textContent=name;b.append(c,n);return b}
+function makeColorButton(name,color,active=false){const b=document.createElement('button');b.className='swatch';b.setAttribute('aria-pressed',String(active));const c=document.createElement('span');c.className='chip';c.style.setProperty('--c',color);const n=document.createElement('span');const parts=name.match(/^(.*?)\s*\((.*?)\)$/)||name.match(/^([\x00-\x7F]+?)([가-힣].*)$/);if(parts){const en=document.createElement('span'),ko=document.createElement('span');en.textContent=parts[1];ko.textContent=parts[2];n.append(en,ko)}else n.textContent=name;b.append(c,n);return b}
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{group=t.dataset.group;panelOpen=true;$('color-panel').hidden=false;render();$('colors').scrollLeft=0});render();
 const P=$('photo');
 function releasePreviousPhotoURL(){
@@ -422,9 +430,12 @@ function paintLips(){
    let amount=strength*(kind==='토너'?.46:kind==='베이스'?.76:.86);
    if(kind==='포인트'){const py=Math.floor(i/4/rw)+y0,cy=(points[13].y+points[14].y)*h/2;amount*=Math.max(.3,1-Math.abs(py-cy)/Math.max(1,lipHeight*.7))}
    // Preserve fine luminance differences and specular highlights from the original.
-   const targetLum=Math.max(0,Math.min(255,y+(lum-mean)*.96));
+   // Keep the photo's shading and temper very bright pigment swatches.
+   const pigmentLum=mean+(y-mean)*.55;
+   const targetLum=Math.max(0,Math.min(255,pigmentLum+(lum-mean)*.96));
+   const chromaScale=.82;
    const highlight=Math.max(0,Math.min(1,(lum-mean-24)/65));amount*=1-highlight*.38;
-   for(let k=0;k<3;k++){const target=Math.max(0,Math.min(255,rgb[k]-y+targetLum));data[i+k]=Math.round(data[i+k]*(1-amount)+target*amount)}
+   for(let k=0;k<3;k++){const target=Math.max(0,Math.min(255,(rgb[k]-y)*chromaScale+targetLum));data[i+k]=Math.round(data[i+k]*(1-amount)+target*amount)}
   }
   data[i+3]=Math.round(alpha*255);
  }
