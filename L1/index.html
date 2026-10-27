@@ -197,7 +197,7 @@ header{order:0;flex-shrink:0}
 </style></head><body>
 <main class="app"><header><button class="tool" id="camera" aria-label="촬영"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 7.3 8.7 5h6.6l1.5 2.3H19a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.3a2 2 0 0 1 2-2h2.2Z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button><button class="tool" id="upload" aria-label="사진 불러오기"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.2"/><path d="M5.7 19c.5-4 2.8-6 6.3-6s5.8 2 6.3 6"/></svg></button><button class="tool save" id="save" aria-label="저장"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m8.5 11.5 3.5 3.5 3.5-3.5"/><path d="M5 19h14"/></svg></button></header>
 <section class="stage" aria-label="사진 미리보기"><div class="empty" id="empty"><svg viewBox="0 0 64 64"><rect x="9" y="7" width="46" height="50" rx="9"/><circle cx="24" cy="23" r="5"/><path d="m10 48 15-15 10 10 9-9 11 12"/></svg>사진을 촬영하거나<br>사진을 불러오세요</div><img id="photo" alt="불러온 고객 사진"><div id="photoGrid" class="grid"></div><canvas id="lipOverlay" aria-hidden="true"></canvas><svg id="lipBoundary" aria-label="입술 경계 조정" xmlns="http://www.w3.org/2000/svg"></svg><button class="lip-retry" id="lipRetry" hidden>다시 인식</button><button id="lipGlobalUndo" class="lip-global-undo" hidden>되돌리기</button><button class="lip-compare" id="lipCompare" hidden aria-pressed="false">원본 비교</button><span class="photo-label" id="photoLabel" hidden>원본 사진</span></section>
-<section class="panel"><div class="tabs" role="tablist" aria-label="입술 컬러 영역"><button class="tab" id="tab-tone" role="tab" aria-selected="false" aria-controls="color-panel" data-group="톤업">톤업</button><button class="tab" id="tab-base" role="tab" aria-selected="false" aria-controls="color-panel" data-group="베이스">베이스</button><button class="tab" id="tab-point" role="tab" aria-selected="false" aria-controls="color-panel" data-group="포인트">포인트</button></div><div id="color-panel" hidden role="tabpanel" aria-labelledby="tab-tone"><div class="colors" id="colors"></div><label class="lip-strength">진하기 <input id="lipStrength" type="range" min="0" max="100" value="65" aria-label="입술 컬러 진하기"><output id="lipStrengthValue">65%</output></label></div></section><div class="lip-detection" id="lipDetection" role="status" aria-live="polite" hidden></div><div class="boundary-tools" id="boundaryTools" hidden><button id="boundaryToggle">입술 영역 조정</button><button id="lipEraseToggle">입술 영역 지우기</button><button id="manualLip" hidden>직접 영역 지정</button><button id="boundaryUndo" hidden>되돌리기</button><button id="boundaryReset" hidden>자동 경계</button></div><div class="boundary-footer" id="boundaryFooter" hidden><p>점을 움직여 입술 경계를 맞춰 주세요</p><div><button id="boundaryCancel" aria-label="경계 조정 취소">×</button><strong>입술 경계 조정</strong><button id="boundaryDone" aria-label="경계 조정 완료">✓</button></div></div><section id="lipErasePanel" hidden aria-label="입술 영역 지우기">
+<section class="panel"><div class="tabs" role="tablist" aria-label="입술 컬러 영역"><button class="tab" id="tab-tone" role="tab" aria-selected="false" aria-controls="color-panel" data-group="톤업">톤업</button><button class="tab" id="tab-base" role="tab" aria-selected="false" aria-controls="color-panel" data-group="베이스">베이스</button><button class="tab" id="tab-point" role="tab" aria-selected="false" aria-controls="color-panel" data-group="포인트">포인트</button></div><div id="color-panel" hidden role="tabpanel" aria-labelledby="tab-tone"><div class="colors" id="colors"></div><label class="lip-strength">진하기 <input id="lipStrength" type="range" min="0" max="100" value="65" aria-label="입술 컬러 진하기"><output id="lipStrengthValue">65%</output></label></div></section><div class="lip-detection" id="lipDetection" role="status" aria-live="polite" hidden></div><div class="boundary-tools" id="boundaryTools" hidden><button id="boundaryToggle">입술 영역 조정</button><button id="lipEraseToggle">입술 영역 지우기</button><button id="manualLip" hidden>직접 영역 지정</button><button id="boundaryUndo" hidden>되돌리기</button><button id="boundaryReset" hidden>자동 경계</button></div><div class="boundary-footer" id="boundaryFooter" hidden><p><span style="color:#dc658f">● 윗입술</span> · <span style="color:#249fbb">● 아랫입술</span> — 점을 움직여 경계를 맞춰 주세요</p><div><button id="boundaryCancel" aria-label="경계 조정 취소">×</button><strong>입술 경계 조정</strong><button id="boundaryDone" aria-label="경계 조정 완료">✓</button></div></div><section id="lipErasePanel" hidden aria-label="입술 영역 지우기">
 <div id="lipErasePreview"><div id="lipEraseDot"></div></div>
 <div class="r"><span>브러시 크기</span><input id="les" aria-label="브러시 크기" type="range" min="1" max="50" step="1" value="40"><b id="lest">40px</b></div>
 <div class="r"><span>가장자리 강도</span><input id="leh" aria-label="가장자리 강도" type="range" min="0" max="100" value="55"><b id="leht">55%</b></div>
@@ -778,15 +778,31 @@ function syncBoundaryButtons(){
  $('boundaryUndo').hidden=!lipState.editing;$('boundaryReset').hidden=!lipState.editing;
  $('boundaryUndo').disabled=!lipState.history.length;
 }
+let boundaryHandles=[];
+function boundaryHandlePosition(ids,index,points,w,h,screenScale){
+ const id=ids[index],p=points[id],upper=index<10,corner=index===0||index===10;
+ let dx=0;
+ if(ids===LIP_INNER&&!corner){
+  const other=points[ids[20-index]],gap=Math.hypot((p.x-other.x)*w,(p.y-other.y)*h)*screenScale;
+  if(gap<20)dx=(upper?-8:8)/screenScale;
+ }
+ if(lipDrag&&lipDrag.id===id)dx=lipDrag.visualDX;
+ return {id,x:p.x*w+dx,y:p.y*h,dx,color:corner?'#ffffff':upper?'#f17aa7':'#50c8e5',label:corner?'입꼬리':upper?'윗입술':'아랫입술'};
+}
 function drawBoundary(){
- const svg=$('lipBoundary');if(!lipState.editing||!lipState.points){svg.replaceChildren();return}
- const w=P.naturalWidth,h=P.naturalHeight,fit=Math.min(stage.clientWidth/w,stage.clientHeight/h),r=4.5/(fit*zoom);
+ const svg=$('lipBoundary');boundaryHandles=[];if(!lipState.editing||!lipState.points){svg.replaceChildren();return}
+ const w=P.naturalWidth,h=P.naturalHeight,fit=Math.min(stage.clientWidth/w,stage.clientHeight/h),scale=fit*zoom;
  svg.setAttribute('viewBox','0 0 '+w+' '+h);svg.setAttribute('preserveAspectRatio','xMidYMid meet');svg.replaceChildren();
- for(const [ids,color,label] of [[LIP_OUTER,'#ed6f9e','바깥 입술선'],[LIP_INNER,'#58bad0','입 안쪽 경계']]){
- const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',lipCurvePath(ids,lipState.points,w,h));path.setAttribute('fill','none');path.setAttribute('stroke','transparent');path.setAttribute('stroke-width',1.2/(fit*zoom));svg.append(path);
- for(const id of ids){const node=document.createElementNS(svg.namespaceURI,'circle'),p=lipState.points[id];node.setAttribute('cx',p.x*w);node.setAttribute('cy',p.y*h);node.setAttribute('r',12/(fit*zoom));node.setAttribute('fill','transparent');node.setAttribute('stroke','none');node.setAttribute('class','lip-node');node.dataset.point=String(id);node.setAttribute('aria-label',label+' 조절점');svg.append(node);const dot=document.createElementNS(svg.namespaceURI,'circle');dot.setAttribute('cx',p.x*w);dot.setAttribute('cy',p.y*h);dot.setAttribute('r',2.8/(fit*zoom));dot.setAttribute('fill','#fff');dot.style.pointerEvents='none';svg.append(dot)}
+ for(const ids of [LIP_OUTER,LIP_INNER]){
+  for(let index=0;index<ids.length;index++){
+   const handle=boundaryHandlePosition(ids,index,lipState.points,w,h,scale),p=lipState.points[handle.id];boundaryHandles.push(handle);
+   if(handle.dx){const line=document.createElementNS(svg.namespaceURI,'line');line.setAttribute('x1',p.x*w);line.setAttribute('y1',p.y*h);line.setAttribute('x2',handle.x);line.setAttribute('y2',handle.y);line.setAttribute('stroke',handle.color);line.setAttribute('stroke-width',.8/scale);line.style.pointerEvents='none';svg.append(line)}
+   const node=document.createElementNS(svg.namespaceURI,'circle');node.setAttribute('cx',handle.x);node.setAttribute('cy',handle.y);node.setAttribute('r',12/scale);node.setAttribute('fill','transparent');node.setAttribute('class','lip-node');node.dataset.point=String(handle.id);node.setAttribute('aria-label',handle.label+(ids===LIP_INNER?' 안쪽':' 바깥')+' 조절점');svg.append(node);
+   const dot=document.createElementNS(svg.namespaceURI,'circle');dot.setAttribute('cx',handle.x);dot.setAttribute('cy',handle.y);dot.setAttribute('r',3.4/scale);dot.setAttribute('fill',handle.color);dot.setAttribute('stroke','#ffffff');dot.setAttribute('stroke-width',.8/scale);dot.style.pointerEvents='none';svg.append(dot);
+  }
  }
 }
+
 let lipDrag=null,boundaryBackup=null,boundaryView=null;
 // Cancel native WebKit sheet/scroll gestures before a node drag can start.
 for(const eventName of ['touchstart','touchmove']){
@@ -795,20 +811,24 @@ for(const eventName of ['touchstart','touchmove']){
  },{passive:false,capture:true});
 }
 $('lipBoundary').addEventListener('pointerdown',e=>{
- const id=e.target.dataset.point;if(id===undefined)return;e.preventDefault();e.stopPropagation();
+ if(e.target.dataset.point===undefined)return;
+ const startPoint=manualPhotoPoint(e),fit=Math.min(stage.clientWidth/P.naturalWidth,stage.clientHeight/P.naturalHeight);
+ const nearest=boundaryHandles.reduce((best,p)=>{const d=Math.hypot(p.x-startPoint.x*P.naturalWidth,p.y-startPoint.y*P.naturalHeight)*fit*zoom;return !best||d<best.distance?{...p,distance:d}:best},null);
+ if(!nearest||nearest.distance>14)return;
+ const id=nearest.id;e.preventDefault();e.stopPropagation();
  pushLipUndo();lipState.history.push(lipState.points.map(p=>({...p})));if(lipState.history.length>30)lipState.history.shift();
  touches.clear();gestureMoved.clear();pinch=null;
- lipDrag={id:Number(id),pointer:e.pointerId};showLipLens(e);$('lipBoundary').setPointerCapture(e.pointerId);syncBoundaryButtons();
+ lipDrag={id:Number(id),pointer:e.pointerId,visualDX:nearest.dx,offsetX:lipState.points[id].x-startPoint.x,offsetY:lipState.points[id].y-startPoint.y};showLipLens(e);$('lipBoundary').setPointerCapture(e.pointerId);syncBoundaryButtons();
 });
 $('lipBoundary').addEventListener('pointermove',e=>{
  if(!lipDrag||lipDrag.pointer!==e.pointerId)return;e.preventDefault();e.stopPropagation();
  const rect=stage.getBoundingClientRect(),sw=stage.clientWidth,sh=stage.clientHeight,w=P.naturalWidth,h=P.naturalHeight,fit=Math.min(sw/w,sh/h),rw=w*fit,rh=h*fit;
  const x=((e.clientX-rect.left-sw/2-panX)/zoom+sw/2-(sw-rw)/2)/rw;
  const y=((e.clientY-rect.top-sh/2-panY)/zoom+sh/2-(sh-rh)/2)/rh;
- lipState.points[lipDrag.id]={...lipState.points[lipDrag.id],x:Math.max(0,Math.min(1,x)),y:Math.max(0,Math.min(1,y))};
+ lipState.points[lipDrag.id]={...lipState.points[lipDrag.id],x:Math.max(0,Math.min(1,x+lipDrag.offsetX)),y:Math.max(0,Math.min(1,y+lipDrag.offsetY))};
  drawBoundary();scheduleLipPaint();showLipLens(e);
 });
-function endBoundary(e){if(lipDrag&&lipDrag.pointer===e.pointerId){if(e.cancelable)e.preventDefault();lipDrag=null;hideLipLens();e.stopPropagation()}}
+function endBoundary(e){if(lipDrag&&lipDrag.pointer===e.pointerId){if(e.cancelable)e.preventDefault();lipDrag=null;hideLipLens();drawBoundary();e.stopPropagation()}}
 $('lipBoundary').addEventListener('pointerup',endBoundary);$('lipBoundary').addEventListener('pointercancel',endBoundary);
 function finishBoundary(accept){
  hideLipLens();lipDrag=null;touches.clear();gestureMoved.clear();pinch=null;
