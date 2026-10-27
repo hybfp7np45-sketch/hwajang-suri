@@ -326,7 +326,7 @@ function installPaletteReorder(button,index){
  for(const name of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(name,finish);
 }
 function makeColorButton(name,color,active=false){const b=document.createElement('button');b.className='swatch';b.setAttribute('aria-pressed',String(active));const c=document.createElement('span');c.className='chip';c.style.setProperty('--c',color);const n=document.createElement('span');const parts=name.match(/^(.*?)\s*\((.*?)\)$/)||name.match(/^([\x00-\x7F]+?)([가-힣].*)$/);if(parts){const en=document.createElement('span'),ko=document.createElement('span');en.textContent=parts[1];ko.textContent=parts[2];n.append(en,ko)}else n.textContent=name;b.append(c,n);return b}
-document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{group=t.dataset.group;panelOpen=true;$('color-panel').hidden=false;render();$('colors').scrollLeft=0});render();
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{group=t.dataset.group;lipLayers.applyMode[group]='full';panelOpen=true;$('color-panel').hidden=false;render();$('colors').scrollLeft=0});render();
 const P=$('photo');
 function releasePreviousPhotoURL(){
  if(photoURL){URL.revokeObjectURL(photoURL);photoURL=null}
