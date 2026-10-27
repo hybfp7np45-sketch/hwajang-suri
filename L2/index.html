@@ -1011,7 +1011,7 @@ $('photoGridToggle').onclick=()=>{const on=$('photoGrid').classList.toggle('on')
  document.addEventListener('keydown',e=>{if(e.key==='Escape')$('lipBlendDialog').hidden=true});
  </script>
 <script id="lip-layer-eraser">
-const lipErase={on:false,mode:'erase',group:'톤업',masks:{},history:[],pointers:new Map(),stroke:null,last:null,pinch:null,lensFrame:0,lensPoint:null};
+const lipErase={on:false,tool:'erase',mode:'erase',group:'톤업',masks:{},history:[],pointers:new Map(),stroke:null,last:null,pinch:null,lensFrame:0,lensPoint:null};
 const lipMaskSize=1024;
 function makeLipMask(){const ratio=Math.min(1,lipMaskSize/Math.max(P.naturalWidth,P.naturalHeight));const w=Math.max(1,Math.round(P.naturalWidth*ratio)),h=Math.max(1,Math.round(P.naturalHeight*ratio));return {w,h,data:new Uint8Array(w*h).fill(255)}}
 function ensureLipMask(kind){return lipErase.masks[kind]||(lipErase.masks[kind]=makeLipMask())}
@@ -1025,18 +1025,21 @@ $('lipGlobalUndo').onclick=undoLipWork;
 function lipEdgeProfile(t,h=+$('leh').value/100){const soft=Math.max(0,1-t),hardWidth=.85*(1-h)+.002*h,hard=t<=1-hardWidth?1:Math.max(0,(1-t)/hardWidth),blend=h<=.5?0:h<=.7?.25*(h-.5)/.2:.25+.75*(h-.7)/.3;return soft*(1-blend)+hard*blend}
 function lipBrushUI(){const d=+$('les').value,a=+$('leo').value/100,hardness=+$('leh').value/100;for(const [id,text] of [['lest',d+'px'],['leht',$('leh').value+'%'],['leot',$('leo').value+'%']])$(id).textContent=text;const stops=[];for(let i=0;i<=100;i+=2)stops.push('rgba(217,139,171,'+(a*.7*lipEdgeProfile(i/100,hardness)).toFixed(5)+') '+i+'%');const dot=$('lipEraseDot');dot.style.width=dot.style.height=d+'px';dot.style.background='radial-gradient(circle closest-side,'+stops.join(',')+')';dot.style.border=lipErase.mode==='restore'?'1.5px solid #d779a8':'none'}
 for(const id of ['les','leh','leo'])$(id).oninput=lipBrushUI;
-function setLipBrushMode(mode){lipErase.mode=mode;for(const [id,m] of [['lePaint','paint'],['leErase','erase']]){$(id).classList.toggle('selected',mode===m);$(id).setAttribute('aria-pressed',String(mode===m))}lipBrushUI()}
+function setLipBrushMode(mode){lipErase.mode=mode;for(const [id,m] of [['lePaint',lipErase.tool==='erase'?'restore':'paint'],['leErase','erase']]){$(id).classList.toggle('selected',mode===m);$(id).setAttribute('aria-pressed',String(mode===m))}lipBrushUI()}
 $('leErase').onclick=()=>setLipBrushMode('erase');
 function openLipErase(mode='erase'){
  if(!lipState.points){lipStatus('먼저 사진의 입술 영역을 잡아 주세요.');return}
  closeLipLayers();
  if(!lipState.applied[group]){lipStatus('먼저 '+group+' 컬러를 선택해 주세요.');return}
  if(lipState.editing)finishBoundary(true);
+ lipErase.tool=mode==='paint'?'paint':'erase';
+ $('lePaint').textContent=lipErase.tool==='erase'?'복원':'브러시';
+ const actions=$('lePaint').parentElement;actions.insertBefore(lipErase.tool==='erase'?$('leErase'):$('lePaint'),actions.firstElementChild);
  lipErase.on=true;lipErase.group=group;lipErase.history=[];lipErase.pointers.clear();lipErase.stroke=null;lipErase.last=null;lipErase.pinch=null;ensureLipMask(group);
- document.querySelector('.app').classList.add('lip-erasing');$('lipErasePanel').hidden=false;setLipBrushMode(mode);$('lipBrushTitle').textContent=group+(mode==='paint'?' · 브러시':' · 영역 지우기');$('lipBrushClear').hidden=false;$('leUndo').disabled=true;
+ document.querySelector('.app').classList.add('lip-erasing');$('lipErasePanel').hidden=false;setLipBrushMode(mode);$('lipBrushTitle').textContent=group+(mode==='paint'?' · 브러시':' · 영역 지우기');$('lipBrushClear').hidden=lipErase.tool==='erase';$('leUndo').disabled=true;
 }
 function closeLipErase(){endLipEraseStroke();lipErase.on=false;lipErase.pointers.clear();lipErase.pinch=null;document.querySelector('.app').classList.remove('lip-erasing');$('lipErasePanel').hidden=true;hideLipEraseLens();flushLipPaint();syncLipUndo()}
-$('lipEraseToggle').onclick=()=>openLipErase('erase');$('lipBrushToggle').onclick=()=>{chooseLipApplyMode('brush');if(lipState.applied[group])openLipErase('paint');else{panelOpen=true;$('color-panel').hidden=false;render();lipStatus(group+' · 색을 고른 뒤 원하는 부분만 칠해 주세요.')}};$('lePaint').onclick=()=>setLipBrushMode('paint');$('lipBrushClear').onclick=clearLipAutoArea;$('leDone').onclick=closeLipErase;
+$('lipEraseToggle').onclick=()=>openLipErase('erase');$('lipBrushToggle').onclick=()=>{chooseLipApplyMode('brush');if(lipState.applied[group])openLipErase('paint');else{panelOpen=true;$('color-panel').hidden=false;render();lipStatus(group+' · 색을 고른 뒤 원하는 부분만 칠해 주세요.')}};$('lePaint').onclick=()=>setLipBrushMode(lipErase.tool==='erase'?'restore':'paint');$('lipBrushClear').onclick=clearLipAutoArea;$('leDone').onclick=closeLipErase;
 function undoLipErase(){endLipEraseStroke();const st=lipErase.history.pop();if(st){if(lipWorkHistory.at(-1)===st.work)lipWorkHistory.pop();restoreLipBrushSnapshot(st);paintLips();syncLipUndo()}$('leUndo').disabled=!lipErase.history.length;hideLipEraseLens()}
 $('leUndo').onclick=undoLipErase;
 function erasePhotoPoint(e){const rect=stage.getBoundingClientRect(),sw=stage.clientWidth,sh=stage.clientHeight,w=P.naturalWidth,h=P.naturalHeight,fit=Math.min(sw/w,sh/h),rw=w*fit,rh=h*fit;return{x:((e.clientX-rect.left-sw/2-panX)/zoom+sw/2-(sw-rw)/2)/rw,y:((e.clientY-rect.top-sh/2-panY)/zoom+sh/2-(sh-rh)/2)/rh,cx:e.clientX,cy:e.clientY}}
