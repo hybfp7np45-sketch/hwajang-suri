@@ -236,7 +236,7 @@ function syncLipApplyMode(){
  const brush=lipLayers.applyMode[group]==='brush';
  $('lipApplyFull').setAttribute('aria-pressed',String(!brush));$('lipApplyBrush').setAttribute('aria-pressed',String(brush));
  $('lipApplyHint').textContent=brush?'색을 고른 뒤 원하는 곳만 칠해요 · 기존에 적용한 색은 유지돼요.':'색을 선택하면 입술 전체에 적용돼요.';
- $('lipApplyHint').style.visibility=brush?'hidden':'visible';
+ $('lipApplyHint').style.visibility='hidden';
 }
 function render(){
  syncLipApplyMode();
@@ -1023,7 +1023,7 @@ function syncLipUndo(){const b=$('lipGlobalUndo');b.hidden=!P.naturalWidth;b.dis
 function undoLipWork(){if(lipErase.on){undoLipErase();return}const st=lipWorkHistory.pop();if(!st)return;lipState.applied={...st.applied};Object.assign(selected,st.selected);Object.assign(lipStrengths,st.strengths);lipState.strength=lipStrengths[group];lipState.points=st.points?.map(p=>({...p}));Object.assign(blendSlots,st.slots);lipErase.masks=st.masks;if(st.layerState)Object.assign(lipLayers,st.layerState);$('lipStrength').value=lipState.strength;$('lipStrengthValue').value=lipState.strength+'%';render();drawBoundary();paintLips();syncLipUndo()}
 $('lipGlobalUndo').onclick=undoLipWork;
 function lipEdgeProfile(t,h=+$('leh').value/100){const soft=Math.max(0,1-t),hardWidth=.85*(1-h)+.002*h,hard=t<=1-hardWidth?1:Math.max(0,(1-t)/hardWidth),blend=h<=.5?0:h<=.7?.25*(h-.5)/.2:.25+.75*(h-.7)/.3;return soft*(1-blend)+hard*blend}
-function lipBrushUI(){const d=+$('les').value,a=+$('leo').value/100,hardness=+$('leh').value/100;for(const [id,text] of [['lest',d+'px'],['leht',$('leh').value+'%'],['leot',$('leo').value+'%']])$(id).textContent=text;const stops=[];for(let i=0;i<=100;i+=2)stops.push('rgba(217,139,171,'+(a*.7*lipEdgeProfile(i/100,hardness)).toFixed(5)+') '+i+'%');const dot=$('lipEraseDot');dot.style.width=dot.style.height=d+'px';dot.style.background='radial-gradient(circle closest-side,'+stops.join(',')+')';dot.style.border=lipErase.mode==='restore'?'1.5px solid #d779a8':'none'}
+function lipBrushUI(){const d=+$('les').value,a=+$('leo').value/100,hardness=+$('leh').value/100;for(const [id,text] of [['lest',d+'px'],['leht',$('leh').value+'%'],['leot',$('leo').value+'%']])$(id).textContent=text;const stops=[];for(let i=0;i<=100;i+=2)stops.push('rgba(217,139,171,'+(a*.7*lipEdgeProfile(i/100,hardness)).toFixed(5)+') '+i+'%');const dot=$('lipEraseDot');dot.style.width=dot.style.height=d+'px';dot.style.background='radial-gradient(circle closest-side,'+stops.join(',')+')';dot.style.border='none'}
 for(const id of ['les','leh','leo'])$(id).oninput=lipBrushUI;
 function setLipBrushMode(mode){lipErase.mode=mode;for(const [id,m] of [['lePaint',lipErase.tool==='erase'?'restore':'paint'],['leErase','erase']]){$(id).classList.toggle('selected',mode===m);$(id).setAttribute('aria-pressed',String(mode===m))}lipBrushUI()}
 $('leErase').onclick=()=>setLipBrushMode('erase');
