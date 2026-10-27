@@ -232,6 +232,11 @@ const palettes={'톤업':[],'베이스':[],'포인트':[]};
 let panelOpen=false;let group='톤업',selected={'톤업':null,'베이스':null,'포인트':null},photoURL=null;
 const blendSlots={'톤업':null,'베이스':null,'포인트':null};
 let blendDraft=[],blendGroup='톤업',dropEditor=null,suppressPaletteClick=false;
+function syncLipApplyMode(){
+ const brush=lipLayers.applyMode[group]==='brush';
+ $('lipApplyFull').setAttribute('aria-pressed',String(!brush));$('lipApplyBrush').setAttribute('aria-pressed',String(brush));
+ $('lipApplyHint').textContent=brush?'색을 고른 뒤 원하는 곳만 칠해요 · 기존에 적용한 색은 유지돼요.':'색을 선택하면 입술 전체에 적용돼요.';
+}
 function render(){
  syncLipApplyMode();
  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(panelOpen&&t.dataset.group===group)));
@@ -1118,11 +1123,6 @@ const renderBeforeLipLayers=render;render=function(){renderBeforeLipLayers();ren
 const boundaryClickBeforeLayers=$('boundaryToggle').onclick;$('boundaryToggle').onclick=e=>{closeLipLayers();boundaryClickBeforeLayers(e)};
 
 
-function syncLipApplyMode(){
- const brush=lipLayers.applyMode[group]==='brush';
- $('lipApplyFull').setAttribute('aria-pressed',String(!brush));$('lipApplyBrush').setAttribute('aria-pressed',String(brush));
- $('lipApplyHint').textContent=brush?'색을 고른 뒤 원하는 곳만 칠해요 · 기존에 적용한 색은 유지돼요.':'색을 선택하면 입술 전체에 적용돼요.';
-}
 function chooseLipApplyMode(mode){
  if(lipErase.on)closeLipErase();
  if(lipLayers.applyMode[group]!==mode){pushLipUndo();lipLayers.applyMode[group]=mode;
