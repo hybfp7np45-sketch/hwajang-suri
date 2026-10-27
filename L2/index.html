@@ -129,11 +129,11 @@ header{order:0;flex-shrink:0}
 #manualLip{display:none!important}
 .boundary-tools{justify-content:space-between;gap:8px;padding:0 14px}
 #lipErasePanel{position:fixed;left:8px;right:8px;bottom:calc(46px + env(safe-area-inset-bottom));flex:none;background:#fff;border:1px solid #efd9e3;border-radius:15px;padding:10px;margin:0;color:#ad6c89;z-index:8}
-#lipErasePreview{height:56px;display:grid;place-items:center;background:#fff9fc;border-radius:10px;margin-bottom:4px}
+#lipErasePreview{height:32px;display:grid;place-items:center;background:#fff9fc;border-radius:10px;margin-bottom:4px}
 #lipEraseDot{border-radius:50%;flex-shrink:0}
-#lipErasePanel .r{display:grid;grid-template-columns:76px 1fr 44px;gap:7px;align-items:center;margin:7px 0;font-size:11px}
+#lipErasePanel .r{display:grid;grid-template-columns:76px 1fr 36px;gap:5px;align-items:center;margin:2px 0;font-size:10px}
 #lipErasePanel input[type=range]{width:100%;accent-color:#d98bab;touch-action:none}
-#lipErasePanel .a{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:7px}
+#lipErasePanel .a{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:4px}
 #lipErasePanel .a button{height:31px;min-width:0;padding:0 3px;border:1px solid #ebccda;background:#fff3f8;color:#b47391;border-radius:9px;font-size:12px;font-weight:700;white-space:nowrap}
 #lipErasePanel .a button.selected{background:#f9dfeb;border:2px solid #d98bab;color:#b36086}
 #lipEraseCursor{position:fixed;pointer-events:none;z-index:90;transform:translate(-50%,-50%);border:1.5px solid #d98bab;box-shadow:0 0 0 1px #fffd;border-radius:50%;display:none;box-sizing:border-box}
@@ -146,7 +146,7 @@ header{order:0;flex-shrink:0}
 .app.lip-erasing .stage{touch-action:none}
 /* Match the two lip tools and keep brush controls above the mouth. */
 .boundary-tools #boundaryToggle,.boundary-tools #lipEraseToggle{box-sizing:border-box;width:110px;height:32px;padding:8px 10px;font-size:10px;line-height:14px;border:1px solid #e6c4d2;border-radius:15px;background:#fffefa;color:#bf7190;font-weight:400;white-space:nowrap}
-#lipErasePanel{top:calc(env(safe-area-inset-top) + 66px);bottom:auto;max-height:calc(100dvh - 100px - env(safe-area-inset-top));overflow-y:auto}
+#lipErasePanel{top:calc(env(safe-area-inset-top) + 58px);bottom:auto;max-height:190px;overflow-y:auto;padding:6px 10px;border-radius:0 0 14px 14px}
 /* Boundary editing owns touch gestures and shows only its local undo. */
 .app.boundary-edit #lipGlobalUndo{display:none!important}
 #lipBoundary,#lipBoundary .lip-node{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -154,9 +154,9 @@ header{order:0;flex-shrink:0}
 /* L2: compact, independent paint and lip layers. */
 .boundary-tools #boundaryToggle,.boundary-tools #lipBrushToggle,.boundary-tools #lipEraseToggle{width:auto;flex:1;min-width:0;padding:8px 5px;font-size:10px;border:1px solid #e6c4d2;border-radius:15px;background:#fffefa;color:#bf7190;height:32px;white-space:nowrap}
 .app.boundary-edit #lipBrushToggle,.app.boundary-edit #lipLayersPanel{display:none!important}
-.lip-brush-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:6px}
+.lip-brush-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:2px}
 #lipBrushClear,#lePaint{border:1px solid #ebccda;border-radius:12px;background:#fff3f8;color:#b47391;padding:5px 9px;font-size:10px}
-#lePaint{width:100%;margin:3px 0}#lePaint.selected{background:#f9dfeb;border-color:#d98bab}
+
 #lipLayersPanel{position:absolute;left:8px;right:8px;top:calc(env(safe-area-inset-top) + 112px);z-index:12;background:#fff;border:1px solid #ecd2de;border-radius:15px;max-height:240px;overflow-y:auto;padding:8px;color:#a96886;box-shadow:0 6px 20px #80506620}
 #lipLayersPanel[hidden]{display:none}#lipLayersPanel p{font-size:10px;text-align:center;margin:5px 0;color:#a48b96}
 .lip-layer-close{width:100%;border:0;background:#fff3f8;border-radius:9px;padding:7px;font-size:12px;color:#af708b}
@@ -215,8 +215,8 @@ header{order:0;flex-shrink:0}
 <div class="lip-brush-head"><strong id="lipBrushTitle">지우기</strong><button id="lipBrushClear" type="button">자동 영역 비우기</button></div><div id="lipErasePreview"><div id="lipEraseDot"></div></div>
 <div class="r"><span>브러시 크기</span><input id="les" aria-label="브러시 크기" type="range" min="1" max="50" step="1" value="40"><b id="lest">40px</b></div>
 <div class="r"><span>가장자리 강도</span><input id="leh" aria-label="가장자리 강도" type="range" min="0" max="100" value="55"><b id="leht">55%</b></div>
-<div class="r"><span>투명도</span><input id="leo" aria-label="지우개 투명도" type="range" min="10" max="100" value="100"><b id="leot">100%</b></div>
-<button id="lePaint" type="button" hidden>브러시로 칠하기</button><div class="a" role="group" aria-label="입술 지우기 도구"><button id="leErase" class="selected" aria-pressed="true">지우기</button><button id="leRestore" aria-pressed="false">복원</button><button id="leUndo">되돌리기</button><button id="leDone">완료</button></div></section><div class="palette-tools"><button id="openPalette">내 팔레트 만들기</button><button id="lipLayersToggle">레이어</button><button id="photoGridToggle" aria-pressed="false">격자 OFF</button></div><section id="lipLayersPanel" hidden aria-label="입술 레이어"><button id="lipLayersClose" class="lip-layer-close">레이어 닫기 ▴</button><p>위에 있는 레이어가 위에 적용돼요 · 끌어서 순서 변경</p><div id="lipLayerRows"></div><div class="lip-layer-controls"><button data-layer-move="top">⏫<small>맨 위</small></button><button data-layer-move="up">↑<small>한 단계 위</small></button><button data-layer-move="down">↓<small>한 단계 아래</small></button><button data-layer-move="bottom">⏬<small>맨 아래</small></button></div></section></main>
+<div class="r"><span>투명도</span><input id="leo" aria-label="브러시 투명도" type="range" min="10" max="100" value="100"><b id="leot">100%</b></div>
+<div class="a" role="group" aria-label="입술 브러시 도구"><button id="lePaint" aria-pressed="false">브러시</button><button id="leErase" aria-pressed="false">지우기</button><button id="leUndo">되돌리기</button><button id="leDone">완료</button></div></section><div class="palette-tools"><button id="openPalette">내 팔레트 만들기</button><button id="lipLayersToggle">레이어</button><button id="photoGridToggle" aria-pressed="false">격자 OFF</button></div><section id="lipLayersPanel" hidden aria-label="입술 레이어"><button id="lipLayersClose" class="lip-layer-close">레이어 닫기 ▴</button><p>위에 있는 레이어가 위에 적용돼요 · 끌어서 순서 변경</p><div id="lipLayerRows"></div><div class="lip-layer-controls"><button data-layer-move="top">⏫<small>맨 위</small></button><button data-layer-move="up">↑<small>한 단계 위</small></button><button data-layer-move="down">↓<small>한 단계 아래</small></button><button data-layer-move="bottom">⏬<small>맨 아래</small></button></div></section></main>
 <input type="file" accept="image/*" id="photos" hidden><input type="file" accept="image/*" id="files" hidden>
 <div class="overlay" id="picker" hidden><div class="sheet" role="dialog" aria-modal="true" aria-label="사진 불러오기"><button id="pickPhotos">사진 불러오기</button><button id="pickFiles">파일 불러오기</button><button id="cancelPick">취소</button></div></div>
 <div class="camview" id="camview"><video id="camvideo" autoplay playsinline muted></video><div class="grid" id="grid"></div><button class="camclose" id="camclose">닫기</button><button class="gridbtn" id="gridbtn">Guide ON</button><button class="flipcam" id="flipcam" aria-label="카메라 전환">↻</button><div class="camctl"><button class="shot" id="shot" aria-label="촬영"></button></div><canvas id="camcanvas" hidden></canvas></div><script>
@@ -224,7 +224,7 @@ const $=id=>document.getElementById(id);
 let lipState={token:0,manualCorners:null,points:null,originalPoints:null,editing:false,history:[],applied:{},strength:65,compare:false,model:null,promise:null};
 const lipLayers={order:['톤업','베이스','포인트'],hidden:[],auto:{},manual:{}};
 const palettes={'톤업':[],'베이스':[],'포인트':[]};
-let panelOpen=false;let group='톤업',selected={'톤업':0,'베이스':0,'포인트':0},photoURL=null;
+let panelOpen=false;let group='톤업',selected={'톤업':null,'베이스':null,'포인트':null},photoURL=null;
 const blendSlots={'톤업':null,'베이스':null,'포인트':null};
 let blendDraft=[],blendGroup='톤업',dropEditor=null,suppressPaletteClick=false;
 function render(){
@@ -723,6 +723,7 @@ function makeInnerLipAccent(points,w,h,x0,y0,rw,rh){
  }
  return mask;
 }
+let lipPaintGeometryCache=null;
 function paintLips(){
  if(!lipState.points||!P.naturalWidth)return;
  const w=P.naturalWidth,h=P.naturalHeight,points=lipState.points,out=$('lipOverlay'),ctx=out.getContext('2d');ctx.clearRect(0,0,w,h);
@@ -732,16 +733,23 @@ function paintLips(){
  let x1=Math.min(w,Math.ceil(Math.max(...ps.map(p=>p.x))*w)+pad),y1=Math.min(h,Math.ceil(Math.max(...ps.map(p=>p.y))*h)+pad);
  for(const {kind} of active){const mask=lipLayers.manual[kind],b=mask?.bounds;if(b){x0=Math.min(x0,Math.floor(b[0]/mask.w*w));y0=Math.min(y0,Math.floor(b[1]/mask.h*h));x1=Math.max(x1,Math.ceil(b[2]/mask.w*w));y1=Math.max(y1,Math.ceil(b[3]/mask.h*h))}}
  const rw=x1-x0,rh=y1-y0;if(rw<2||rh<2)return;
+ const geometryKey=JSON.stringify([P.src,w,h,x0,y0,rw,rh,LIP_OUTER.map(i=>[points[i].x,points[i].y]),LIP_INNER.map(i=>[points[i].x,points[i].y])]);
+ let rawOuter,softOuter,softInner,source;
+ if(lipPaintGeometryCache?.key===geometryKey){({rawOuter,softOuter,softInner,source}=lipPaintGeometryCache)}else{
  const makeMask=()=>{const c=document.createElement('canvas');c.width=rw;c.height=rh;return c};
  const outer=makeMask(),m=outer.getContext('2d');m.beginPath();lipPolygon(m,LIP_OUTER,points,w,h,x0,y0);m.fillStyle='#fff';m.fill();
- const rawOuter=m.getImageData(0,0,rw,rh).data;
+ rawOuter=m.getImageData(0,0,rw,rh).data;
  // Feather mostly inward, like one soft eraser pass along the outline.
  // Keep a short outward tail and full pigment in the lip centre.
  const outsideFade=Math.max(.5,lipHeight*.08),insideFade=Math.max(.5,lipHeight*.15);
- const softOuter=softenLipAlphaAgain(blendLipOutline(rawOuter,rw,rh,outsideFade,insideFade),rw,rh,Math.max(1,Math.min(lipWidth*.004,lipHeight*.018)));
+ softOuter=softenLipAlphaAgain(blendLipOutline(rawOuter,rw,rh,outsideFade,insideFade),rw,rh,Math.max(1,Math.min(lipWidth*.004,lipHeight*.018)));
  const inner=makeMask(),ic=inner.getContext('2d');ic.fillStyle='#fff';ic.fillRect(0,0,rw,rh);ic.globalCompositeOperation='destination-out';ic.beginPath();lipPolygon(ic,LIP_INNER,points,w,h,x0,y0);ic.fill();
- const softInner=featherLipMask(ic.getImageData(0,0,rw,rh).data,rw,rh,Math.max(1,lipWidth*.007));
- const c=makeMask(),z=c.getContext('2d');z.drawImage(P,x0,y0,rw,rh,0,0,rw,rh);const pixels=z.getImageData(0,0,rw,rh),data=pixels.data;
+ softInner=featherLipMask(ic.getImageData(0,0,rw,rh).data,rw,rh,Math.max(1,lipWidth*.007));
+ const c=makeMask(),z=c.getContext('2d');z.drawImage(P,x0,y0,rw,rh,0,0,rw,rh);source=z.getImageData(0,0,rw,rh);
+
+ lipPaintGeometryCache={key:geometryKey,rawOuter,softOuter,softInner,source,innerAccent:null};
+ }
+ const pixels=new ImageData(new Uint8ClampedArray(source.data),rw,rh),data=pixels.data;
  let sum=0,count=0,lipR=0,lipB=0,skinR=0,skinB=0,skinN=0;
  for(let i=0;i<data.length;i+=4){
   if(softOuter[i+3]>160&&softInner[i+3]>160){sum+=data[i]*.2126+data[i+1]*.7152+data[i+2]*.0722;lipR+=data[i]-data[i+1];lipB+=data[i+2]-data[i+1];count++}
@@ -752,7 +760,7 @@ function paintLips(){
  lipR/=Math.max(1,count);lipB/=Math.max(1,count);skinR/=Math.max(1,skinN);skinB/=Math.max(1,skinN);
  const separation=Math.hypot(lipR-skinR,lipB-skinB);
  const layers=active.map(o=>({...o,y:o.rgb[0]*.2126+o.rgb[1]*.7152+o.rgb[2]*.0722}));
- const innerAccent=active.some(o=>o.kind==='포인트')?makeInnerLipAccent(points,w,h,x0,y0,rw,rh):null;
+ const innerAccent=active.some(o=>o.kind==='포인트')?(lipPaintGeometryCache.innerAccent ||= makeInnerLipAccent(points,w,h,x0,y0,rw,rh)):null;
  for(let i=0;i<data.length;i+=4){
   const autoAlpha=softOuter[i+3]/255*softInner[i+3]/255,px=x0+(i/4)%rw,py=y0+Math.floor(i/4/rw);
   let alpha=autoAlpha;for(const {kind} of layers)alpha=Math.max(alpha,lipManualVisibility(kind,px,py,w,h));if(alpha===0){data[i+3]=0;continue}
@@ -942,7 +950,7 @@ const pigmentCatalog=[{"id":"perma:Orange Crush","brand":"perma","name":"Orange 
 
 const paletteKey='suri.L2.myPalette.v1';try{if(localStorage.getItem(paletteKey)===null){const previous=localStorage.getItem('suri.L1.myPalette.v1');if(previous)localStorage.setItem(paletteKey,previous)}}catch(e){}let myColors=[],draft=[],sampling=false,makerURL=null;
 try{const v=JSON.parse(localStorage.getItem(paletteKey)||'[]');if(Array.isArray(v))myColors=v.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&/^#[0-9a-f]{6}$/i.test(x.hex))}catch(e){}
-function syncMyPalette(){lipProfileCache.clear();for(const key of Object.keys(palettes)){palettes[key]=myColors.map(x=>[x.name,x.hex]);selected[key]=Math.min(selected[key],Math.max(0,myColors.length-1))}render()}
+function syncMyPalette(){lipProfileCache.clear();for(const key of Object.keys(palettes)){palettes[key]=myColors.map(x=>[x.name,x.hex]);if(Number.isInteger(selected[key])&&selected[key]>=0)selected[key]=myColors.length?Math.min(selected[key],myColors.length-1):null}render()}
 function drawCatalog(){
  const catalog=$('catalog'),scroll=catalog.scrollTop;
  catalog.replaceChildren();
@@ -1002,18 +1010,18 @@ function pushLipUndo(){lipWorkHistory.push(captureLipWork());let bytes=0;for(let
 function syncLipUndo(){const b=$('lipGlobalUndo');b.hidden=!P.naturalWidth;b.disabled=!lipWorkHistory.length}
 function undoLipWork(){if(lipErase.on){undoLipErase();return}const st=lipWorkHistory.pop();if(!st)return;lipState.applied={...st.applied};Object.assign(selected,st.selected);Object.assign(lipStrengths,st.strengths);lipState.strength=lipStrengths[group];lipState.points=st.points?.map(p=>({...p}));Object.assign(blendSlots,st.slots);lipErase.masks=st.masks;if(st.layerState)Object.assign(lipLayers,st.layerState);$('lipStrength').value=lipState.strength;$('lipStrengthValue').value=lipState.strength+'%';render();drawBoundary();paintLips();syncLipUndo()}
 $('lipGlobalUndo').onclick=undoLipWork;
-function lipEdgeProfile(t){const h=+$('leh').value/100,soft=Math.max(0,1-t),hardWidth=.85*(1-h)+.002*h,hard=t<=1-hardWidth?1:Math.max(0,(1-t)/hardWidth),blend=h<=.5?0:h<=.7?.25*(h-.5)/.2:.25+.75*(h-.7)/.3;return soft*(1-blend)+hard*blend}
-function lipBrushUI(){const d=+$('les').value,a=+$('leo').value/100;for(const [id,text] of [['lest',d+'px'],['leht',$('leh').value+'%'],['leot',$('leo').value+'%']])$(id).textContent=text;const stops=[];for(let i=0;i<=100;i+=2)stops.push('rgba(217,139,171,'+(a*.7*lipEdgeProfile(i/100)).toFixed(5)+') '+i+'%');const dot=$('lipEraseDot');dot.style.width=dot.style.height=d+'px';dot.style.background='radial-gradient(circle closest-side,'+stops.join(',')+')';dot.style.border=lipErase.mode==='restore'?'1.5px solid #d779a8':'none'}
+function lipEdgeProfile(t,h=+$('leh').value/100){const soft=Math.max(0,1-t),hardWidth=.85*(1-h)+.002*h,hard=t<=1-hardWidth?1:Math.max(0,(1-t)/hardWidth),blend=h<=.5?0:h<=.7?.25*(h-.5)/.2:.25+.75*(h-.7)/.3;return soft*(1-blend)+hard*blend}
+function lipBrushUI(){const d=+$('les').value,a=+$('leo').value/100,hardness=+$('leh').value/100;for(const [id,text] of [['lest',d+'px'],['leht',$('leh').value+'%'],['leot',$('leo').value+'%']])$(id).textContent=text;const stops=[];for(let i=0;i<=100;i+=2)stops.push('rgba(217,139,171,'+(a*.7*lipEdgeProfile(i/100,hardness)).toFixed(5)+') '+i+'%');const dot=$('lipEraseDot');dot.style.width=dot.style.height=d+'px';dot.style.background='radial-gradient(circle closest-side,'+stops.join(',')+')';dot.style.border=lipErase.mode==='restore'?'1.5px solid #d779a8':'none'}
 for(const id of ['les','leh','leo'])$(id).oninput=lipBrushUI;
-function setLipBrushMode(mode){lipErase.mode=mode;for(const [id,m] of [['leErase','erase'],['leRestore','restore'],['lePaint','paint']]){$(id).classList.toggle('selected',mode===m);$(id).setAttribute('aria-pressed',String(mode===m))}lipBrushUI()}
-$('leErase').onclick=()=>setLipBrushMode('erase');$('leRestore').onclick=()=>setLipBrushMode('restore');
+function setLipBrushMode(mode){lipErase.mode=mode;for(const [id,m] of [['lePaint','paint'],['leErase','erase']]){$(id).classList.toggle('selected',mode===m);$(id).setAttribute('aria-pressed',String(mode===m))}lipBrushUI()}
+$('leErase').onclick=()=>setLipBrushMode('erase');
 function openLipErase(mode='erase'){
  if(!lipState.points){lipStatus('먼저 사진의 입술 영역을 잡아 주세요.');return}
  closeLipLayers();
  if(!lipState.applied[group]){lipStatus('먼저 '+group+' 컬러를 선택해 주세요.');return}
  if(lipState.editing)finishBoundary(true);
  lipErase.on=true;lipErase.group=group;lipErase.history=[];lipErase.pointers.clear();lipErase.stroke=null;lipErase.last=null;lipErase.pinch=null;ensureLipMask(group);
- document.querySelector('.app').classList.add('lip-erasing');$('lipErasePanel').hidden=false;setLipBrushMode(mode);$('lipBrushTitle').textContent=group+(mode==='paint'?' · 브러시':' · 영역 지우기');$('lePaint').hidden=mode!=='paint';$('lipBrushClear').hidden=mode!=='paint';$('leUndo').disabled=true;
+ document.querySelector('.app').classList.add('lip-erasing');$('lipErasePanel').hidden=false;setLipBrushMode(mode);$('lipBrushTitle').textContent=group+(mode==='paint'?' · 브러시':' · 영역 지우기');$('lipBrushClear').hidden=false;$('leUndo').disabled=true;
 }
 function closeLipErase(){endLipEraseStroke();lipErase.on=false;lipErase.pointers.clear();lipErase.pinch=null;document.querySelector('.app').classList.remove('lip-erasing');$('lipErasePanel').hidden=true;hideLipEraseLens();flushLipPaint();syncLipUndo()}
 $('lipEraseToggle').onclick=()=>openLipErase('erase');$('lipBrushToggle').onclick=()=>openLipErase('paint');$('lePaint').onclick=()=>setLipBrushMode('paint');$('lipBrushClear').onclick=clearLipAutoArea;$('leDone').onclick=closeLipErase;
@@ -1024,8 +1032,8 @@ function beginLipEraseStroke(e){pushLipUndo();const m=ensureLipMask(lipErase.gro
 function lipEraseDab(p){
  const m=ensureLipMask(lipErase.group),base=lipErase.stroke?.base;if(!base)return;
  const fit=Math.min(stage.clientWidth/P.naturalWidth,stage.clientHeight/P.naturalHeight),rx=+$('les').value/2/zoom/fit/P.naturalWidth*m.w,ry=+$('les').value/2/zoom/fit/P.naturalHeight*m.h,px=p.x*m.w,py=p.y*m.h;
- const x0=Math.max(0,Math.floor(px-rx)),x1=Math.min(m.w,Math.ceil(px+rx)),y0=Math.max(0,Math.floor(py-ry)),y1=Math.min(m.h,Math.ceil(py+ry)),opacity=+$('leo').value/100;
- for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){const r=Math.hypot((x+.5-px)/rx,(y+.5-py)/ry);if(r>=1)continue;const i=y*m.w+x,t=opacity*lipEdgeProfile(r);if(lipErase.mode==='paint'){const manual=ensureLipManual(lipErase.group),pb=lipErase.stroke.paintBase;manual.data[i]=Math.max(manual.data[i],Math.round(pb[i]+(255-pb[i])*t));m.data[i]=Math.max(m.data[i],Math.round(base[i]+(255-base[i])*t));const b=manual.bounds;manual.bounds=b?[Math.min(b[0],x),Math.min(b[1],y),Math.max(b[2],x+1),Math.max(b[3],y+1)]:[x,y,x+1,y+1]}else if(lipErase.mode==='restore')m.data[i]=Math.max(m.data[i],Math.round(base[i]+(255-base[i])*t));else m.data[i]=Math.min(m.data[i],Math.round(base[i]*(1-t)))}
+ const x0=Math.max(0,Math.floor(px-rx)),x1=Math.min(m.w,Math.ceil(px+rx)),y0=Math.max(0,Math.floor(py-ry)),y1=Math.min(m.h,Math.ceil(py+ry)),opacity=+$('leo').value/100,hardness=+$('leh').value/100,manual=lipErase.mode==='paint'?ensureLipManual(lipErase.group):null;
+ for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){const r=Math.hypot((x+.5-px)/rx,(y+.5-py)/ry);if(r>=1)continue;const i=y*m.w+x,t=opacity*lipEdgeProfile(r,hardness);if(lipErase.mode==='paint'){const pb=lipErase.stroke.paintBase;manual.data[i]=Math.max(manual.data[i],Math.round(pb[i]+(255-pb[i])*t));m.data[i]=Math.max(m.data[i],Math.round(base[i]+(255-base[i])*t));const b=manual.bounds;manual.bounds=b?[Math.min(b[0],x),Math.min(b[1],y),Math.max(b[2],x+1),Math.max(b[3],y+1)]:[x,y,x+1,y+1]}else if(lipErase.mode==='restore')m.data[i]=Math.max(m.data[i],Math.round(base[i]+(255-base[i])*t));else m.data[i]=Math.min(m.data[i],Math.round(base[i]*(1-t)))}
 }
 function lipEraseLine(p){const q=lipErase.last;if(!q)lipEraseDab(p);else{const n=Math.max(1,Math.ceil(Math.hypot(p.cx-q.cx,p.cy-q.cy)/Math.max(1,+$('les').value*.18)));for(let i=1;i<=n;i++){const t=i/n;lipEraseDab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t})}}lipErase.last=p;scheduleLipPaint()}
 function endLipEraseStroke(){lipErase.stroke=null;lipErase.last=null;hideLipEraseLens()}
@@ -1105,4 +1113,5 @@ const boundaryClickBeforeLayers=$('boundaryToggle').onclick;$('boundaryToggle').
 
 lipBrushUI();syncLipUndo();renderLipLayers();
 </script></body></html>
+
 
