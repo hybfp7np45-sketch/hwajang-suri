@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>건강상태 확인서 & 시술 동의서</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#eaf6fc;color:#233744;font:14px/1.5 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif}.flowbar{height:118px;padding:10px 14px;background:#eaf6fc;display:flex;flex-direction:column;justify-content:center;gap:8px}.flowbar h1{font-size:17px;margin:0}.row{display:flex;align-items:center;gap:10px;justify-content:space-between}a,button{font:inherit;color:inherit}a{text-decoration:none}button{border:1px solid #bad3e4;border-radius:9px;background:#fff;padding:8px 12px;cursor:pointer}.next{background:#287fa9;color:white;border-color:#287fa9}.step{color:#526d7c;font-size:12px}.frames{height:calc(100dvh - 118px);position:relative}iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#eaf6fc}iframe[hidden]{display:none}button:disabled{opacity:.5;cursor:default}</style></head>
+<body><style>body{height:100dvh;display:flex;flex-direction:column}.flowbar{height:auto;min-height:118px;flex:none}.frames{height:auto;flex:1;min-height:0}#guide{font-size:11px;max-width:48%}.next{white-space:nowrap}</style><header class="flowbar"><div class="row"><a href="./index.html">‹ 홈</a><span class="step" id="step" aria-live="polite">1 / 2 · 건강상태 확인서</span></div><h1>건강상태 확인서 & 시술 동의서</h1><div class="row"><button id="back" hidden>‹ 건강상태 확인서</button><span id="guide">건강상태 확인 후 시술 동의서를 작성해 주세요.</span><button class="next" id="next" disabled>다음 · 시술 동의서 ›</button></div></header>
+<main class="frames"><iframe id="health" title="건강상태 확인서 작성" src="./forms.html?type=health"></iframe><iframe id="consent" title="시술 동의서 작성" src="./forms.html?type=consent" hidden></iframe></main>
+<script>
+const health=document.getElementById('health'),consent=document.getElementById('consent');
+const next=document.getElementById('next'),back=document.getElementById('back');
+let loaded=0;
+for(const frame of [health,consent])frame.addEventListener('load',()=>{
+ const doc=frame.contentDocument;
+ if(!doc?.getElementById('paper'))return;
+ const home=doc.querySelector('.toolbar a');if(home){home.href='./index.html';home.target='_top';}
+ const style=doc.createElement('style');style.textContent='.toolbar{position:relative}.toolbar>a{display:none}';doc.head.append(style);
+ loaded++;next.disabled=loaded<2;
+});
+function syncPersonal(source,target){
+ const from=source.contentDocument,to=target.contentDocument;
+ const common=new Set(['고객 성명','생년월일','연락처','주소','시술 부위','시술 예정일','담당 시술자','응급 연락처 성명','관계','응급 연락처 전화']);
+ for(const field of from.querySelectorAll('.field')){
+  const label=field.querySelector(':scope>span')?.textContent;
+  if(common.has(label)){
+   const dest=[...to.querySelectorAll('.field')].find(el=>el.querySelector(':scope>span')?.textContent===label);
+   const input=field.querySelector('input,textarea'),output=dest?.querySelector('input,textarea');
+   if(input&&output){output.value=input.value;output.dispatchEvent(new Event('input',{bubbles:true}));}
+  }
+ }
+ const selected=from.querySelector('.gender input:checked');
+ for(const radio of to.querySelectorAll('.gender input'))radio.checked=!!selected&&radio.value===selected.value;
+}
+next.addEventListener('click',()=>{syncPersonal(health,consent);health.hidden=true;consent.hidden=false;next.hidden=true;back.hidden=false;document.getElementById('guide').hidden=true;document.getElementById('step').textContent='2 / 2 · 시술 동의서';consent.contentWindow.scrollTo(0,0);});
+back.addEventListener('click',()=>{syncPersonal(consent,health);consent.hidden=true;health.hidden=false;next.hidden=false;back.hidden=true;document.getElementById('guide').hidden=false;document.getElementById('step').textContent='1 / 2 · 건강상태 확인서';});
+</script></body></html>
