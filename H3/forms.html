@@ -44,7 +44,8 @@ document.querySelectorAll('.signrow>span').forEach(highlightRequired);
 document.querySelectorAll('.signrow>label').forEach(label=>{const text=[...label.childNodes].find(n=>n.nodeType===3);if(text){const title=document.createElement('span');title.textContent=text.textContent;label.replaceChild(title,text);highlightRequired(title);label.querySelector('input')?.setAttribute('aria-required','true');}});
 document.querySelectorAll('.question legend').forEach(highlightRequired);
 if(kind==='health'){const privacy=document.querySelector('input[name="privacy"]')?.closest('fieldset')?.querySelector('legend');if(privacy)highlightRequired(privacy);}
-if(kind==='consent'||kind==='minor'){document.querySelectorAll('.check>span').forEach(highlightRequired);}
+if(kind==='minor'){document.querySelectorAll('.check>span').forEach(highlightRequired);}
+if(kind==='consent'){const heading=[...document.querySelectorAll('h2')].find(el=>el.textContent.includes('설명받은 내용 확인'));if(heading){const title=document.createElement('span');title.textContent=heading.textContent;heading.replaceChildren(title);highlightRequired(title);}}
 const key=document.createElement('p');key.className='required-key';key.innerHTML='<mark class="required-label">연노란색 표시</mark>는 이 서식에서 작성·확인이 필요한 항목입니다. 해당하지 않는 내용은 “해당 없음”으로 적어 주세요.';
 document.querySelector('h1').after(key);
 
