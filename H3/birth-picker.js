@@ -1,6 +1,6 @@
 (()=>{
 const dialog=document.createElement('dialog');dialog.id='birthDialog';dialog.setAttribute('aria-labelledby','birthTitle');dialog.innerHTML='<h2 id="birthTitle">생년월일 선택</h2><p>연·월·일을 위아래로 움직여 선택하세요.</p><div class="wheels"></div><div class="birth-footer"><button type="button" id="birthCancel">취소</button><button type="button" class="primary" id="birthDone">완료</button></div>';document.body.append(dialog);
-const now=new Date(),maxYear=now.getFullYear();let target=null,parts=[1996,1,1],updating=false;
+const now=new Date(),maxYear=now.getFullYear();let target=null,parts=[1996,6,15],updating=false;
 const wheels=dialog.querySelector('.wheels');
 for(const name of ['연도','월','일']){const wrap=document.createElement('div');wrap.innerHTML='<div class="wheel-label">'+name+'</div><div class="wheel" role="listbox" tabindex="0" aria-label="'+name+'"></div>';wheels.append(wrap)}
 const columns=[...dialog.querySelectorAll('.wheel')];
@@ -9,6 +9,6 @@ function render(i){const col=columns[i];col.replaceChildren();for(let k=0;k<coun
 function position(i){const col=columns[i],index=i===0?parts[i]-1900:parts[i]-1;col.scrollTop=index*40;}
 function choose(i,value,center){parts[i]=value;columns[i].querySelectorAll('button').forEach(b=>b.setAttribute('aria-selected',String(+b.dataset.value===value)));if(center)position(i);if(i<2){const last=count(2);if(parts[2]>last)parts[2]=last;render(2)}}
 columns.forEach((col,i)=>{let timer;col.addEventListener('scroll',()=>{clearTimeout(timer);timer=setTimeout(()=>{if(!dialog.open||updating)return;const index=Math.max(0,Math.min(count(i)-1,Math.round(col.scrollTop/40)));choose(i,i===0?1900+index:index+1,false)},140)});col.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const min=i===0?1900:1,max=i===0?maxYear:count(i);choose(i,Math.max(min,Math.min(max,parts[i]+(e.key==='ArrowDown'?1:-1))),true)}})});
-document.querySelectorAll('.birth-input').forEach(input=>input.addEventListener('click',()=>{target=input;parts=input.value?input.value.split('-').map(Number):[1996,1,1];updating=true;dialog.showModal();columns.forEach((_,i)=>render(i));requestAnimationFrame(()=>requestAnimationFrame(()=>{updating=false}));}));
+document.querySelectorAll('.birth-input').forEach(input=>input.addEventListener('click',()=>{target=input;parts=input.value?input.value.split('-').map(Number):[1996,6,15];updating=true;dialog.showModal();columns.forEach((_,i)=>render(i));requestAnimationFrame(()=>requestAnimationFrame(()=>{updating=false}));}));
 dialog.querySelector('#birthCancel').onclick=()=>dialog.close();dialog.querySelector('#birthDone').onclick=()=>{const value=parts[0]+'-'+String(parts[1]).padStart(2,'0')+'-'+String(parts[2]).padStart(2,'0');if(new Date(value+'T00:00:00')>now){dialog.querySelector('#birthTitle').textContent='미래 날짜는 선택할 수 없습니다';return}target.value=value;target.dispatchEvent(new Event('input',{bubbles:true}));dialog.close()};dialog.addEventListener('close',()=>{dialog.querySelector('#birthTitle').textContent='생년월일 선택';target?.focus()});
 })();
