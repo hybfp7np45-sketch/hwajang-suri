@@ -56,6 +56,36 @@ document.querySelectorAll('.sig').forEach(b=>b.addEventListener('click',()=>{tar
 canvas.addEventListener('pointerdown',e=>{if(pointer!==null)return;e.preventDefault();pointer=e.pointerId;canvas.setPointerCapture(pointer);active=[point(e)];strokes.push(active);draw()});canvas.addEventListener('pointermove',e=>{if(e.pointerId!==pointer||!active)return;e.preventDefault();active.push(point(e));draw()});function end(e){if(e.pointerId!==pointer)return;pointer=null;active=null}canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);canvas.addEventListener('lostpointercapture',end);window.addEventListener('resize',()=>{if(dialog.open)draw()});
 document.getElementById('clearSign').onclick=()=>{strokes=[];pointer=null;active=null;draw()};document.getElementById('cancelSign').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{document.body.classList.remove('signing');pointer=null;active=null;target?.focus()});document.getElementById('doneSign').onclick=()=>{if(!strokes.length){document.getElementById('signTitle').textContent='먼저 서명해 주세요';return}const img=new Image();img.src=canvas.toDataURL('image/png');img.alt=target.getAttribute('aria-label').replace('하기','');target.replaceChildren(img);target._strokes=JSON.parse(JSON.stringify(strokes));dialog.close();document.getElementById('signTitle').textContent='서명해 주세요'};
 function sync(){document.querySelectorAll('input:not([type=radio]):not([type=checkbox]),textarea').forEach(el=>{let p=el.nextElementSibling;if(p?.classList.contains('printvalue'))p.textContent=el.value||' ';});}
+
+function formatPhone(value){
+ if(/^\s*\+/.test(value))return value;
+ const n=value.replace(/\D/g,'');
+ if(n.length>11)return value;
+ if(n.startsWith('02')){
+  if(n.length<=2)return n;
+  if(n.length<=5)return n.slice(0,2)+'-'+n.slice(2);
+  const middle=n.length===9?3:4;
+  if(n.length<=2+middle)return n.slice(0,2)+'-'+n.slice(2);
+  return n.slice(0,2)+'-'+n.slice(2,2+middle)+'-'+n.slice(2+middle);
+ }
+ if(n.length===8&&!n.startsWith('0'))return n.slice(0,4)+'-'+n.slice(4);
+ if(n.length<=3)return n;
+ if(n.length<=7)return n.slice(0,3)+'-'+n.slice(3);
+ const middle=n.startsWith('010')?4:(n.length===10?3:4);
+ return n.slice(0,3)+'-'+n.slice(3,3+middle)+'-'+n.slice(3+middle);
+}
+document.querySelectorAll('input[type="tel"]').forEach(input=>{
+ input.inputMode='tel';input.autocomplete='tel';input.placeholder='010-1234-5678';
+ input.addEventListener('input',()=>{
+  const raw=input.value,position=input.selectionStart??raw.length,digitsBefore=raw.slice(0,position).replace(/\D/g,'').length;
+  const next=formatPhone(raw);if(next===raw)return;input.value=next;
+  let cursor=0,count=0;while(cursor<next.length&&count<digitsBefore){if(/\d/.test(next[cursor]))count++;cursor++}
+  if(position===raw.length)cursor=next.length;
+  try{input.setSelectionRange(cursor,cursor)}catch(e){}
+  sync();
+ });
+});
+
 document.addEventListener('input',sync);window.addEventListener('beforeprint',sync);document.getElementById('print').onclick=()=>window.exportOriginalPdf();
 document.getElementById('download').textContent='PDF 내려받기';document.getElementById('download').onclick=()=>window.exportOriginalPdf();
 
