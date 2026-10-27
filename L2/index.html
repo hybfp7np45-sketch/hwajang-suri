@@ -1142,7 +1142,7 @@ function applyLipColor(kind,color){
 }
 function startSelectedLipBrush(kind){if(kind===group&&lipLayers.applyMode[kind]==='brush'&&lipState.points)openLipErase('paint')}
 $('lipApplyFull').onclick=()=>chooseLipApplyMode('full');
-$('lipApplyBrush').onclick=()=>chooseLipApplyMode('brush');
+$('lipApplyBrush').onclick=()=>{chooseLipApplyMode('brush');if(lipState.applied[group])openLipErase('paint');else lipStatus(group+' · 색을 고르면 브러시 창이 열려요.');};
 syncLipApplyMode();
 
 lipBrushUI();syncLipUndo();renderLipLayers();
