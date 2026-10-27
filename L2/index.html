@@ -17,7 +17,7 @@ header{height:58px;gap:9px;padding:8px 13px;justify-content:flex-start;backgroun
 .tab{flex:0 0 auto;width:auto;min-width:76px;height:34px;border-radius:9px;padding:0 17px;background:#fff;border:1px solid #ead8de;font-size:12px;font-weight:700;color:#967b87}
 .tab[aria-selected=true]{background:#fff0f5;border-color:#df7596;color:#c66d8f}
 .tab[aria-selected=true]:after{display:none}
-#color-panel{position:absolute;bottom:76px;left:0;right:0;border-radius:22px 22px 0 0;background:rgba(255,255,255,.98);box-shadow:0 -8px 28px #00000014;padding:8px 0 6px}
+#color-panel{position:absolute;bottom:76px;left:0;right:0;border-radius:22px 22px 0 0;background:rgba(255,255,255,.98);box-shadow:0 -8px 28px #00000014;padding:8px 0 4.5px}
 #color-panel[hidden]{display:none}
 #color-panel:before{content:"";display:block;width:42px;height:5px;border-radius:5px;background:#e6d8de;margin:0 auto 4px}
 .selection{padding:5px 14px 9px}.selection strong{font-size:12px}.selection span{color:#b69ca8}
@@ -62,7 +62,7 @@ header{order:0;flex-shrink:0}
 .lip-detection{position:absolute;top:12px;left:12px;right:12px;pointer-events:none;font-size:11px;color:#966378;background:#ffffffeb;border-radius:12px;padding:8px 10px;line-height:1.5}
 .lip-retry,.lip-compare{position:absolute;border:1px solid #ead5df;background:#fffffff0;color:#b76c8b;border-radius:16px;padding:8px 12px;font-size:11px;z-index:2}
 .lip-retry{top:66px;left:12px}.lip-compare{right:12px;bottom:12px}.lip-compare[aria-pressed=true]{background:#f9dce8}
-.lip-strength{display:flex;align-items:center;gap:10px;padding:0 16px 10px;font-size:11px;color:#b78096}
+.lip-strength{display:flex;align-items:center;gap:10px;padding:0 16px 7.5px;font-size:11px;color:#b78096}
 .lip-strength input{flex:1;min-width:0;accent-color:#dd94b0}.lip-strength output{min-width:32px;text-align:right}
 .photo-label{display:none}
 
@@ -235,6 +235,7 @@ let blendDraft=[],blendGroup='톤업',dropEditor=null,suppressPaletteClick=false
 function syncLipApplyMode(){
  const brush=lipLayers.applyMode[group]==='brush';
  $('lipApplyFull').setAttribute('aria-pressed',String(!brush));$('lipApplyBrush').setAttribute('aria-pressed',String(brush));
+ $('lipApplyHint').textContent=brush?'색을 고른 뒤 원하는 곳만 칠해요 · 기존에 적용한 색은 유지돼요.':'색을 선택하면 입술 전체에 적용돼요.';
  $('lipApplyHint').style.visibility=brush?'hidden':'visible';
 }
 function render(){
