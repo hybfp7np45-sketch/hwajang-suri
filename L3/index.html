@@ -1,0 +1,1152 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>화장수리 · 입술 컬러 L2</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;color:#304b5d;background:#e9f5fb}button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}button:focus-visible{outline:3px solid #168fc7;outline-offset:3px}.app{height:100dvh;max-width:560px;margin:auto;display:flex;flex-direction:column;background:#f6fbfe;overflow:hidden}header{flex-shrink:0;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#e9f7ff;border-bottom:1px solid #dcecf5}h1{font-size:17px;margin:0;letter-spacing:-.6px}header small{font-size:10px;color:#82a1b4;margin-left:6px}.tools{display:flex;gap:7px}.tool{border:1px solid #d3e7f3;background:#fff;border-radius:12px;height:38px;padding:0 11px;font-size:12px;font-weight:650;display:flex;align-items:center;gap:5px}.tool svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.stage{flex:1;min-height:120px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#edf3f6}.stage img{width:100%;height:100%;object-fit:contain;display:none}.empty{text-align:center;color:#8aa4b5;font-size:14px;line-height:1.9}.empty svg{width:60px;height:60px;display:block;margin:0 auto 16px;stroke:#acc8d9;fill:none;stroke-width:1.3}.photo-label{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:#ffffffdc;border-radius:20px;padding:6px 12px;font-size:10px;color:#7393a6;white-space:nowrap}.panel{flex-shrink:0;background:white;padding:0 0 calc(18px + env(safe-area-inset-bottom));border-radius:22px 22px 0 0;box-shadow:0 -5px 22px #7191a510;position:relative}.tabs{display:flex;padding:7px 22px 0;gap:12px;border-bottom:1px solid #edf3f7}.tab{flex:1;height:49px;border:0;background:none;color:#91a4b0;position:relative;font-size:16px;font-weight:650}.tab[aria-selected=true]{color:#2996c8}.tab[aria-selected=true]:after{content:"";height:3px;border-radius:4px;background:#49acd8;position:absolute;bottom:0;left:25%;right:25%}.selection{padding:14px 22px 11px;font-size:12px;display:flex;align-items:center;justify-content:space-between}.selection strong{font-weight:650}.selection span{color:#9cafbc;font-size:10px}.colors{display:flex;overflow-x:auto;gap:13px;padding:2px 22px 12px;scrollbar-width:none}.colors::-webkit-scrollbar{display:none}.swatch{flex:0 0 66px;padding:0;border:0;background:none;display:flex;align-items:center;flex-direction:column;gap:9px;font-size:11px;color:#788e9e}.chip{width:62px;height:62px;background:var(--c);border-radius:17px;display:grid;place-items:center;position:relative;box-shadow:inset 0 0 0 1px #00000005}.swatch[aria-pressed=true] .chip{outline:2px solid #42a6d3;outline-offset:3px}.swatch[aria-pressed=true] .chip:after{content:"✓";font-size:28px;color:white;text-shadow:0 1px 4px #0005}.swatch[aria-pressed=true]{color:#2d8db9;font-weight:700}.note{text-align:center;font-size:10px;color:#a5b5bf;margin:3px 0 0}.overlay{position:fixed;inset:0;background:#0007;z-index:10;display:flex;align-items:flex-end;justify-content:center}.overlay[hidden],.camera[hidden]{display:none}.sheet{width:100%;max-width:560px;padding:15px 16px calc(16px + env(safe-area-inset-bottom));background:#fff;border-radius:22px 22px 0 0;display:grid;gap:8px}.sheet button{height:50px;border:0;border-radius:13px;background:#edf7fd;font-size:15px;font-weight:650}.sheet button:last-child{background:white;color:#8a9da9}.camera{position:fixed;inset:0;background:#111;z-index:20;display:flex;flex-direction:column}.camera video{flex:1;min-height:0;width:100%;object-fit:contain}.cam-head,.cam-foot{display:flex;justify-content:space-between;align-items:center;padding:16px max(20px,env(safe-area-inset-left));color:white}.cam-head button,.cam-foot button{background:#ffffff20;border:0;border-radius:22px;padding:11px 17px;color:#fff}.cam-foot{padding-bottom:calc(20px + env(safe-area-inset-bottom));justify-content:center}.cam-foot #shutter{width:68px;height:68px;border:5px solid #aaa;background:white;border-radius:50%;padding:0}.status{font-size:12px;color:#b8c9d3;text-align:center}
+
+/* L1: v18.8 toolbar geometry, pale pink theme, bottom design rail and upper color sheet */
+html,body{background:#fff;color:#493a41;overflow:hidden;overscroll-behavior:none}
+.app{max-width:none;padding-top:env(safe-area-inset-top);background:#fcf7f9;position:relative}
+header{height:58px;gap:9px;padding:8px 13px;justify-content:flex-start;background:#fff;border-bottom:1px solid #f1e8eb;z-index:4}
+.tool{width:42px;height:42px;border:0;border-radius:13px;background:#fff0f5;color:#e9a1bb;display:grid;place-items:center;padding:0}
+.tool svg{width:24px;height:24px;display:block;fill:none;stroke:#e9a1bb;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.save{margin-left:auto}
+.stage{margin:8px auto;width:min(calc(100vw - 16px),calc((100dvh - 150px - env(safe-area-inset-top) - env(safe-area-inset-bottom))*.8));max-height:calc(100% - 150px);aspect-ratio:4/5;border-radius:18px;background:#eee8ea;flex:1}
+.empty{color:#ad959f}.empty svg{stroke:#d6b5c4}.photo-label{color:#a17d8d}
+.panel{height:calc(76px + env(safe-area-inset-bottom));padding:0 0 env(safe-area-inset-bottom);border-radius:0;box-shadow:none;background:#fff;z-index:3;position:relative}
+.tabs{height:76px;align-items:center;justify-content:center;gap:8px;padding:3px 12px 5px;border:0}
+.tab{flex:0 0 auto;width:auto;min-width:76px;height:34px;border-radius:9px;padding:0 17px;background:#fff;border:1px solid #ead8de;font-size:12px;font-weight:700;color:#967b87}
+.tab[aria-selected=true]{background:#fff0f5;border-color:#df7596;color:#c66d8f}
+.tab[aria-selected=true]:after{display:none}
+#color-panel{position:absolute;bottom:76px;left:0;right:0;border-radius:22px 22px 0 0;background:rgba(255,255,255,.98);box-shadow:0 -8px 28px #00000014;padding:8px 0 4.5px}
+#color-panel[hidden]{display:none}
+#color-panel:before{content:"";display:block;width:42px;height:5px;border-radius:5px;background:#e6d8de;margin:0 auto 4px}
+.selection{padding:5px 14px 9px}.selection strong{font-size:12px}.selection span{color:#b69ca8}
+.colors{gap:12px;padding:5px 14px 12px}.swatch{color:#947a86}.swatch[aria-pressed=true]{color:#c66d8f}
+.swatch[aria-pressed=true] .chip{outline-color:#e39bb5}
+.note{display:none}.sheet button{background:#fff0f5}.sheet button:last-child{color:#997f8c}
+
+.camview{position:fixed;inset:0;background:#000;z-index:999999;display:none}
+.camview.show{display:block}
+.camview video,.camview canvas{width:100%;height:100%;object-fit:cover}
+.camview video{transform-origin:center center;will-change:transform}
+.camview{border:0!important;outline:0!important}
+.camview:after{display:none!important}
+.grid{position:absolute;inset:0;pointer-events:none;display:none;background:linear-gradient(to right,transparent calc(25% - .18px),rgba(255,255,255,.62) calc(25% - .18px),rgba(255,255,255,.62) calc(25% + .18px),transparent calc(25% + .18px),transparent calc(50% - .45px),rgba(255,255,255,.92) calc(50% - .45px),rgba(255,255,255,.92) calc(50% + .45px),transparent calc(50% + .45px),transparent calc(75% - .18px),rgba(255,255,255,.62) calc(75% - .18px),rgba(255,255,255,.62) calc(75% + .18px),transparent calc(75% + .18px)),linear-gradient(to bottom,transparent calc(33.333% - .18px),rgba(255,255,255,.62) calc(33.333% - .18px),rgba(255,255,255,.62) calc(33.333% + .18px),transparent calc(33.333% + .18px))}
+.grid.on{display:block}
+.grid:after{content:'';position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border:.7px solid rgba(255,255,255,.9);border-radius:50%}
+.camctl{position:absolute;left:0;right:0;bottom:calc(30px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:18px}
+.camctl button{width:58px;height:58px;border-radius:50%;border:2px solid #fff;background:#ffffff33;color:#fff;font-size:22px}
+.camctl .shot{background:#fff;border:6px solid #ffffff66}
+.camclose{position:absolute;top:22px;left:18px;border:0;background:#0006;color:#fff;border-radius:18px;padding:6px 10px;font-size:13px}
+.gridbtn{position:absolute;top:22px;right:18px;border:1px solid #fff8;background:#0006;color:#fff;border-radius:18px;padding:6px 10px;font-size:13px}
+.flipcam{position:absolute;right:22px;bottom:calc(35px + env(safe-area-inset-bottom));width:50px;height:50px;border-radius:50%;border:1px solid #fff8;background:#0006;color:#fff;font-size:24px}
+.stage{touch-action:none;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
+.stage img{transform-origin:center center;will-change:transform;pointer-events:none;-webkit-user-drag:none}
+.camview{touch-action:none;overscroll-behavior:none}
+.camview .camclose,.camview .gridbtn{top:calc(22px + env(safe-area-inset-top))}
+#color-panel{bottom:calc(76px + env(safe-area-inset-bottom))}
+
+/* L1 top-pinned lip controls: expand colors downward over the upper photo. */
+.app{padding-bottom:env(safe-area-inset-bottom)}
+header{order:0;flex-shrink:0}
+.panel{order:1;flex-shrink:0;height:48px;padding:0;z-index:5;border-bottom:1px solid #f1e5eb}
+.tabs{height:48px;gap:0;padding:0 13px;align-items:stretch}
+.tab{flex:1;min-width:0;width:auto;height:48px;border:0;border-radius:0;background:#fff;color:#9d8790;font-size:14px;padding:0 10px;position:relative}
+.tab[aria-selected=true]{background:#fff;color:#d57d9f;border:0}
+.tab[aria-selected=true]:after{display:block;content:"";position:absolute;left:32%;right:32%;bottom:0;height:3px;border-radius:3px;background:#e7a1bc}
+#color-panel{top:100%;bottom:auto;left:0;right:0;border-radius:0 0 22px 22px;box-shadow:0 8px 22px #7b4c5d14;padding-top:9px}
+#color-panel:before{display:none}
+.stage{order:2;max-height:calc(100% - 122px);width:min(calc(100vw - 16px),calc((100dvh - 122px - env(safe-area-inset-top) - env(safe-area-inset-bottom))*.8))}
+
+#lipOverlay{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;transform-origin:center;will-change:transform}
+.lip-detection{position:absolute;top:12px;left:12px;right:12px;pointer-events:none;font-size:11px;color:#966378;background:#ffffffeb;border-radius:12px;padding:8px 10px;line-height:1.5}
+.lip-retry,.lip-compare{position:absolute;border:1px solid #ead5df;background:#fffffff0;color:#b76c8b;border-radius:16px;padding:8px 12px;font-size:11px;z-index:2}
+.lip-retry{top:66px;left:12px}.lip-compare{right:12px;bottom:12px}.lip-compare[aria-pressed=true]{background:#f9dce8}
+.lip-strength{display:flex;align-items:center;gap:10px;padding:0 16px 7.5px;font-size:11px;color:#b78096}
+.lip-strength input{flex:1;min-width:0;accent-color:#dd94b0}.lip-strength output{min-width:32px;text-align:right}
+.photo-label{display:none}
+
+#lipBoundary{position:absolute;inset:0;width:100%;height:100%;transform-origin:center;pointer-events:none;overflow:visible}
+#lipBoundary .lip-node{pointer-events:all;touch-action:none;cursor:move}
+#lipBoundary path{pointer-events:none}
+.boundary-tools{position:absolute;bottom:12px;left:12px;display:flex;gap:5px;z-index:3}
+.boundary-tools[hidden]{display:none}
+.boundary-tools button{border:1px solid #e6c4d2;border-radius:15px;background:#fffefa;color:#bf7190;padding:8px 10px;font-size:10px}
+.boundary-tools button[hidden]{display:none}
+
+.boundary-footer{order:3;flex-shrink:0;background:#fff;padding:7px 20px 10px;z-index:8}
+.boundary-footer[hidden]{display:none}.boundary-footer p{text-align:center;font-size:11px;color:#a28a95;margin:3px 0 6px}
+.boundary-footer>div{display:flex;align-items:center;justify-content:space-between}
+.boundary-footer button{border:0;background:none;font-size:30px;color:#c67c99;width:46px;height:42px}
+.boundary-footer strong{font-size:14px;font-weight:500;color:#9d7185}
+.app.boundary-edit header,.app.boundary-edit .panel{display:none}
+.app.boundary-edit .stage{width:100%;max-height:none;margin:0;border-radius:0;aspect-ratio:auto}
+.app.boundary-edit .lip-detection,.app.boundary-edit .lip-compare,.app.boundary-edit .photo-label{display:none}
+.app.boundary-edit .boundary-tools{bottom:8px;left:8px}.app.boundary-edit #boundaryToggle{display:none}
+
+.boundary-tools{position:relative;order:3;left:auto;bottom:auto;flex-shrink:0;min-height:46px;align-items:center;justify-content:center;background:#fff;border-top:1px solid #f2e5eb}
+.boundary-tools #boundaryToggle{font-size:12px;padding:8px 20px;background:#fff0f5}
+.app.boundary-edit .boundary-tools{position:absolute;left:8px;bottom:calc(100px + env(safe-area-inset-bottom));min-height:0;border:0;background:transparent}
+
+#lipLens{position:fixed;display:none;pointer-events:none;z-index:2147483645;width:124px;height:124px;border:2px solid white;border-radius:50%;overflow:hidden;box-shadow:0 2px 9px #0007;background:white;transform:translate(-50%,-50%)}
+#lipLens canvas{width:120px;height:120px;display:block}
+
+.lip-detection{position:relative;order:3;top:auto;left:auto;right:auto;flex-shrink:0;margin:0;padding:8px 14px;border-radius:0;text-align:center;background:#fff4f8;color:#a86582;font-size:11px;min-height:32px;z-index:6}
+.lip-detection[hidden]{display:none}.boundary-tools button:disabled{opacity:.6}
+/* Compact preview palette; the brand catalogue retains eight columns. */
+#colors{gap:8px;padding:5px 12px 9px}
+#colors .swatch{flex:0 0 calc((100% - 40px)/6);min-width:0;gap:5px;font-size:9px;line-height:1.35}
+#colors .chip{width:100%;height:auto;aspect-ratio:1;border-radius:12px}
+#colors .swatch>span:last-child{display:block;width:100%;min-width:0}
+#colors .swatch>span:last-child>span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:8px;line-height:1.4;letter-spacing:-.2px}
+#colors .swatch[aria-pressed=true] .chip:after{font-size:23px}
+.selection{padding:10px 14px 8px}
+#lipBlending{border:1px solid #ecd2de;border-radius:14px;background:#fff3f8;color:#b66c8c;padding:4px 11px;font-size:10px;line-height:1.4}
+#lipCompare{font-size:10px;padding:6px 10px;min-height:0;border-radius:18px;right:10px;bottom:10px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#lipCompare{font-size:9px;padding:4px 7px;line-height:1.25;border-width:1px;right:8px;bottom:8px}
+#color-panel .colors{padding-top:3px}
+.blend-empty{border:1.5px solid #dea0b8;color:#bd7896;font-size:10px;background:white!important}
+.palette-dragging{opacity:.6;transform:scale(1.05)}.palette-drop-target .chip{outline:2px dashed #cc7c9e;outline-offset:2px}
+.lip-blend-dialog{position:fixed;inset:0;z-index:65;width:min(100%,560px);margin:auto;background:#fffbfd;display:flex;flex-direction:column;padding:calc(12px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));gap:10px;color:#795566}
+.lip-blend-dialog header{background:transparent;height:42px;padding:0;border-bottom:1px solid #f0e0e8;flex-shrink:0}
+.lip-blend-dialog button:not(.swatch):not(.blend-result){background:#f9eaf1;border:1px solid #ebcfdd;border-radius:16px;padding:7px 13px;color:#a76885;font-size:12px}
+.blend-top{display:flex;gap:8px;align-items:center;padding:10px 0}.blend-chosen-wrap{flex:1;min-width:0}#blendChosen{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+#blendChosen .swatch{min-width:0;width:100%;gap:4px;font-size:8px}#blendChosen .chip{width:100%;height:auto;aspect-ratio:1;border-radius:12px}
+#blendChosen .swatch>span:last-of-type>span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:8px}
+#blendChosen small{font-size:9px;color:#a87d90}.drop-badge{position:absolute;bottom:5px;right:6px;color:white;font-size:13px;font-weight:700;text-shadow:0 1px 3px #0009}
+.blend-equals{font-size:20px;color:#c58ca6}.blend-result{flex:0 0 65px;min-width:0;padding:0;border:0;background:transparent;color:#ac6d8b;font-size:10px;display:flex;flex-direction:column;gap:7px;align-items:center}
+.blend-result .chip{width:61px;height:61px;border-radius:13px;border:1px solid #ead3de}.blend-result:disabled{opacity:.45}
+#blendEmpty{text-align:center;font-size:12px;color:#b38c9d;line-height:1.8}.blend-ratio{text-align:center;font-size:12px;color:#a16b83;min-height:18px}
+.blend-drop-editor{background:#f9edf3;padding:10px;border-radius:14px;font-size:11px}.blend-drop-editor>span{display:block;margin-bottom:7px}.blend-drop-editor>div{display:flex;align-items:center;justify-content:center;gap:8px}
+#blendDropCount{width:42px;padding:6px;text-align:center;border:1px solid #e7c9d8;border-radius:8px;background:white;font-size:14px;color:#89566f}
+.blend-palette-title{font-size:13px;border-top:1px solid #eddae4;padding-top:14px}.blend-palette-title small{font-size:9px;font-weight:400;display:block;margin-top:6px}
+#blendMessage{font-size:11px;color:#b3597f;margin:0;min-height:14px}
+#blendPalette{overflow:auto;flex:1;min-height:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:15px 7px;align-content:start;padding:5px}
+#blendPalette .swatch{width:100%;min-width:0;gap:5px;font-size:8px}#blendPalette .chip{width:100%;height:auto;aspect-ratio:1;border-radius:12px}
+#blendPalette .swatch>span:last-child{width:100%}#blendPalette .swatch>span:last-child>span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:8px;line-height:1.4}
+#blendComplete:disabled{opacity:.4;cursor:default}
+
+#manualLip{display:none!important}
+.boundary-tools{justify-content:space-between;gap:8px;padding:0 14px}
+#lipErasePanel{position:fixed;left:8px;right:8px;bottom:calc(46px + env(safe-area-inset-bottom));flex:none;background:#fff;border:1px solid #efd9e3;border-radius:15px;padding:10px;margin:0;color:#ad6c89;z-index:8}
+#lipErasePreview{height:32px;display:grid;justify-items:center;align-items:start;background:transparent;border-radius:0;margin-bottom:4px;overflow:visible}
+#lipEraseDot{border-radius:50%;flex-shrink:0;transform:translateY(-50%);pointer-events:none}
+#lipErasePanel .r{display:grid;grid-template-columns:76px 1fr 36px;gap:5px;align-items:center;margin:2px 0;font-size:10px}
+#lipErasePanel input[type=range]{width:100%;accent-color:#d98bab;touch-action:none}
+#lipErasePanel .a{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:4px}
+#lipErasePanel .a button{height:31px;min-width:0;padding:0 3px;border:1px solid #ebccda;background:#fff3f8;color:#b47391;border-radius:9px;font-size:12px;font-weight:700;white-space:nowrap}
+#lipErasePanel .a button.selected{background:#f9dfeb;border:2px solid #d98bab;color:#b36086}
+#lipEraseCursor{position:fixed;pointer-events:none;z-index:90;transform:translate(-50%,-50%);border:1.5px solid #d98bab;box-shadow:0 0 0 1px #fffd;border-radius:50%;display:none;box-sizing:border-box}
+#lipEraseLens{position:fixed;width:160px;height:160px;border:2px solid white;border-radius:50%;overflow:hidden;pointer-events:none;z-index:91;transform:translate(-50%,-50%);box-shadow:0 2px 8px #0006;background:white;display:none}
+#lipEraseLens canvas{display:block;width:160px;height:160px}
+#lipGlobalUndo{position:absolute;z-index:5;bottom:8px;left:8px;padding:4px 7px;border:1px solid #ecd2de;background:#fff9fc;color:#b47391;border-radius:18px;font-size:9px;line-height:1.25}
+#lipGlobalUndo:disabled{opacity:.45}
+.app.lip-erasing .panel,.app.lip-erasing #color-panel,.app.lip-erasing .palette-tools,.app.lip-erasing #boundaryTools{display:none!important}
+.app.lip-erasing #lipBoundary{pointer-events:none!important}
+.app.lip-erasing .stage{touch-action:none}
+/* Match the two lip tools and keep brush controls above the mouth. */
+.boundary-tools #boundaryToggle,.boundary-tools #lipEraseToggle{box-sizing:border-box;width:110px;height:32px;padding:8px 10px;font-size:10px;line-height:14px;border:1px solid #e6c4d2;border-radius:15px;background:#fffefa;color:#bf7190;font-weight:400;white-space:nowrap}
+#lipErasePanel{top:calc(env(safe-area-inset-top) + 58px);bottom:auto;max-height:190px;overflow-y:auto;padding:6px 10px;border-radius:0 0 14px 14px}
+/* Boundary editing owns touch gestures and shows only its local undo. */
+.app.boundary-edit #lipGlobalUndo{display:none!important}
+#lipBoundary,#lipBoundary .lip-node{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+
+/* L2: compact, independent paint and lip layers. */
+.boundary-tools #boundaryToggle,.boundary-tools #lipBrushToggle,.boundary-tools #lipEraseToggle{width:auto;flex:1;min-width:0;padding:8px 5px;font-size:10px;border:1px solid #e6c4d2;border-radius:15px;background:#fffefa;color:#bf7190;height:32px;white-space:nowrap}
+.app.boundary-edit #lipBrushToggle,.app.boundary-edit #lipLayersPanel{display:none!important}
+.lip-brush-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:2px}
+#lipBrushClear,#lePaint{border:1px solid #ebccda;border-radius:12px;background:#fff3f8;color:#b47391;padding:5px 9px;font-size:10px}
+
+#lipLayersPanel{position:absolute;left:8px;right:8px;top:calc(env(safe-area-inset-top) + 112px);z-index:12;background:#fff;border:1px solid #ecd2de;border-radius:15px;max-height:240px;overflow-y:auto;padding:8px;color:#a96886;box-shadow:0 6px 20px #80506620}
+#lipLayersPanel[hidden]{display:none}#lipLayersPanel p{font-size:10px;text-align:center;margin:5px 0;color:#a48b96}
+.lip-layer-close{width:100%;border:0;background:#fff3f8;border-radius:9px;padding:7px;font-size:12px;color:#af708b}
+.lip-layer-row{display:flex;align-items:center;gap:7px;padding:7px 5px;border:1px solid #f0e2e9;border-radius:10px;margin:4px 0;touch-action:none}
+.lip-layer-row.selected{border-color:#d98bab;background:#fff0f6}.lip-layer-row.dragging{opacity:.5}.lip-layer-row button{font-size:11px;border:0;background:transparent;color:#a96886;padding:4px}.lip-layer-select{flex:1;min-width:0;text-align:left;display:flex;align-items:center;gap:7px}.lip-layer-select span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lip-layer-chip{width:20px;height:20px;border-radius:6px;flex:none;border:1px solid #ead4df}.lip-layer-controls{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;position:sticky;bottom:-8px;background:white;padding:5px 0}.lip-layer-controls button{border:1px solid #e7ccda;border-radius:8px;background:#fff6fa;color:#ad708a;font-size:16px;padding:4px}.lip-layer-controls small{display:block;font-size:8px}
+.lip-layer-photo{font-size:11px;text-align:center;padding:8px;background:#f8f5f6;color:#9d8b94;border-radius:8px}
+
+
+.lip-apply-modes{display:flex;gap:6px;padding:0 12px 2px}
+.lip-apply-modes button{flex:1;min-height:28px;border:1px solid #ead8de;border-radius:9px;background:#fff;color:#967b87;font-size:11px;font-weight:600}
+.lip-apply-modes button[aria-pressed=true]{border-color:#d98bab;background:#fff0f5;color:#b36086;box-shadow:inset 0 0 0 1px #d98bab}
+.lip-apply-hint{margin:1px 12px 0;font-size:10px;color:#a77d90;line-height:1.4}
+</style><style>
+[hidden]{display:none!important}.palette-tools{display:flex;justify-content:center;gap:12px;padding:12px}.palette-tools button,.pal button:not(.swatch){border:0;border-radius:12px;padding:12px;background:#fcebf2;color:#85566c}.pal{position:fixed;z-index:50;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,560px);background:white;border-radius:22px 22px 0 0;padding:15px 15px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -5px 30px #0003;max-height:72dvh;display:flex;flex-direction:column;gap:12px}.pal header{height:auto;background:white;padding:0;gap:8px}.pal header strong{flex:1}.pal-list{overflow:auto;min-height:80px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 8px;padding:8px}.pal .swatch{width:100%;font-size:10px;overflow-wrap:anywhere}.pal-picked{display:flex;overflow:auto;gap:12px;padding:8px;min-height:100px;border-top:1px solid #eee}.pal-picked .swatch{min-width:75px;width:75px}.pal select,.pal input:not([type=color]){padding:10px;border:1px solid #e4cdd6;border-radius:9px;width:100%;font:inherit}.pal-row{display:flex;gap:8px;align-items:center}.pal input[type=color]{height:46px;width:90px}.pal small{color:#947080}#customMaker{z-index:51;max-height:45dvh}#paletteBuilder{height:70dvh}#makerPhoto{max-width:100%;max-height:90px;object-fit:contain;cursor:crosshair}body.sampling .stage{outline:3px solid #d080a0;outline-offset:-3px}#photoGrid{z-index:2}.pal-status{font-size:12px;color:#9b4769}
+</style><style id="palette-layout-v2">
+.palette-tools{order:10;flex:0 0 38px;position:absolute;left:0;right:0;bottom:env(safe-area-inset-bottom);width:100%;height:38px;background:#fff;border-top:1px solid #f4edef;display:flex;align-items:center;justify-content:space-between;gap:0;padding:0 26px;z-index:6}
+.palette-tools button{height:26px;padding:0 9px;border:1px solid #efd2de;border-radius:13px;background:#fff2f7;color:#cb83a1;font-size:11px;font-weight:700;line-height:24px;white-space:nowrap}
+.palette-tools button[aria-pressed=true]{background:#fbe2ed;border-color:#de9cb8}
+#paletteBuilder{top:0;bottom:0;width:100%;height:100dvh;max-height:100dvh;border-radius:0;padding-top:calc(12px + env(safe-area-inset-top));gap:10px}
+#brandFilter{display:none}#paletteBuilder header{flex-shrink:0}#catalog{flex:1;min-height:0;grid-template-columns:repeat(8,minmax(0,1fr));align-content:start;gap:14px 4px;padding:7px 1px}
+#picked{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));align-content:start;gap:14px 4px;flex:0 0 auto;min-height:60px;max-height:26dvh;overflow:auto;padding:8px 1px}
+#catalog .swatch,#picked .swatch{width:100%;min-width:0;gap:5px;font-size:8px;line-height:1.3;flex:none}
+#catalog .chip,#picked .chip{width:100%;height:auto;aspect-ratio:1;border-radius:5px}
+#catalog .swatch>span:last-child,#picked .swatch>span:last-child{width:100%;display:block}
+#catalog .swatch>span:last-child>span,#picked .swatch>span:last-child>span{display:block;white-space:nowrap;font-size:clamp(5px,1.5vw,11px);letter-spacing:-.3px}
+#catalog .swatch[aria-pressed=true] .chip:after,#picked .swatch[aria-pressed=true] .chip:after{font-size:18px}
+.app{padding-bottom:calc(38px + env(safe-area-inset-bottom))}
+.app.boundary-edit .palette-tools{display:none}
+.app.boundary-edit{padding-bottom:env(safe-area-inset-bottom)}
+#paletteBuilder #brandFilter{display:none}
+#paletteBuilder header{min-height:42px}
+#paletteBuilder header strong{font-size:16px;white-space:nowrap}
+#paletteBuilder header button{font-size:12px;white-space:nowrap;padding:9px}
+#catalog,#picked{scrollbar-width:thin;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#catalog .swatch,#picked .swatch{overflow:visible}
+#catalog .swatch>span:last-child>span,#picked .swatch>span:last-child>span{overflow:hidden;text-overflow:ellipsis;line-height:1.5}
+#catalog .swatch:focus-visible,#picked .swatch:focus-visible{outline:2px solid #d87fa0;outline-offset:2px}
+</style><style id="palette-brand-headings">
+#catalog .catalog-brand{grid-column:1/-1;margin:8px 0 0;padding:9px 2px 6px;border-bottom:1px solid #efdde5;color:#a96e88;font-size:14px;font-weight:700;line-height:1.4}
+#catalog .catalog-brand:first-child{margin-top:0}
+</style><style id="blend-compact">
+.lip-blend-dialog{gap:4px;padding-top:calc(6px + env(safe-area-inset-top))}
+.lip-blend-dialog header{justify-content:space-between;height:38px}
+.blend-header-actions{display:flex;gap:6px;margin-left:auto}
+.blend-top{padding:3px 0;gap:6px}
+#blendEmpty{margin:4px 0;line-height:1.4}
+.blend-ratio{font-size:11px;min-height:0;line-height:1.3;margin:0}
+.blend-ratio:empty,#blendMessage:empty{display:none}
+.blend-drop-editor{padding:6px 8px}
+.blend-drop-editor>span{margin-bottom:3px}
+.blend-drop-editor>div{gap:6px}
+.blend-palette-title{padding-top:6px;display:flex;align-items:center;gap:8px}
+.blend-palette-title small{display:inline;margin:0}
+#blendPalette{padding:2px;gap:10px 7px}
+#blendChosen .swatch{gap:2px}
+#blendChosen small{line-height:1.2}
+</style></head><body>
+<main class="app"><header><button class="tool" id="camera" aria-label="촬영"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 7.3 8.7 5h6.6l1.5 2.3H19a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.3a2 2 0 0 1 2-2h2.2Z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button><button class="tool" id="upload" aria-label="사진 불러오기"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.2"/><path d="M5.7 19c.5-4 2.8-6 6.3-6s5.8 2 6.3 6"/></svg></button><button class="tool save" id="save" aria-label="저장"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m8.5 11.5 3.5 3.5 3.5-3.5"/><path d="M5 19h14"/></svg></button></header>
+<section class="stage" aria-label="사진 미리보기"><div class="empty" id="empty"><svg viewBox="0 0 64 64"><rect x="9" y="7" width="46" height="50" rx="9"/><circle cx="24" cy="23" r="5"/><path d="m10 48 15-15 10 10 9-9 11 12"/></svg>사진을 촬영하거나<br>사진을 불러오세요</div><img id="photo" alt="불러온 고객 사진"><div id="photoGrid" class="grid"></div><canvas id="lipOverlay" aria-hidden="true"></canvas><svg id="lipBoundary" aria-label="입술 경계 조정" xmlns="http://www.w3.org/2000/svg"></svg><button class="lip-retry" id="lipRetry" hidden>다시 인식</button><button id="lipGlobalUndo" class="lip-global-undo" hidden>되돌리기</button><button class="lip-compare" id="lipCompare" hidden aria-pressed="false">원본 비교</button><span class="photo-label" id="photoLabel" hidden>원본 사진</span></section>
+<section class="panel"><div class="tabs" role="tablist" aria-label="입술 컬러 영역"><button class="tab" id="tab-tone" role="tab" aria-selected="false" aria-controls="color-panel" data-group="톤업">톤업</button><button class="tab" id="tab-base" role="tab" aria-selected="false" aria-controls="color-panel" data-group="베이스">베이스</button><button class="tab" id="tab-point" role="tab" aria-selected="false" aria-controls="color-panel" data-group="포인트">포인트</button></div><div id="color-panel" hidden role="tabpanel" aria-labelledby="tab-tone"><div class="lip-apply-modes" role="group" aria-label="컬러 적용 방식"><button id="lipApplyFull" type="button" aria-pressed="true">전체 적용</button><button id="lipApplyBrush" type="button" aria-pressed="false">브러시로 칠하기</button></div><p id="lipApplyHint" class="lip-apply-hint">색을 선택하면 입술 전체에 적용돼요.</p><div class="colors" id="colors"></div><label class="lip-strength">진하기 <input id="lipStrength" type="range" min="0" max="100" value="65" aria-label="입술 컬러 진하기"><output id="lipStrengthValue">65%</output></label></div></section><div class="lip-detection" id="lipDetection" role="status" aria-live="polite" hidden></div><div class="boundary-tools" id="boundaryTools" hidden><button id="boundaryToggle">입술 영역 조정</button><button id="lipBrushToggle">브러시</button><button id="lipEraseToggle">입술 영역 지우기</button><button id="manualLip" hidden>직접 영역 지정</button><button id="boundaryUndo" hidden>되돌리기</button><button id="boundaryReset" hidden>자동 경계</button></div><div class="boundary-footer" id="boundaryFooter" hidden><p><span style="color:#dc658f">● 윗입술</span> · <span style="color:#249fbb">● 아랫입술</span> — 점을 움직여 경계를 맞춰 주세요</p><div><button id="boundaryCancel" aria-label="경계 조정 취소">×</button><strong>입술 경계 조정</strong><button id="boundaryDone" aria-label="경계 조정 완료">✓</button></div></div><section id="lipErasePanel" hidden aria-label="입술 영역 지우기">
+<div class="lip-brush-head"><strong id="lipBrushTitle">지우기</strong><button id="lipBrushClear" type="button">자동 영역 비우기</button></div><div id="lipErasePreview"><div id="lipEraseDot"></div></div>
+<div class="r"><span>브러시 크기</span><input id="les" aria-label="브러시 크기" type="range" min="1" max="50" step="1" value="40"><b id="lest">40px</b></div>
+<div class="r"><span>가장자리 강도</span><input id="leh" aria-label="가장자리 강도" type="range" min="0" max="100" value="55"><b id="leht">55%</b></div>
+<div class="r"><span>투명도</span><input id="leo" aria-label="브러시 투명도" type="range" min="10" max="100" value="100"><b id="leot">100%</b></div>
+<div class="a" role="group" aria-label="입술 브러시 도구"><button id="lePaint" aria-pressed="false">브러시</button><button id="leErase" aria-pressed="false">지우기</button><button id="leUndo">되돌리기</button><button id="leDone">완료</button></div></section><div class="palette-tools"><button id="openPalette">내 팔레트 만들기</button><button id="lipLayersToggle">레이어</button><button id="photoGridToggle" aria-pressed="false">격자 OFF</button></div><section id="lipLayersPanel" hidden aria-label="입술 레이어"><button id="lipLayersClose" class="lip-layer-close">레이어 닫기 ▴</button><p>위에 있는 레이어가 위에 적용돼요 · 끌어서 순서 변경</p><div id="lipLayerRows"></div><div class="lip-layer-controls"><button data-layer-move="top">⏫<small>맨 위</small></button><button data-layer-move="up">↑<small>한 단계 위</small></button><button data-layer-move="down">↓<small>한 단계 아래</small></button><button data-layer-move="bottom">⏬<small>맨 아래</small></button></div></section></main>
+<input type="file" accept="image/*" id="photos" hidden><input type="file" accept="image/*" id="files" hidden>
+<div class="overlay" id="picker" hidden><div class="sheet" role="dialog" aria-modal="true" aria-label="사진 불러오기"><button id="pickPhotos">사진 불러오기</button><button id="pickFiles">파일 불러오기</button><button id="cancelPick">취소</button></div></div>
+<div class="camview" id="camview"><video id="camvideo" autoplay playsinline muted></video><div class="grid" id="grid"></div><button class="camclose" id="camclose">닫기</button><button class="gridbtn" id="gridbtn">Guide ON</button><button class="flipcam" id="flipcam" aria-label="카메라 전환">↻</button><div class="camctl"><button class="shot" id="shot" aria-label="촬영"></button></div><canvas id="camcanvas" hidden></canvas></div><script>
+const $=id=>document.getElementById(id);
+let lipState={token:0,manualCorners:null,points:null,originalPoints:null,editing:false,history:[],applied:{},strength:65,compare:false,model:null,promise:null};
+const lipLayers={applyMode:{'톤업':'full','베이스':'full','포인트':'full'},order:['톤업','베이스','포인트'],hidden:[],auto:{},manual:{}};
+const palettes={'톤업':[],'베이스':[],'포인트':[]};
+let panelOpen=false;let group='톤업',selected={'톤업':null,'베이스':null,'포인트':null},photoURL=null;
+const blendSlots={'톤업':null,'베이스':null,'포인트':null};
+let blendDraft=[],blendGroup='톤업',dropEditor=null,suppressPaletteClick=false;
+function syncLipApplyMode(){
+ const brush=lipLayers.applyMode[group]==='brush';
+ $('lipApplyFull').setAttribute('aria-pressed',String(!brush));$('lipApplyBrush').setAttribute('aria-pressed',String(brush));
+ $('lipApplyHint').textContent=brush?'색을 고른 뒤 원하는 곳만 칠해요 · 기존에 적용한 색은 유지돼요.':'색을 선택하면 입술 전체에 적용돼요.';
+ $('lipApplyHint').style.visibility='hidden';
+}
+function render(){
+ syncLipApplyMode();
+ document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(panelOpen&&t.dataset.group===group)));
+ const list=palettes[group],slot=blendSlots[group],colors=$('colors'),left=colors.scrollLeft;colors.replaceChildren();
+ const b=makeColorButton('블랜딩',slot?.hex||'#ffffff',selected[group]===-1&&!!slot);
+ b.classList.add('blend-slot');b.title='블랜딩 열기';if(!slot){b.querySelector('.chip').textContent='블랜딩';b.querySelector('.chip').classList.add('blend-empty')}
+ b.onclick=openLipBlend;colors.append(b);
+ $('lipStrength').closest('label').hidden=!list.length&&!slot;
+ list.forEach(([name,color],i)=>{
+  const button=makeColorButton(name,color,i===selected[group]);button.dataset.paletteIndex=i;
+  button.onclick=()=>{if(suppressPaletteClick)return;pushLipUndo();selected[group]=i;applyLipColor(group,color);render();paintLips();startSelectedLipBrush(group)};
+  installPaletteReorder(button,i);colors.append(button);
+ });colors.scrollLeft=left;
+}
+function openLipBlend(){
+ blendGroup=group;blendDraft=(blendSlots[group]?.ingredients||[]).map(x=>({...x}));dropEditor=null;
+ $('lipBlendDialog').hidden=false;drawLipBlend();
+}
+function mixtureHex(){
+ const total=blendDraft.reduce((n,x)=>n+x.drops,0);if(!total)return null;
+ const channels=[0,1,2].map(k=>Math.round(255*Math.exp(blendDraft.reduce((n,x)=>n+x.drops/total*Math.log(Math.max(1,hexRGB(x.hex)[k])/255),0))));
+ return '#'+channels.map(x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
+}
+function drawLipBlend(){
+ const chosen=$('blendChosen'),palette=$('blendPalette'),total=blendDraft.reduce((n,x)=>n+x.drops,0);chosen.replaceChildren();palette.replaceChildren();
+ blendDraft.forEach((x,i)=>{
+  const b=makeColorButton(x.name,x.hex);b.classList.add('blend-ingredient');
+  const badge=document.createElement('span');badge.className='drop-badge';badge.textContent=x.drops;b.querySelector('.chip').append(badge);
+  const percent=document.createElement('small');percent.textContent=(100*x.drops/total).toFixed(1)+'%';b.append(percent);
+  b.onclick=()=>{dropEditor=i;drawLipBlend()};chosen.append(b);
+ });
+ $('blendEmpty').hidden=!!blendDraft.length;
+ const hex=mixtureHex(),result=$('blendResult');result.style.setProperty('--c',hex||'#fff');result.disabled=blendDraft.length<2;$('blendComplete').disabled=blendDraft.length<2;
+ $('blendRatio').textContent=blendDraft.length?blendDraft.map(x=>x.drops).join(' : ')+' · 총 '+total+'방울':'컬러를 2~4개 선택해 주세요';
+ myColors.forEach(x=>{
+  const active=blendDraft.some(c=>c.id===x.id),b=makeColorButton(x.name,x.hex,active);
+  b.onclick=()=>{const i=blendDraft.findIndex(c=>c.id===x.id);if(i>=0){blendDraft.splice(i,1);dropEditor=null}
+   else if(blendDraft.length<4){blendDraft.push({...x,drops:1});dropEditor=null}
+   else{$('blendMessage').textContent='최대 4가지 컬러까지 선택할 수 있어요';return}
+   $('blendMessage').textContent='';drawLipBlend();
+  };palette.append(b);
+ });
+ if(!myColors.length)palette.textContent='먼저 내 팔레트에 컬러를 담아 주세요.';
+ const editor=$('blendDropEditor');editor.hidden=dropEditor===null||!blendDraft[dropEditor];
+ if(!editor.hidden){$('blendDropName').textContent=blendDraft[dropEditor].name;$('blendDropCount').value=blendDraft[dropEditor].drops}
+}
+function changeBlendDrops(value){
+ if(dropEditor===null||!blendDraft[dropEditor])return;
+ blendDraft[dropEditor].drops=Math.max(1,Math.min(99,Math.round(Number(value)||1)));drawLipBlend();
+}
+function saveBlendResult(){
+ const hex=mixtureHex();if(!hex||blendDraft.length<2)return;
+ pushLipUndo();blendSlots[blendGroup]={hex,ingredients:blendDraft.map(x=>({...x}))};
+ selected[blendGroup]=-1;applyLipColor(blendGroup,hex);$('lipBlendDialog').hidden=true;render();paintLips();startSelectedLipBrush(blendGroup);
+}
+function installPaletteReorder(button,index){
+ let state=null,timer=null;
+ const clear=()=>{clearTimeout(timer);button.classList.remove('palette-dragging');document.querySelectorAll('.palette-drop-target').forEach(x=>x.classList.remove('palette-drop-target'))};
+ button.style.touchAction='none';button.oncontextmenu=e=>e.preventDefault();
+ button.addEventListener('pointerdown',e=>{
+  if(e.button!==0)return;
+  state={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,active:false,moved:false,target:index};button.setPointerCapture(e.pointerId);
+  timer=setTimeout(()=>{if(!state||state.moved)return;state.active=true;suppressPaletteClick=true;button.classList.add('palette-dragging');navigator.vibrate?.(20)},430);
+ });
+ button.addEventListener('pointermove',e=>{
+  if(!state||state.id!==e.pointerId)return;
+  const dx=e.clientX-state.lastX;state.lastX=e.clientX;
+  if(!state.active){
+   if(Math.hypot(e.clientX-state.x,e.clientY-state.y)>7){state.moved=true;suppressPaletteClick=true;clearTimeout(timer);$('colors').scrollLeft-=dx}return;
+  }
+  e.preventDefault();const bounds=$('colors').getBoundingClientRect();if(e.clientX<bounds.left+30)$('colors').scrollLeft-=12;else if(e.clientX>bounds.right-30)$('colors').scrollLeft+=12;
+  let nearest=null,distance=Infinity;
+  $('colors').querySelectorAll('[data-palette-index]').forEach(node=>{const r=node.getBoundingClientRect(),d=Math.abs(e.clientX-r.left-r.width/2);node.classList.remove('palette-drop-target');if(d<distance){distance=d;nearest=node}});
+  if(nearest){state.target=Number(nearest.dataset.paletteIndex);nearest.classList.add('palette-drop-target')}
+ });
+ const finish=e=>{
+  if(!state||state.id!==e.pointerId)return;
+  const prior=state;state=null;clear();
+  if(e.type==='pointerup'&&prior.active&&prior.target!==index){
+   const chosen=Object.fromEntries(Object.keys(selected).map(k=>[k,selected[k]===-1?null:myColors[selected[k]]?.id])),item=myColors.splice(index,1)[0];myColors.splice(prior.target,0,item);
+   try{localStorage.setItem(paletteKey,JSON.stringify(myColors))}catch(err){}
+   syncMyPalette();for(const k of Object.keys(chosen)){if(chosen[k])selected[k]=myColors.findIndex(x=>x.id===chosen[k]);else if(blendSlots[k])selected[k]=-1}render();
+  }
+  if(prior.active||prior.moved)setTimeout(()=>{suppressPaletteClick=false},0);
+ };
+ for(const name of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(name,finish);
+}
+function makeColorButton(name,color,active=false){const b=document.createElement('button');b.className='swatch';b.setAttribute('aria-pressed',String(active));const c=document.createElement('span');c.className='chip';c.style.setProperty('--c',color);const n=document.createElement('span');const parts=name.match(/^(.*?)\s*\((.*?)\)$/)||name.match(/^([\x00-\x7F]+?)([가-힣].*)$/);if(parts){const en=document.createElement('span'),ko=document.createElement('span');en.textContent=parts[1];ko.textContent=parts[2];n.append(en,ko)}else n.textContent=name;b.append(c,n);return b}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{group=t.dataset.group;lipLayers.applyMode[group]='full';panelOpen=true;$('color-panel').hidden=false;render();$('colors').scrollLeft=0});render();
+const P=$('photo');
+function releasePreviousPhotoURL(){
+ if(photoURL){URL.revokeObjectURL(photoURL);photoURL=null}
+}
+function photoErrorMessage(f,detail){
+ const type=(f.type||'알 수 없음'),name=(f.name||'사진'),size=Math.round((f.size||0)/1024);
+ alert('사진을 불러오지 못했어요.\\n파일: '+name+'\\n형식: '+type+' / '+size+'KB\\n단계: '+detail+'\\n갤럭시에서 JPG 또는 PNG로 저장한 사진으로 다시 시도해 주세요.');
+}
+async function loadHEICConverter(){
+ if(typeof window.heic2any==='function')return window.heic2any;
+ if(!window._heicConverterPromise){
+  window._heicConverterPromise=new Promise((resolve,reject)=>{
+   const script=document.createElement('script');
+   script.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+   script.onload=()=>typeof window.heic2any==='function'?resolve(window.heic2any):reject(new Error('변환기 초기화 실패'));
+   script.onerror=()=>reject(new Error('변환기 다운로드 실패 (네트워크 또는 카카오톡 브라우저 차단)'));
+   document.head.appendChild(script);
+  }).catch(err=>{window._heicConverterPromise=null;throw err});
+ }
+ return window._heicConverterPromise;
+}
+async function showBlob(f){
+ if(!f||!f.size){photoErrorMessage(f||{},'파일 데이터가 비어 있음');return}
+ const ext=(f.name||'').split('.').pop().toLowerCase();
+ if(['heic','heif'].includes(ext)||/heic|heif/i.test(f.type)){
+  try{
+   const convert=await loadHEICConverter();
+   const output=await convert({blob:f,toType:'image/jpeg',quality:0.92});
+   const jpeg=Array.isArray(output)?output[0]:output;
+   if(!jpeg||!jpeg.size)throw new Error('변환된 이미지가 비어 있음');
+   f=new File([jpeg],(f.name||'photo').replace(/\.(heic|heif)$/i,'')+'.jpg',{type:'image/jpeg'});
+  }catch(err){photoErrorMessage(f,'HEIC JPG 자동변환 실패: '+(err&&err.message||err));return}
+ }
+ const tempURL=URL.createObjectURL(f);
+ const probe=new Image();
+ probe.onload=()=>{
+  if(!probe.naturalWidth||!probe.naturalHeight){URL.revokeObjectURL(tempURL);photoErrorMessage(f,'이미지 크기 확인 실패');return}
+  const oldURL=photoURL;
+  P.onload=()=>{try{resetLoadedPhoto()}catch(err){alert('사진 표시 후 오류: '+(err&&err.message||err))}if(oldURL)URL.revokeObjectURL(oldURL)};
+  P.onerror=()=>{URL.revokeObjectURL(tempURL);photoErrorMessage(f,'화면 이미지 표시 실패')};
+  photoURL=tempURL;P.src=tempURL;
+ };
+ probe.onerror=()=>{
+  URL.revokeObjectURL(tempURL);
+  // Data URL fallback for Android in-app browsers.
+  const reader=new FileReader();
+  reader.onload=()=>{
+   const img=new Image();
+   img.onload=()=>{P.onload=()=>{try{resetLoadedPhoto()}catch(err){alert('사진 표시 후 오류: '+(err&&err.message||err))}releasePreviousPhotoURL();photoURL=P.src};P.onerror=()=>photoErrorMessage(f,'DataURL 화면 표시 실패');P.src=reader.result};
+   img.onerror=()=>photoErrorMessage(f,'Blob URL 및 DataURL 디코딩 실패');
+   img.src=reader.result;
+  };
+  reader.onerror=()=>photoErrorMessage(f,'파일 읽기 실패');
+  reader.readAsDataURL(f);
+ };
+ probe.src=tempURL;
+}
+async function load(f){if(!f)return;try{await showBlob(f)}catch(e){photoErrorMessage(f,'예외: '+(e&&e.message||e))}}
+$('upload').onclick=()=>{const i=$('photos');i.value='';try{if(typeof i.showPicker==='function'){i.showPicker();return}}catch(_){}i.click()};
+$('pickPhotos').onclick=async()=>{$('picker').hidden=true;
+ try{
+  if(window.showOpenFilePicker){
+   const [h]=await showOpenFilePicker({multiple:false,types:[{description:'사진',accept:{'image/*':['.jpg','.jpeg','.png','.heic','.webp']}}]});
+   if(h){const f=await h.getFile();load(f)}
+  }else{$('photos').click()}
+ }catch(e){if(e&&e.name!=='AbortError')$('photos').click()}
+};
+$('pickFiles').onclick=()=>{$('picker').hidden=true;const i=$('files');i.value='';try{if(typeof i.showPicker==='function'){i.showPicker();return}}catch(_){}i.click()};
+$('cancelPick').onclick=()=>{$('picker').hidden=true};$('photos').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)load(f);e.target.value=''};$('files').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)load(f);e.target.value=''};
+
+function resetLoadedPhoto(){resetView();P.style.display='block';$('empty').hidden=true;$('photoLabel').hidden=true;detectLips();}
+function showPhoto(blob){return showBlob(blob)}
+$('picker').onclick=e=>{if(e.target===$('picker'))$('picker').hidden=true};
+
+let stream=null,facing='environment',camZoom=1,camPinch=null,currentDeviceId=null;const cv=$('camview'),video=$('camvideo'),grid=$('grid');
+function applyCamZoom(){video.style.transform='scale('+camZoom+')'}
+async function stopCamStream(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;await new Promise(r=>setTimeout(r,120))}
+async function cameraDevices(){try{return (await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput')}catch(_){return[]}}
+async function requestFacing(target){
+ await stopCamStream();
+ let s=null;
+ try{s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:target},width:{ideal:1280},height:{ideal:1600}},audio:false})}catch(_){}
+ if(!s){try{s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:target},width:{ideal:1280},height:{ideal:1600}},audio:false})}catch(_){}}
+ return s
+}
+async function openCam(){
+ cv.style.display='block';cv.classList.add('show');$('gridbtn').textContent=grid.classList.contains('on')?'Guide OFF':'Guide ON';
+ try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('mediaDevices unavailable');stream=await requestFacing(facing);if(!stream)throw new Error('camera unavailable');video.srcObject=stream;video.setAttribute('playsinline','');video.muted=true;await video.play();currentDeviceId=stream.getVideoTracks()[0]?.getSettings?.().deviceId||null;camZoom=1;applyCamZoom()}catch(err){alert('카메라를 열 수 없어요. 카메라 권한을 확인해 주세요.');closeCam()}
+}
+$('camera').onclick=openCam;
+$('flipcam').onclick=async e=>{e.preventDefault();e.stopPropagation();const target=facing==='environment'?'user':'environment';try{
+ const oldId=currentDeviceId;let next=await requestFacing(target);
+ if(next){let id=next.getVideoTracks()[0]?.getSettings?.().deviceId||null;if(id&&oldId&&id===oldId){next.getTracks().forEach(t=>t.stop());next=null}}
+ if(!next){const devs=await cameraDevices();const candidates=devs.filter(d=>d.deviceId&&d.deviceId!==oldId);if(candidates.length){const wanted=candidates.find(d=>target==='user'?/front|user|전면/i.test(d.label):/back|rear|environment|후면/i.test(d.label))||candidates[0];next=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:wanted.deviceId},width:{ideal:1280},height:{ideal:1600}},audio:false})}}
+ if(!next)throw new Error('no alternate camera');stream=next;facing=target;video.srcObject=stream;await video.play();currentDeviceId=stream.getVideoTracks()[0]?.getSettings?.().deviceId||null;camZoom=1;applyCamZoom()
+ }catch(err){alert('이 기기에서 전·후면 카메라 전환을 완료하지 못했어요. 카메라 권한을 확인해 주세요.')}}
+$('gridbtn').onclick=()=>{grid.classList.toggle('on');$('gridbtn').textContent=grid.classList.contains('on')?'Guide OFF':'Guide ON'};
+function closeCam(){cv.classList.remove('show');cv.style.display='none';video.style.transform='scale(1)';stopCamStream()}$('camclose').onclick=closeCam;
+video.addEventListener('touchstart',e=>{if(e.touches.length===2){const a=e.touches[0],b=e.touches[1];camPinch={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),z:camZoom};e.preventDefault()}},{passive:false});
+video.addEventListener('touchmove',e=>{if(e.touches.length===2&&camPinch){const a=e.touches[0],b=e.touches[1],d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);camZoom=Math.max(1,Math.min(4,camPinch.z*d/camPinch.d));applyCamZoom();e.preventDefault()}},{passive:false});
+video.addEventListener('touchend',e=>{if(e.touches.length<2)camPinch=null},{passive:false});
+$('shot').onclick=()=>{const c=$('camcanvas'),ctx=c.getContext('2d'),vw=video.videoWidth,vh=video.videoHeight;c.width=vw;c.height=vh;const sw=vw/camZoom,sh=vh/camZoom,sx=(vw-sw)/2,sy=(vh-sh)/2;ctx.drawImage(video,sx,sy,sw,sh,0,0,vw,vh);c.toBlob(blob=>{showPhoto(blob);closeCam()},'image/jpeg',.94)};
+
+$('save').onclick=async()=>{
+ if(!photoURL){alert('사진을 먼저 불러오거나 촬영해 주세요.');return}
+ const c=document.createElement('canvas');c.width=P.naturalWidth;c.height=P.naturalHeight;const ctx=c.getContext('2d');ctx.drawImage(P,0,0);
+ if(lipState.points)ctx.drawImage($('lipOverlay'),0,0);
+ const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.98));if(!blob){alert('사진을 저장하지 못했어요.');return}
+ const name='hwajang-suri-lip-'+Date.now()+'.jpg',f=new File([blob],name,{type:'image/jpeg'});
+ if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]});return}catch(e){if(e.name==='AbortError')return}}
+ const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),30000);
+};
+
+window.addEventListener('pagehide',()=>stopCamStream());document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('picker').hidden=true;closeCam()}});
+
+const stage=document.querySelector('.stage'),touches=new Map(),gestureMoved=new Map();
+let zoom=1,panX=0,panY=0,pinch=null,lastTap=0;
+function setWorld(){const t='translate('+panX+'px,'+panY+'px) scale('+zoom+')';$('photo').style.transform=t;$('lipOverlay').style.transform=t;$('lipBoundary').style.transform=t;drawBoundary()}
+function resetView(){zoom=1;panX=0;panY=0;pinch=null;touches.clear();gestureMoved.clear();setWorld()}
+stage.addEventListener('pointerdown',e=>{
+ if(!photoURL||lipState.editing&&e.target.closest('.lip-node'))return;
+ touches.set(e.pointerId,{x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY});gestureMoved.set(e.pointerId,false);
+ try{stage.setPointerCapture(e.pointerId)}catch(_){}
+ if(touches.size===2){
+ const p=[...touches.values()],dx=p[1].x-p[0].x,dy=p[1].y-p[0].y;
+ pinch={dist:Math.max(1,Math.hypot(dx,dy)),zoom,panX,panY,cx:(p[0].x+p[1].x)/2,cy:(p[0].y+p[1].y)/2};lastTap=0;e.preventDefault();
+ }
+});
+stage.addEventListener('pointermove',e=>{
+ const t=touches.get(e.pointerId);if(!t)return;t.x=e.clientX;t.y=e.clientY;
+ if(Math.hypot(t.x-t.startX,t.y-t.startY)>7)gestureMoved.set(e.pointerId,true);
+ if(touches.size===2&&pinch){
+ const p=[...touches.values()],dist=Math.max(1,Math.hypot(p[1].x-p[0].x,p[1].y-p[0].y));
+ const cx=(p[0].x+p[1].x)/2,cy=(p[0].y+p[1].y)/2;
+ zoom=Math.max(1,Math.min(lipState.editing?12:4,pinch.zoom*dist/pinch.dist));panX=pinch.panX+(cx-pinch.cx);panY=pinch.panY+(cy-pinch.cy);setWorld();e.preventDefault();
+ }
+});
+function endPhotoPointer(e){
+ const wasTwo=!!pinch||touches.size>1,moved=gestureMoved.get(e.pointerId);
+ touches.delete(e.pointerId);gestureMoved.delete(e.pointerId);if(touches.size<2)pinch=null;
+ if(!wasTwo&&!moved&&e.type!=='pointercancel'){const now=Date.now();if(now-lastTap<330){panelOpen=false;$('color-panel').hidden=true;render();lastTap=0}else lastTap=now}else lastTap=0;
+}
+stage.addEventListener('pointerup',endPhotoPointer);stage.addEventListener('pointercancel',endPhotoPointer);
+stage.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+['contextmenu','selectstart','dragstart'].forEach(ev=>stage.addEventListener(ev,e=>e.preventDefault()));
+
+const LIP_OUTER=[61,185,40,39,37,0,267,269,270,409,291,375,321,405,314,17,84,181,91,146];
+const LIP_INNER=[78,191,80,81,82,13,312,311,310,415,308,324,318,402,317,14,87,178,88,95];
+function lipStatus(text){$('lipDetection').hidden=false;$('lipDetection').textContent=text}
+async function getLipModel(){
+ if(lipState.model)return lipState.model;
+ if(!lipState.promise)lipState.promise=(async()=>{
+ const root='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+ const {FaceLandmarker,FilesetResolver}=await import(root+'/vision_bundle.mjs');
+ const files=await FilesetResolver.forVisionTasks(root+'/wasm');
+ const model=await FaceLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',delegate:'CPU'},runningMode:'IMAGE',numFaces:1,minFaceDetectionConfidence:.5,minFacePresenceConfidence:.5});
+ lipState.model=model;return model;
+ })().catch(e=>{lipState.promise=null;throw e});
+ return lipState.promise;
+}
+
+function loadLipScript(url,ready){
+ if(ready())return Promise.resolve();
+ return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=url;script.crossOrigin='anonymous';const timer=setTimeout(()=>{script.remove();reject(new Error('SCRIPT_TIMEOUT'))},25000);script.onload=()=>{clearTimeout(timer);ready()?resolve():reject(new Error('SCRIPT_INIT'))};script.onerror=()=>{clearTimeout(timer);script.remove();reject(new Error('SCRIPT_LOAD'))};document.head.append(script)});
+}
+let alternativeLipModel=null,alternativeLipPromise=null;
+async function alternativeLipDetect(input){
+ if(!alternativeLipPromise)alternativeLipPromise=(async()=>{
+ await loadLipScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js',()=>!!window.tf);
+ await window.tf.setBackend('cpu');await window.tf.ready();
+ await loadLipScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.3/dist/face-detection.min.js',()=>!!window.faceDetection);
+ await loadLipScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.6/dist/face-landmarks-detection.min.js',()=>!!window.faceLandmarksDetection);
+ alternativeLipModel=await window.faceLandmarksDetection.createDetector(window.faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,{runtime:'tfjs',refineLandmarks:false,maxFaces:1});
+ return alternativeLipModel;
+ })().catch(e=>{alternativeLipPromise=null;throw e});
+ const model=await alternativeLipPromise,faces=await model.estimateFaces(input,{flipHorizontal:false,staticImageMode:true});
+ return faces[0]?.keypoints.map(p=>({x:p.x/input.width,y:p.y/input.height,z:(p.z||0)/input.width}));
+}
+let lipWorker=null,lipWorkerSeq=0;
+function stopLipWorker(){if(lipWorker){lipWorker.terminate();lipWorker=null}}
+async function automaticLipPoints(input,token){
+ stopLipWorker();
+ const code="self.onmessage=async e=>{\n const {id,width,height,pixels}=e.data;let model;\n try{\n const root='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';\n const {FaceLandmarker,FilesetResolver}=await import(root+'/vision_bundle.mjs');\n const files=await FilesetResolver.forVisionTasks(root+'/wasm');\n const canvas=new OffscreenCanvas(width,height),ctx=canvas.getContext('2d'),rgb=new Uint8Array(pixels),rgba=new Uint8ClampedArray(width*height*4);\n for(let i=0,j=0;i<rgb.length;i+=3,j+=4){rgba[j]=rgb[i];rgba[j+1]=rgb[i+1];rgba[j+2]=rgb[i+2];rgba[j+3]=255}\n ctx.putImageData(new ImageData(rgba,width,height),0,0);\n model=await FaceLandmarker.createFromOptions(files,{canvas:new OffscreenCanvas(1,1),baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',delegate:'CPU'},runningMode:'IMAGE',numFaces:1,minFaceDetectionConfidence:.4,minFacePresenceConfidence:.4});\n const result=model.detect(canvas);self.postMessage({id,points:result.faceLandmarks?.[0]||null});\n }catch(err){self.postMessage({id,error:String(err.message||err)})}finally{try{model?.close()}catch(_){}}\n};",u=URL.createObjectURL(new Blob([code],{type:'text/javascript'}));lipWorker=new Worker(u);URL.revokeObjectURL(u);
+ const worker=lipWorker,id=++lipWorkerSeq,rgba=input.getContext('2d').getImageData(0,0,input.width,input.height).data,rgb=new Uint8Array(input.width*input.height*3);
+ for(let i=0,j=0;i<rgba.length;i+=4){rgb[j++]=rgba[i];rgb[j++]=rgba[i+1];rgb[j++]=rgba[i+2]}
+ return await new Promise((resolve,reject)=>{
+ const timer=setTimeout(()=>{worker.terminate();if(lipWorker===worker)lipWorker=null;reject(new Error('인식 시간 초과'))},25000);
+ worker.onmessage=e=>{if(e.data.id!==id)return;clearTimeout(timer);worker.terminate();if(lipWorker===worker)lipWorker=null;if(e.data.error)reject(new Error(e.data.error));else if(!e.data.points)reject(new Error('NO_FACE'));else resolve(e.data.points)};
+ worker.onerror=e=>{clearTimeout(timer);worker.terminate();if(lipWorker===worker)lipWorker=null;reject(new Error(e.message||'입술 인식 실행 실패'))};
+ worker.postMessage({id,width:input.width,height:input.height,pixels:rgb.buffer},[rgb.buffer]);
+ });
+}
+async function detectLips(){
+ stopLipWorker();const token=++lipState.token,source=P.src;lipState.manualCorners=null;$('boundaryToggle').disabled=false;$('boundaryToggle').textContent='입술 영역 직접 지정';$('manualLip').hidden=false;lipState.points=null;lipState.originalPoints=null;lipState.history=[];lipState.editing=false;$('boundaryTools').hidden=false;$('lipBoundary').replaceChildren();lipState.compare=false;$('lipCompare').hidden=true;$('lipCompare').setAttribute('aria-pressed','false');$('lipRetry').hidden=true;
+ const overlay=$('lipOverlay');overlay.width=P.naturalWidth;overlay.height=P.naturalHeight;overlay.style.visibility='visible';lipStatus('입술 자동 인식 중 · 기다리지 않고 아래 버튼으로 직접 지정할 수도 있어요.');
+ try{
+ const input=document.createElement('canvas'),ratio=Math.min(1,800/Math.max(P.naturalWidth,P.naturalHeight));input.width=Math.round(P.naturalWidth*ratio);input.height=Math.round(P.naturalHeight*ratio);input.getContext('2d').drawImage(P,0,0,input.width,input.height);
+ await new Promise(r=>requestAnimationFrame(r));
+ const points=await automaticLipPoints(input,token);if(token!==lipState.token||source!==P.src)return;if(!points)throw new Error('NO_FACE');
+ let refinement={points,refined:false};try{refinement=refineDetectedLipContour(points,P)}catch(err){console.warn('입술 경계 정밀 보정 생략',err)}
+ let innerRefined=refinement.points;try{innerRefined=refineInnerLipContour(refinement.points,P)}catch(err){console.warn('입술 안쪽 경계 보정 생략',err)}
+ const expanded=expandDetectedLips(innerRefined,P.naturalWidth,P.naturalHeight,refinement.refined?.18:1);lipState.points=expanded;lipState.originalPoints=expanded.map(p=>({...p}));$('boundaryToggle').disabled=false;$('boundaryTools').hidden=false;syncBoundaryButtons();$('lipCompare').hidden=false;lipStatus('입술 인식 완료 · 위에서 컬러를 선택해 주세요.');try{paintLips()}catch(err){console.error('입술 컬러 표시 오류',err);lipStatus('입술은 인식했어요. 컬러를 다시 선택해 주세요.')}
+ }catch(e){if(token!==lipState.token)return;lipState.points=null;$('boundaryToggle').disabled=false;$('manualLip').hidden=false;$('boundaryTools').hidden=false;syncBoundaryButtons();lipStatus(e.message==='NO_FACE'?'입술을 찾지 못했어요. 입술이 선명하게 보이는 얼굴 사진으로 다시 시도해 주세요.':'입술 인식 기능을 불러오지 못했어요. 인터넷 연결을 확인한 뒤 다시 인식해 주세요.');$('lipRetry').hidden=false;console.warn('Lip detection:',e)}
+}
+function refineInnerLipPixels(points,w,h,rgba){
+ const ids=LIP_INNER,p=ids.map(i=>({x:points[i].x*w,y:points[i].y*h})),outer=LIP_OUTER.map(i=>points[i].y*h),height=Math.max(...outer)-Math.min(...outer),left=Math.min(...p.map(q=>q.x)),right=Math.max(...p.map(q=>q.x));
+ if(height<12||right-left<25)return points;
+ const lum=(x,y)=>{let sum=0;for(const dx of [-1,0,1]){const ix=Math.max(0,Math.min(w-1,Math.round(x+dx*height*.008))),iy=Math.max(0,Math.min(h-1,Math.round(y))),k=(iy*w+ix)*4;sum+=rgba[k]*.2126+rgba[k+1]*.7152+rgba[k+2]*.0722}return sum/3};
+ const bounds=x=>{const ys=[];for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];if(x<Math.min(a.x,b.x)||x>Math.max(a.x,b.x)||Math.abs(b.x-a.x)<.001)continue;ys.push(a.y+(b.y-a.y)*(x-a.x)/(b.x-a.x))}return ys.length?[Math.min(...ys),Math.max(...ys)]:null};
+ const cols=61,states=41,step=height*.26/(states-1),rows=[],scores=[];
+ for(let c=0;c<cols;c++){
+  const x=left+(right-left)*(c+.5)/cols,b=bounds(x);if(!b)return points;const cy=(b[0]+b[1])/2;rows.push({x,b,cy});
+  scores.push(Array.from({length:states},(_,j)=>{const y=cy-height*.13+j*step,mid=lum(x,y),near=(lum(x,y-height*.065)+lum(x,y+height*.065))/2;return (near-mid)*.035-mid*.003-2*((y-cy)/height)**2}));
+ }
+ let prev=Float64Array.from(scores[0]);const back=[];
+ for(let c=1;c<cols;c++){const next=new Float64Array(states).fill(-Infinity),links=new Int16Array(states);for(let j=0;j<states;j++)for(let k=0;k<states;k++){const penalty=100*((j-k)*step/height)**2,v=prev[k]+scores[c][j]-penalty;if(v>next[j]){next[j]=v;links[j]=k}}back[c]=links;prev=next}
+ const path=new Int16Array(cols);path[cols-1]=prev.indexOf(Math.max(...prev));for(let c=cols-1;c>0;c--)path[c-1]=back[c][path[c]];
+ const edges=rows.map((r,c)=>{
+  const cy=r.cy-height*.13+path[c]*step,mid=lum(r.x,cy),near=(lum(r.x,cy-height*.065)+lum(r.x,cy+height*.065))/2;
+  if(near-mid<6)return {top:r.b[0],bottom:r.b[1],valid:false};
+  const threshold=mid+(near-mid)*.35,maxHalf=Math.max(height*.018,Math.min(height*.14,(r.b[1]-r.b[0])/2+height*.025));let top=cy,bottom=cy;
+  while(cy-top<maxHalf&&lum(r.x,top-1)<threshold)top--;
+  while(bottom-cy<maxHalf&&lum(r.x,bottom+1)<threshold)bottom++;
+  if(bottom-top<height*.035){const seam=(top+bottom)/2;return {top:seam,bottom:seam,valid:true}}
+  return {top:top-.5,bottom:bottom+.5,valid:true};
+ });
+ if(edges.filter(e=>e.valid).length<cols*.4)return points;
+ const result=points.map(p=>({...p}));
+ ids.forEach((id,i)=>{
+  // Mouth corners are shared endpoints; keep their original position.
+  if(i===0||i===10)return;
+  const pos=Math.max(0,Math.min(cols-1,(points[id].x*w-left)/(right-left)*cols-.5)),a=Math.floor(pos),b=Math.min(cols-1,a+1),t=pos-a,key=i<10?'top':'bottom';
+  if(!edges[a].valid||!edges[b].valid)return;
+  const y=edges[a][key]*(1-t)+edges[b][key]*t;
+  result[id]={...result[id],y:Math.max(0,Math.min(1,y/h))};
+ });
+ return result;
+}
+function refineInnerLipContour(points,photo){
+ const w=photo.naturalWidth,h=photo.naturalHeight,ps=LIP_OUTER.map(i=>points[i]),pad=(Math.max(...ps.map(p=>p.y))-Math.min(...ps.map(p=>p.y)))*h*.25,x0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.x))*w-pad)),y0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.y))*h-pad)),cw=Math.min(w-x0,Math.ceil(Math.max(...ps.map(p=>p.x))*w+pad)-x0),ch=Math.min(h-y0,Math.ceil(Math.max(...ps.map(p=>p.y))*h+pad)-y0),scale=Math.min(1,760/cw);
+ const c=document.createElement('canvas');c.width=Math.max(1,Math.round(cw*scale));c.height=Math.max(1,Math.round(ch*scale));const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(photo,x0,y0,cw,ch,0,0,c.width,c.height);
+ const local=points.map(p=>({...p,x:(p.x*w-x0)/cw,y:(p.y*h-y0)/ch})),r=refineInnerLipPixels(local,c.width,c.height,ctx.getImageData(0,0,c.width,c.height).data),result=points.map(p=>({...p}));
+ // Only inner points change; preserve the approved outer contour exactly.
+ LIP_INNER.forEach(id=>{result[id]={...result[id],y:(r[id].y*ch+y0)/h}});return result;
+}
+
+function refineLipContourPixels(points,w,h,rgba){
+ const ids=LIP_OUTER,n=ids.length,p=ids.map(id=>({x:points[id].x*w,y:points[id].y*h}));
+ const height=Math.max(...p.map(q=>q.y))-Math.min(...p.map(q=>q.y)),width=Math.max(...p.map(q=>q.x))-Math.min(...p.map(q=>q.x));
+ if(height<12||width<25)return {points,refined:false};
+ let area=0;for(let i=0;i<n;i++)area+=p[i].x*p[(i+1)%n].y-p[(i+1)%n].x*p[i].y;
+ const normals=p.map((q,i)=>{const a=p[(i+n-1)%n],b=p[(i+1)%n],dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,sgn=area>=0?1:-1;return {x:sgn*dy/len,y:-sgn*dx/len}});
+ const sample=(x,y)=>{x=Math.max(0,Math.min(w-1,Math.round(x)));y=Math.max(0,Math.min(h-1,Math.round(y)));const i=(y*w+x)*4,r=rgba[i],g=rgba[i+1],b=rgba[i+2];return [Math.log((r+12)/(g+12)),Math.log((b+12)/(g+12)),.12*Math.log(.2126*r+.7152*g+.0722*b+16)]};
+ const at=(i,d,tangent=0)=>{const q=p[i],v=normals[i];return sample(q.x+v.x*d-v.y*tangent,q.y+v.y*d+v.x*tangent)};
+ const median=v=>{v.sort((a,b)=>a-b);return v[Math.floor(v.length/2)]};
+ const med=arr=>[0,1,2].map(k=>median(arr.map(v=>v[k])));
+ const lips=[],skins=[];
+ for(let i=0;i<n;i++){for(const d of [-.18,-.28])lips.push(at(i,height*d));for(const d of [.38,.50])skins.push(at(i,height*d));}
+ const lip=med(lips),skin=med(skins),delta=lip.map((v,k)=>v-skin[k]),norm=delta.reduce((s,v)=>s+v*v,0);
+ if(norm<.0007)return {points,refined:false};
+ const localSkins=p.map((q,i)=>med([at(i,height*.42),at(i,height*.52),at((i+n-1)%n,height*.42),at((i+1)%n,height*.42)]));
+ const probability=(f,i)=>{const sk=localSkins[i],z=Math.sqrt(f.reduce((v,x,k)=>v+(x-sk[k])**2,0)/norm)-.48;return 1/(1+Math.exp(-Math.max(-12,Math.min(12,10*z))))};
+ const prob=(i,d)=>{let sum=0;for(const t of [-.018,0,.018])sum+=probability(at(i,d,height*t),i);return sum/3};
+ const steps=31,offsets=Array.from({length:steps},(_,j)=>height*(-.18+j*.52/(steps-1))),band=Math.max(2,height*.045);
+ const costs=p.map((q,i)=>offsets.map(d=>{const a=prob(i,d-band),b=prob(i,d+band);return Math.log(.03+a)+Math.log(1.03-b)+.8*(a-b)-.8*(d/height)**2}));
+ // Closed-chain search discourages isolated point jumps while preserving lip shape.
+ let best=-Infinity,path=null;
+ for(let first=0;first<steps;first++){
+  let prev=new Float64Array(steps).fill(-Infinity);prev[first]=costs[0][first];const back=[];
+  for(let i=1;i<n;i++){const next=new Float64Array(steps).fill(-Infinity),links=new Int16Array(steps);for(let j=0;j<steps;j++)for(let k=0;k<steps;k++){const v=prev[k]+costs[i][j]-12*((offsets[j]-offsets[k])/height)**2;if(v>next[j]){next[j]=v;links[j]=k}}back[i]=links;prev=next;}
+  for(let last=0;last<steps;last++){const v=prev[last]-12*((offsets[last]-offsets[first])/height)**2;if(v<=best)continue;best=v;const candidate=new Int16Array(n);candidate[n-1]=last;for(let i=n-1;i>0;i--)candidate[i-1]=back[i][candidate[i]];path=candidate;}
+ }
+ const result=points.map(q=>({...q}));let changed=0;
+ for(let i=0;i<n;i++){
+  const d=offsets[path[i]],a=prob(i,d-band),b=prob(i,d+band);
+  // A genuine lip-to-skin transition is required; glare/uncertain colours retain the landmark.
+  if(a-b<.12||a<.50||b>.58)continue;
+  const corner=(i===0||i===10)?.35:1,shift=d*corner;
+  result[ids[i]]={...result[ids[i]],x:Math.max(0,Math.min(1,(p[i].x+normals[i].x*shift)/w)),y:Math.max(0,Math.min(1,(p[i].y+normals[i].y*shift)/h))};changed++;
+ }
+ return {points:result,refined:changed>=n*.35};
+}
+function refineDetectedLipContour(points,photo){
+ // Read only a high-resolution mouth crop; never send the photo to another service.
+ const w=photo.naturalWidth,h=photo.naturalHeight,ps=LIP_OUTER.map(i=>points[i]),minX=Math.min(...ps.map(p=>p.x)),maxX=Math.max(...ps.map(p=>p.x)),minY=Math.min(...ps.map(p=>p.y)),maxY=Math.max(...ps.map(p=>p.y));
+ const pad=Math.max((maxX-minX)*w*.22,(maxY-minY)*h*.65),x0=Math.max(0,Math.floor(minX*w-pad)),y0=Math.max(0,Math.floor(minY*h-pad)),cw=Math.min(w-x0,Math.ceil(maxX*w+pad)-x0),ch=Math.min(h-y0,Math.ceil(maxY*h+pad)-y0),scale=Math.min(1,760/cw);
+ const c=document.createElement('canvas');c.width=Math.max(1,Math.round(cw*scale));c.height=Math.max(1,Math.round(ch*scale));const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(photo,x0,y0,cw,ch,0,0,c.width,c.height);
+ const local=points.map(p=>({...p,x:(p.x*w-x0)/cw,y:(p.y*h-y0)/ch})),r=refineLipContourPixels(local,c.width,c.height,ctx.getImageData(0,0,c.width,c.height).data);
+ if(!r.refined)return {points,refined:false};
+ return {points:r.points.map(p=>({...p,x:(p.x*cw+x0)/w,y:(p.y*ch+y0)/h})),refined:true};
+}
+
+function expandDetectedLips(points,w,h,expansion=1){
+ const result=points.map(p=>({...p})),p=LIP_OUTER.map(id=>({x:points[id].x*w,y:points[id].y*h})),n=p.length;
+ const width=Math.max(...p.map(q=>q.x))-Math.min(...p.map(q=>q.x)),height=Math.max(...p.map(q=>q.y))-Math.min(...p.map(q=>q.y));
+ const offset=Math.max(0,Math.min(width*.018,height*.085))*expansion;if(offset===0)return result;
+ let area=0;for(let i=0;i<n;i++){const a=p[i],b=p[(i+1)%n];area+=a.x*b.y-b.x*a.y}
+ const orientation=area>=0?1:-1;
+ for(let i=0;i<n;i++){
+  const before=p[(i+n-1)%n],here=p[i],after=p[(i+1)%n],d1=Math.max(.001,Math.hypot(here.x-before.x,here.y-before.y)),d2=Math.max(.001,Math.hypot(after.x-here.x,after.y-here.y));
+  let nx=orientation*((here.y-before.y)/d1+(after.y-here.y)/d2),ny=-orientation*((here.x-before.x)/d1+(after.x-here.x)/d2),len=Math.hypot(nx,ny);
+  if(len<.001)continue;nx/=len;ny/=len;
+  const id=LIP_OUTER[i],corner=id===61||id===291? .35:1,d=offset*corner;
+  result[id]={...result[id],x:Math.max(0,Math.min(1,(here.x+nx*d)/w)),y:Math.max(0,Math.min(1,(here.y+ny*d)/h))};
+ }
+ return result;
+}
+function lipCurveSegments(ids,points,w,h,ox=0,oy=0){
+ const p=ids.map(id=>({x:points[id].x*w-ox,y:points[id].y*h-oy})),n=p.length;
+ return p.map((a,i)=>{const prev=p[(i+n-1)%n],b=p[(i+1)%n],next=p[(i+2)%n],k=.9/6;
+ return {a,b,c1:{x:a.x+(b.x-prev.x)*k,y:a.y+(b.y-prev.y)*k},c2:{x:b.x-(next.x-a.x)*k,y:b.y-(next.y-a.y)*k}}});
+}
+function lipPolygon(ctx,ids,points,w,h,ox,oy){const parts=lipCurveSegments(ids,points,w,h,ox,oy);ctx.moveTo(parts[0].a.x,parts[0].a.y);for(const p of parts)ctx.bezierCurveTo(p.c1.x,p.c1.y,p.c2.x,p.c2.y,p.b.x,p.b.y);ctx.closePath()}
+function lipCurvePath(ids,points,w,h){const p=lipCurveSegments(ids,points,w,h);return 'M'+p[0].a.x+' '+p[0].a.y+p.map(q=>' C'+q.c1.x+' '+q.c1.y+' '+q.c2.x+' '+q.c2.y+' '+q.b.x+' '+q.b.y).join('')+' Z'}
+function featherLipMask(rgba,w,h,radius){
+ const d=new Float32Array(w*h),far=w+h,diag=Math.SQRT2;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;d[i]=(rgba[i*4+3]<128||x===0||y===0||x===w-1||y===h-1)?0:far}
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;let v=d[i];if(x)v=Math.min(v,d[i-1]+1);if(y){v=Math.min(v,d[i-w]+1);if(x)v=Math.min(v,d[i-w-1]+diag);if(x<w-1)v=Math.min(v,d[i-w+1]+diag)}d[i]=v}
+ for(let y=h-1;y>=0;y--)for(let x=w-1;x>=0;x--){const i=y*w+x;let v=d[i];if(x<w-1)v=Math.min(v,d[i+1]+1);if(y<h-1){v=Math.min(v,d[i+w]+1);if(x)v=Math.min(v,d[i+w-1]+diag);if(x<w-1)v=Math.min(v,d[i+w+1]+diag)}d[i]=v}
+ for(let i=0;i<d.length;i++){const t=Math.max(0,Math.min(1,d[i]/Math.max(1,radius)));rgba[i*4+3]=Math.round(rgba[i*4+3]*t*t*(3-2*t))}
+ return rgba;
+}
+function hexRGB(hex){return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16))}
+function blendLipOutline(rgba,w,h,outside,inside){
+ function distanceTo(target){
+  const d=new Float32Array(w*h),far=w+h,diag=Math.SQRT2;
+  for(let i=0;i<d.length;i++)d[i]=((rgba[i*4+3]>=128)===target)?0:far;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;let v=d[i];if(x)v=Math.min(v,d[i-1]+1);if(y){v=Math.min(v,d[i-w]+1);if(x)v=Math.min(v,d[i-w-1]+diag);if(x<w-1)v=Math.min(v,d[i-w+1]+diag)}d[i]=v}
+  for(let y=h-1;y>=0;y--)for(let x=w-1;x>=0;x--){const i=y*w+x;let v=d[i];if(x<w-1)v=Math.min(v,d[i+1]+1);if(y<h-1){v=Math.min(v,d[i+w]+1);if(x)v=Math.min(v,d[i+w-1]+diag);if(x<w-1)v=Math.min(v,d[i+w+1]+diag)}d[i]=v}return d;
+ }
+ const toInside=distanceTo(true),toOutside=distanceTo(false),result=new Uint8ClampedArray(rgba);
+ for(let i=0;i<toInside.length;i++){
+  const signed=rgba[i*4+3]>=128?toOutside[i]-.5:-(toInside[i]-.5);
+  // Independent boundary coverage: 10%; widths are fractions of lip height.
+  const boundaryCoverage=.10;
+  // Smooth monotone Hermite anchors: boundary 10%, inward 15% -> 80%, 25% -> 100%.
+  const t=Math.max(0,signed<0?Math.min(1,1+signed/outside):signed/inside);
+  let alpha;
+  if(signed<0)alpha=boundaryCoverage*t*t*(3-2*t);
+  else if(t<=1)alpha=boundaryCoverage+(.80-boundaryCoverage)*t*t*(3-2*t)+.45*t*t*(t-1);
+  else{
+   const u=Math.min(1,(t-1)/(25/15-1));
+   alpha=.80+.20*u*u*(3-2*u)+.30*u*(u-1)*(u-1);
+  }
+  result[i*4+3]=Math.round(255*alpha);
+ }
+ return result;
+}
+function softenLipAlphaAgain(rgba,w,h,sigma){
+ const radius=Math.max(1,Math.ceil(sigma*3)),kernel=new Float32Array(radius*2+1),tmp=new Float32Array(w*h),out=new Uint8ClampedArray(rgba);let sum=0;
+ for(let k=-radius;k<=radius;k++){const v=Math.exp(-(k*k)/(2*sigma*sigma));kernel[k+radius]=v;sum+=v}
+ for(let i=0;i<kernel.length;i++)kernel[i]/=sum;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){let v=0;for(let k=-radius;k<=radius;k++){const xx=x+k;if(xx>=0&&xx<w)v+=rgba[(y*w+xx)*4+3]*kernel[k+radius]}tmp[y*w+x]=v}
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){let v=0;for(let k=-radius;k<=radius;k++){const yy=y+k;if(yy>=0&&yy<h)v+=tmp[yy*w+x]*kernel[k+radius]}out[(y*w+x)*4+3]=Math.round(v)}
+ return out;
+}
+// Per-pigment render profiles; chart HEX values stay unchanged.
+const lipPigmentProfiles={
+ 'passion red':{chroma:.58,lightness:.72,coverage:.98,status:'reference-adjusted'},
+ 'date night':{chroma:.74,lightness:.88,coverage:.98,status:'approved-baseline'},
+ 'nude':{chroma:.68,lightness:.94,coverage:.98,status:'initial'},
+ 'pink rose':{chroma:.66,lightness:.92,coverage:.98,status:'initial'}
+};
+const lipProfileCache=new Map();
+function pigmentProfile(hex){
+ const key=hex.toUpperCase();if(lipProfileCache.has(key))return lipProfileCache.get(key);
+ const item=myColors.find(c=>c.hex.toUpperCase()===key)||pigmentCatalog.find(c=>c.hex.toUpperCase()===key);
+ const name=(item?.name||'').split(' (')[0].toLowerCase();
+ const rgb=hexRGB(hex),hi=Math.max(...rgb),lo=Math.min(...rgb),sat=hi?(hi-lo)/hi:0;
+ const profile={chroma:sat>.8?.58:.74,lightness:sat>.8?.74:.88,coverage:.98,status:'initial',...lipPigmentProfiles[name]};
+ lipProfileCache.set(key,profile);return profile;
+}
+function makeInnerLipAccent(points,w,h,x0,y0,rw,rh){
+ // Follow the curved mouth seam and the local upper/lower lip thickness.
+ const bounds=ids=>{
+  const top=new Float32Array(rw).fill(Infinity),bottom=new Float32Array(rw).fill(-Infinity);
+  for(const q of lipCurveSegments(ids,points,w,h)){
+   let prev=q.a;
+   for(let j=1;j<=32;j++){
+    const t=j/32,v=1-t,next={x:v*v*v*q.a.x+3*v*v*t*q.c1.x+3*v*t*t*q.c2.x+t*t*t*q.b.x,y:v*v*v*q.a.y+3*v*v*t*q.c1.y+3*v*t*t*q.c2.y+t*t*t*q.b.y};
+    const lo=Math.max(0,Math.ceil(Math.min(prev.x,next.x)-x0-.5)),hi=Math.min(rw-1,Math.floor(Math.max(prev.x,next.x)-x0-.5));
+    for(let x=lo;x<=hi;x++){
+     const u=Math.abs(next.x-prev.x)<1e-6?.5:(x0+x+.5-prev.x)/(next.x-prev.x),y=prev.y+(next.y-prev.y)*u;
+     top[x]=Math.min(top[x],y);bottom[x]=Math.max(bottom[x],y);
+    }
+    prev=next;
+   }
+  }
+  return {top,bottom};
+ };
+ const outer=bounds(LIP_OUTER),inner=bounds(LIP_INNER),mask=new Float32Array(rw*rh);
+ const left=Math.min(...LIP_INNER.map(i=>points[i].x))*w,right=Math.max(...LIP_INNER.map(i=>points[i].x))*w;
+ const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};
+ for(let x=0;x<rw;x++){
+  if(!Number.isFinite(inner.top[x])||!Number.isFinite(outer.top[x]))continue;
+  const side=smooth(Math.min(x0+x+.5-left,right-x0-x-.5)/Math.max(1,(right-left)*.15));
+  for(let y=0;y<rh;y++){
+   const py=y0+y+.5,above=py<(inner.top[x]+inner.bottom[x])/2,seam=above?inner.top[x]:inner.bottom[x],edge=above?outer.top[x]:outer.bottom[x];
+   const depth=Math.max(0,(above?seam-py:py-seam)/Math.max(1,Math.abs(edge-seam)));
+   // Upper accent stays narrow; the thicker lower lip carries pigment farther down.
+   // Upper lip: no solid band; spread the fade across the entire 65% extent.
+   // Lower lip retains its approved 18% core and 90% extent.
+   const pointFade=above?Math.pow(Math.max(0,1-depth/.65),1.35):1-smooth((depth-.18)/(.90-.18));
+   mask[y*rw+x]=side*pointFade;
+  }
+ }
+ return mask;
+}
+let lipPaintGeometryCache=null;
+function paintLips(){
+ if(!lipState.points||!P.naturalWidth)return;
+ const w=P.naturalWidth,h=P.naturalHeight,points=lipState.points,out=$('lipOverlay'),ctx=out.getContext('2d');ctx.clearRect(0,0,w,h);
+ const active=lipLayers.order.filter(kind=>lipState.applied[kind]&&!lipLayers.hidden.includes(kind)).map(kind=>{const hex=lipState.applied[kind];return {kind,rgb:hexRGB(hex),profile:pigmentProfile(hex)}});if(!active.length){lipStatus('입술 영역 준비 완료 · 위에서 컬러를 선택해 주세요.');return}
+ const ps=LIP_OUTER.map(i=>points[i]),lipWidth=(Math.max(...ps.map(p=>p.x))-Math.min(...ps.map(p=>p.x)))*w,lipHeight=(Math.max(...ps.map(p=>p.y))-Math.min(...ps.map(p=>p.y)))*h;
+ const pad=Math.max(8,Math.ceil(lipWidth*.08));let x0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.x))*w)-pad),y0=Math.max(0,Math.floor(Math.min(...ps.map(p=>p.y))*h)-pad);
+ let x1=Math.min(w,Math.ceil(Math.max(...ps.map(p=>p.x))*w)+pad),y1=Math.min(h,Math.ceil(Math.max(...ps.map(p=>p.y))*h)+pad);
+ for(const {kind} of active){const mask=lipLayers.manual[kind],b=mask?.bounds;if(b){x0=Math.min(x0,Math.floor(b[0]/mask.w*w));y0=Math.min(y0,Math.floor(b[1]/mask.h*h));x1=Math.max(x1,Math.ceil(b[2]/mask.w*w));y1=Math.max(y1,Math.ceil(b[3]/mask.h*h))}}
+ const rw=x1-x0,rh=y1-y0;if(rw<2||rh<2)return;
+ const geometryKey=JSON.stringify([P.src,w,h,x0,y0,rw,rh,LIP_OUTER.map(i=>[points[i].x,points[i].y]),LIP_INNER.map(i=>[points[i].x,points[i].y])]);
+ let rawOuter,softOuter,softInner,source;
+ if(lipPaintGeometryCache?.key===geometryKey){({rawOuter,softOuter,softInner,source}=lipPaintGeometryCache)}else{
+ const makeMask=()=>{const c=document.createElement('canvas');c.width=rw;c.height=rh;return c};
+ const outer=makeMask(),m=outer.getContext('2d');m.beginPath();lipPolygon(m,LIP_OUTER,points,w,h,x0,y0);m.fillStyle='#fff';m.fill();
+ rawOuter=m.getImageData(0,0,rw,rh).data;
+ // Feather mostly inward, like one soft eraser pass along the outline.
+ // Keep a short outward tail and full pigment in the lip centre.
+ const outsideFade=Math.max(.5,lipHeight*.08),insideFade=Math.max(.5,lipHeight*.15);
+ softOuter=softenLipAlphaAgain(blendLipOutline(rawOuter,rw,rh,outsideFade,insideFade),rw,rh,Math.max(1,Math.min(lipWidth*.004,lipHeight*.018)));
+ const inner=makeMask(),ic=inner.getContext('2d');ic.fillStyle='#fff';ic.fillRect(0,0,rw,rh);ic.globalCompositeOperation='destination-out';ic.beginPath();lipPolygon(ic,LIP_INNER,points,w,h,x0,y0);ic.fill();
+ softInner=featherLipMask(ic.getImageData(0,0,rw,rh).data,rw,rh,Math.max(1,lipWidth*.007));
+ const c=makeMask(),z=c.getContext('2d');z.drawImage(P,x0,y0,rw,rh,0,0,rw,rh);source=z.getImageData(0,0,rw,rh);
+
+ lipPaintGeometryCache={key:geometryKey,rawOuter,softOuter,softInner,source,innerAccent:null};
+ }
+ const pixels=new ImageData(new Uint8ClampedArray(source.data),rw,rh),data=pixels.data;
+ let sum=0,count=0,lipR=0,lipB=0,skinR=0,skinB=0,skinN=0;
+ for(let i=0;i<data.length;i+=4){
+  if(softOuter[i+3]>160&&softInner[i+3]>160){sum+=data[i]*.2126+data[i+1]*.7152+data[i+2]*.0722;lipR+=data[i]-data[i+1];lipB+=data[i+2]-data[i+1];count++}
+  else if(rawOuter[i+3]===0){skinR+=data[i]-data[i+1];skinB+=data[i+2]-data[i+1];skinN++}
+ }
+ const mean=sum/Math.max(1,count),strength=lipState.strength/100;
+ const lipTop=Math.min(...ps.map(p=>p.y))*h,lipBottom=Math.max(...ps.map(p=>p.y))*h,lipCenterX=(points[61].x+points[291].x)*w/2;
+ lipR/=Math.max(1,count);lipB/=Math.max(1,count);skinR/=Math.max(1,skinN);skinB/=Math.max(1,skinN);
+ const separation=Math.hypot(lipR-skinR,lipB-skinB);
+ const layers=active.map(o=>({...o,y:o.rgb[0]*.2126+o.rgb[1]*.7152+o.rgb[2]*.0722}));
+ const innerAccent=active.some(o=>o.kind==='포인트')?(lipPaintGeometryCache.innerAccent ||= makeInnerLipAccent(points,w,h,x0,y0,rw,rh)):null;
+ for(let i=0;i<data.length;i+=4){
+  const autoAlpha=softOuter[i+3]/255*softInner[i+3]/255,px=x0+(i/4)%rw,py=y0+Math.floor(i/4/rw);
+  let alpha=autoAlpha;for(const {kind} of layers)alpha=Math.max(alpha,lipManualVisibility(kind,px,py,w,h));if(alpha===0){data[i+3]=0;continue}
+  const lum=data[i]*.2126+data[i+1]*.7152+data[i+2]*.0722;
+  for(const {kind,rgb,y,profile} of layers){
+   // Every tab reaches full pigment coverage at 100%, including toner.
+   const coverage=kind==='톤업'?.62:kind==='베이스'?.82:.9;
+   const layerStrength=(lipStrengths[kind]??lipState.strength)/100;
+   let amount=layerStrength*(coverage+(profile.coverage-coverage)*layerStrength*layerStrength);
+   const manual=lipManualVisibility(kind,px,py,w,h),automatic=lipLayers.auto[kind]===false?0:autoAlpha*(kind==='포인트'?innerAccent[i/4]:1);
+   amount*=(automatic+(1-automatic)*manual)*lipLayerVisibility(kind,px,py,w,h)/alpha;
+   // Restore the approved Date Night shading; temper each pigment separately.
+   const pigmentLum=mean+(y-mean)*profile.lightness;
+   const targetLum=Math.max(0,Math.min(255,pigmentLum+(lum-mean)*.96));
+   const highlight=Math.max(0,Math.min(1,(lum-mean-24)/65));amount*=1-highlight*.16;
+   for(let k=0;k<3;k++){
+    const target=Math.max(0,Math.min(255,(rgb[k]-y)*profile.chroma+targetLum));
+    data[i+k]=Math.round(data[i+k]*(1-amount)+target*amount);
+   }
+  }
+  data[i+3]=Math.round(alpha*255);
+ }
+ ctx.putImageData(pixels,x0,y0);out.style.visibility=lipState.compare?'hidden':'visible';lipStatus('입술 영역에 컬러 적용 중');
+}
+$('lipRetry').onclick=()=>detectLips();
+$('lipStrength').oninput=e=>{lipState.strength=Number(e.target.value);$('lipStrengthValue').value=lipState.strength+'%';paintLips()};
+function showLipOriginal(on){
+ lipState.compare=on;$('lipOverlay').style.visibility=on?'hidden':'visible';
+ $('lipCompare').setAttribute('aria-pressed',String(on));
+}
+$('lipCompare').onpointerdown=e=>{e.preventDefault();$('lipCompare').setPointerCapture(e.pointerId);showLipOriginal(true)};
+for(const event of ['pointerup','pointercancel','lostpointercapture'])$('lipCompare').addEventListener(event,()=>showLipOriginal(false));
+$('lipCompare').onkeydown=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();showLipOriginal(true)}};
+$('lipCompare').onkeyup=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();showLipOriginal(false)}};
+$('lipCompare').onblur=()=>showLipOriginal(false);
+window.addEventListener('blur',()=>showLipOriginal(false));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)showLipOriginal(false)});
+$('lipCompare').oncontextmenu=e=>e.preventDefault();
+
+function syncBoundaryButtons(){
+ $('boundaryToggle').textContent=lipState.editing?'경계 완료':'입술 영역 조정';
+ $('boundaryUndo').hidden=!lipState.editing;$('boundaryReset').hidden=!lipState.editing;
+ $('boundaryUndo').disabled=!lipState.history.length;
+}
+let boundaryHandles=[];
+function boundaryHandlePosition(ids,index,points,w,h,screenScale){
+ const id=ids[index],p=points[id],upper=index<10,corner=index===0||index===10;
+ let dx=0;
+ if(ids===LIP_INNER&&!corner){
+  const other=points[ids[20-index]],gap=Math.hypot((p.x-other.x)*w,(p.y-other.y)*h)*screenScale;
+  if(gap<20)dx=(upper?-8:8)/screenScale;
+ }
+ if(lipDrag&&lipDrag.id===id)dx=lipDrag.visualDX;
+ return {id,x:p.x*w+dx,y:p.y*h,dx,color:corner?'#ffffff':upper?'#f17aa7':'#50c8e5',label:corner?'입꼬리':upper?'윗입술':'아랫입술'};
+}
+function drawBoundary(){
+ const svg=$('lipBoundary');boundaryHandles=[];if(!lipState.editing||!lipState.points){svg.replaceChildren();return}
+ const w=P.naturalWidth,h=P.naturalHeight,fit=Math.min(stage.clientWidth/w,stage.clientHeight/h),scale=fit*zoom;
+ svg.setAttribute('viewBox','0 0 '+w+' '+h);svg.setAttribute('preserveAspectRatio','xMidYMid meet');svg.replaceChildren();
+ for(const ids of [LIP_OUTER,LIP_INNER]){
+  for(let index=0;index<ids.length;index++){
+   const handle=boundaryHandlePosition(ids,index,lipState.points,w,h,scale),p=lipState.points[handle.id];boundaryHandles.push(handle);
+   if(handle.dx){const line=document.createElementNS(svg.namespaceURI,'line');line.setAttribute('x1',p.x*w);line.setAttribute('y1',p.y*h);line.setAttribute('x2',handle.x);line.setAttribute('y2',handle.y);line.setAttribute('stroke',handle.color);line.setAttribute('stroke-width',.8/scale);line.style.pointerEvents='none';svg.append(line)}
+   const node=document.createElementNS(svg.namespaceURI,'circle');node.setAttribute('cx',handle.x);node.setAttribute('cy',handle.y);node.setAttribute('r',12/scale);node.setAttribute('fill','transparent');node.setAttribute('class','lip-node');node.dataset.point=String(handle.id);node.setAttribute('aria-label',handle.label+(ids===LIP_INNER?' 안쪽':' 바깥')+' 조절점');svg.append(node);
+   const dot=document.createElementNS(svg.namespaceURI,'circle');dot.setAttribute('cx',handle.x);dot.setAttribute('cy',handle.y);dot.setAttribute('r',3.4/scale);dot.setAttribute('fill',handle.color);dot.setAttribute('stroke','#ffffff');dot.setAttribute('stroke-width',.8/scale);dot.style.pointerEvents='none';svg.append(dot);
+  }
+ }
+}
+
+let lipDrag=null,boundaryBackup=null,boundaryView=null;
+// Cancel native WebKit sheet/scroll gestures before a node drag can start.
+for(const eventName of ['touchstart','touchmove']){
+ $('lipBoundary').addEventListener(eventName,e=>{
+  if(lipState.editing&&(lipDrag||e.target.closest('.lip-node'))&&e.cancelable)e.preventDefault();
+ },{passive:false,capture:true});
+}
+$('lipBoundary').addEventListener('pointerdown',e=>{
+ if(e.target.dataset.point===undefined)return;
+ const startPoint=manualPhotoPoint(e),fit=Math.min(stage.clientWidth/P.naturalWidth,stage.clientHeight/P.naturalHeight);
+ const nearest=boundaryHandles.reduce((best,p)=>{const d=Math.hypot(p.x-startPoint.x*P.naturalWidth,p.y-startPoint.y*P.naturalHeight)*fit*zoom;return !best||d<best.distance?{...p,distance:d}:best},null);
+ if(!nearest||nearest.distance>14)return;
+ const id=nearest.id;e.preventDefault();e.stopPropagation();
+ pushLipUndo();lipState.history.push(lipState.points.map(p=>({...p})));if(lipState.history.length>30)lipState.history.shift();
+ touches.clear();gestureMoved.clear();pinch=null;
+ lipDrag={id:Number(id),pointer:e.pointerId,visualDX:nearest.dx,offsetX:lipState.points[id].x-startPoint.x,offsetY:lipState.points[id].y-startPoint.y};showLipLens(e);$('lipBoundary').setPointerCapture(e.pointerId);syncBoundaryButtons();
+});
+$('lipBoundary').addEventListener('pointermove',e=>{
+ if(!lipDrag||lipDrag.pointer!==e.pointerId)return;e.preventDefault();e.stopPropagation();
+ const rect=stage.getBoundingClientRect(),sw=stage.clientWidth,sh=stage.clientHeight,w=P.naturalWidth,h=P.naturalHeight,fit=Math.min(sw/w,sh/h),rw=w*fit,rh=h*fit;
+ const x=((e.clientX-rect.left-sw/2-panX)/zoom+sw/2-(sw-rw)/2)/rw;
+ const y=((e.clientY-rect.top-sh/2-panY)/zoom+sh/2-(sh-rh)/2)/rh;
+ lipState.points[lipDrag.id]={...lipState.points[lipDrag.id],x:Math.max(0,Math.min(1,x+lipDrag.offsetX)),y:Math.max(0,Math.min(1,y+lipDrag.offsetY))};
+ drawBoundary();scheduleLipPaint();showLipLens(e);
+});
+function endBoundary(e){if(lipDrag&&lipDrag.pointer===e.pointerId){if(e.cancelable)e.preventDefault();lipDrag=null;hideLipLens();drawBoundary();flushLipPaint();e.stopPropagation()}}
+$('lipBoundary').addEventListener('pointerup',endBoundary);$('lipBoundary').addEventListener('pointercancel',endBoundary);
+function finishBoundary(accept){
+ hideLipLens();lipDrag=null;touches.clear();gestureMoved.clear();pinch=null;
+ if(!accept&&boundaryBackup)lipState.points=boundaryBackup.map(p=>({...p}));
+ lipState.editing=false;document.querySelector('.app').classList.remove('boundary-edit');$('boundaryFooter').hidden=true;
+ if(boundaryView){zoom=boundaryView.zoom;panX=boundaryView.panX;panY=boundaryView.panY}
+ syncBoundaryButtons();setWorld();paintLips();boundaryBackup=null;
+}
+$('boundaryToggle').onclick=()=>{
+ if(lipState.manualCorners){lipState.manualCorners=null;syncBoundaryButtons();lipStatus('직접 지정을 취소했어요. 다시 인식하거나 입술 영역 조정을 눌러 주세요.');return}
+ if(!lipState.points){beginManualLip();return}
+ boundaryBackup=lipState.points.map(p=>({...p}));boundaryView={zoom,panX,panY};lipState.editing=true;lipState.history=[];
+ document.querySelector('.app').classList.add('boundary-edit');$('boundaryFooter').hidden=false;syncBoundaryButtons();
+ requestAnimationFrame(()=>{const ps=LIP_OUTER.map(i=>lipState.points[i]),cx=(Math.min(...ps.map(p=>p.x))+Math.max(...ps.map(p=>p.x)))/2,cy=(Math.min(...ps.map(p=>p.y))+Math.max(...ps.map(p=>p.y)))/2;
+ const sw=stage.clientWidth,sh=stage.clientHeight,fit=Math.min(sw/P.naturalWidth,sh/P.naturalHeight),rw=P.naturalWidth*fit,rh=P.naturalHeight*fit;
+ const lipW=Math.max(1,(Math.max(...ps.map(p=>p.x))-Math.min(...ps.map(p=>p.x)))*rw),lipH=Math.max(1,(Math.max(...ps.map(p=>p.y))-Math.min(...ps.map(p=>p.y)))*rh);
+ zoom=Math.max(1,Math.min(12,sw*.82/lipW,sh*.55/lipH));
+ panX=-(cx-.5)*rw*zoom;panY=-(cy-.5)*rh*zoom;setWorld();
+ });
+};
+$('boundaryCancel').onclick=()=>finishBoundary(false);
+$('boundaryDone').onclick=()=>finishBoundary(true);
+$('boundaryUndo').onclick=()=>{if(lipState.history.length){lipState.points=lipState.history.pop();drawBoundary();paintLips();syncBoundaryButtons()}};
+$('boundaryReset').onclick=()=>{if(lipState.originalPoints){lipState.history.push(lipState.points.map(p=>({...p})));lipState.points=lipState.originalPoints.map(p=>({...p}));drawBoundary();paintLips();syncBoundaryButtons()}};
+window.addEventListener('resize',drawBoundary);
+
+let lipPaintPending=false,lipLensFrame=0,lipLensTouch=null;
+let lipPaintTimer=0;
+function scheduleLipPaint(){if(lipState.editing&&lipDrag)return;if(lipPaintPending)return;lipPaintPending=true;lipPaintTimer=setTimeout(()=>{lipPaintPending=false;lipPaintTimer=0;paintLips()},lipState.editing?100:40)}
+function flushLipPaint(){if(lipPaintTimer)clearTimeout(lipPaintTimer);lipPaintTimer=0;lipPaintPending=false;paintLips()}
+const lipLens=document.createElement('div');lipLens.id='lipLens';const lipLensCanvas=document.createElement('canvas');lipLensCanvas.width=lipLensCanvas.height=288;lipLens.append(lipLensCanvas);document.body.append(lipLens);
+function hideLipLens(){lipLensTouch=null;lipLens.style.display='none';if(lipLensFrame){cancelAnimationFrame(lipLensFrame);lipLensFrame=0}}
+function showLipLens(e){lipLensTouch={clientX:e.clientX,clientY:e.clientY};if(!lipLensFrame)lipLensFrame=requestAnimationFrame(()=>{lipLensFrame=0;renderLipLens()})}
+function renderLipLens(){
+ if(!lipLensTouch||!lipDrag||!lipState.editing||!lipState.points){hideLipLens();return}
+ const t=lipLensTouch,p=lipState.points[lipDrag.id],w=P.naturalWidth,h=P.naturalHeight,fit=Math.min(stage.clientWidth/w,stage.clientHeight/h);
+ const ix=p.x*w,iy=p.y*h,src=60/(zoom*fit),n=lipLensCanvas.width,c=lipLensCanvas.getContext('2d');
+ c.clearRect(0,0,n,n);c.fillStyle='#fff';c.fillRect(0,0,n,n);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
+ c.drawImage(P,ix-src/2,iy-src/2,src,src,0,0,n,n);
+ if(!lipState.compare)c.drawImage($('lipOverlay'),ix-src/2,iy-src/2,src,src,0,0,n,n);
+ c.save();c.translate(n/2,n/2);c.scale(n/src,n/src);c.translate(-ix,-iy);
+ for(const ids of [LIP_OUTER,LIP_INNER]){
+  const parts=lipCurveSegments(ids,lipState.points,w,h);
+  parts.forEach((q,i)=>{c.beginPath();c.moveTo(q.a.x,q.a.y);c.bezierCurveTo(q.c1.x,q.c1.y,q.c2.x,q.c2.y,q.b.x,q.b.y);c.strokeStyle=i<10?'#f17aa7':'#50c8e5';c.lineWidth=src/n*1.8;c.stroke()});
+  ids.forEach((id,i)=>{const q=boundaryHandlePosition(ids,i,lipState.points,w,h,fit*zoom);c.beginPath();c.arc(q.x,q.y,src/n*3,0,Math.PI*2);c.fillStyle=i<=10?'#f17aa7':'#50c8e5';c.fill()});
+ }
+ c.restore();
+ const selectedIndex=LIP_INNER.includes(lipDrag.id)?LIP_INNER.indexOf(lipDrag.id):LIP_OUTER.indexOf(lipDrag.id),selectedColor=selectedIndex<=10?'#f17aa7':'#50c8e5';
+ c.beginPath();c.arc(n/2,n/2,7,0,Math.PI*2);c.fillStyle=selectedColor;c.fill();c.strokeStyle='#fff';c.lineWidth=2;c.stroke();
+ // v18.8 lens placement and animation-frame tracking.
+ const lx=Math.min(innerWidth-64,Math.max(64,t.clientX+82)),ly=Math.min(innerHeight-64,Math.max(64,t.clientY-128));
+ lipLens.style.left=lx+'px';lipLens.style.top=ly+'px';lipLens.style.display='block';
+}
+document.addEventListener('touchstart',e=>{if(e.touches.length>1)hideLipLens()},{passive:true});
+document.addEventListener('touchcancel',hideLipLens,{passive:true});
+window.addEventListener('blur',hideLipLens);
+
+$('manualLip').onclick=beginManualLip;
+function beginManualLip(){
+ stopLipWorker();$('boundaryToggle').disabled=false;
+ $('manualLip').hidden=true;
+ lipState.token++;$('lipRetry').hidden=true;lipState.manualCorners=[];panelOpen=false;$('color-panel').hidden=true;render();resetView();
+ lipStatus('자동 인식 대신 직접 지정해요. 사진에서 왼쪽 입꼬리를 한 번 눌러 주세요.');
+ $('boundaryToggle').textContent='지정 취소';
+}
+function manualPhotoPoint(e){
+ const rect=stage.getBoundingClientRect(),sw=stage.clientWidth,sh=stage.clientHeight,fit=Math.min(sw/P.naturalWidth,sh/P.naturalHeight),rw=P.naturalWidth*fit,rh=P.naturalHeight*fit;
+ return {x:Math.max(0,Math.min(1,((e.clientX-rect.left-sw/2-panX)/zoom+sw/2-(sw-rw)/2)/rw)),y:Math.max(0,Math.min(1,((e.clientY-rect.top-sh/2-panY)/zoom+sh/2-(sh-rh)/2)/rh))};
+}
+let manualTouch=null,manualMultitouch=false;
+stage.addEventListener('pointerdown',e=>{if(!lipState.manualCorners)return;if(touches.size>1){manualMultitouch=true;manualTouch=null}else{manualMultitouch=false;manualTouch={id:e.pointerId,x:e.clientX,y:e.clientY}}});
+stage.addEventListener('pointercancel',()=>{manualTouch=null;manualMultitouch=true});
+stage.addEventListener('pointerup',e=>{
+ if(!lipState.manualCorners||manualMultitouch||!manualTouch||manualTouch.id!==e.pointerId||Math.hypot(e.clientX-manualTouch.x,e.clientY-manualTouch.y)>7)return;
+ manualTouch=null;
+ const p=manualPhotoPoint(e),corners=lipState.manualCorners;
+ if(!corners.length){corners.push(p);lipStatus('이제 반대쪽 입꼬리를 한 번 눌러 주세요.');return}
+ const a=corners[0],w=P.naturalWidth,h=P.naturalHeight,dx=(p.x-a.x)*w,dy=(p.y-a.y)*h;
+ if(Math.hypot(dx,dy)<20){lipStatus('입꼬리 두 곳을 조금 더 떨어지게 지정해 주세요.');return}
+ const template=[[0,0],[.07,-.12],[.16,-.23],[.26,-.32],[.39,-.39],[.5,-.30],[.61,-.39],[.74,-.32],[.84,-.23],[.93,-.12],[1,0],[.94,.15],[.84,.29],[.73,.40],[.61,.46],[.5,.48],[.39,.46],[.27,.40],[.16,.29],[.06,.15]];
+ const points=Array.from({length:478},()=>({x:.5,y:.5,z:0}));
+ const make=(u,v)=>({x:a.x+(dx*u-dy*v)/w,y:a.y+(dy*u+dx*v)/h,z:0});
+ LIP_OUTER.forEach((id,i)=>{points[id]=make(template[i][0],template[i][1])});
+ LIP_INNER.forEach((id,i)=>{const t=Math.PI+i*Math.PI*2/LIP_INNER.length;points[id]=make(.5+.49*Math.cos(t),.035*Math.sin(t))});
+ const expanded=expandDetectedLips(points,P.naturalWidth,P.naturalHeight);lipState.points=expanded;lipState.originalPoints=expanded.map(p=>({...p}));lipState.manualCorners=null;lipState.token++;$('lipRetry').hidden=true;$('lipCompare').hidden=false;syncBoundaryButtons();paintLips();$('boundaryToggle').click();
+});
+
+</script><section id="paletteBuilder" class="pal" hidden role="dialog" aria-label="내 팔레트 만들기"><header><strong>내 팔레트 만들기</strong><button id="openMaker">컬러 만들기</button><button id="closePalette">닫기</button></header><select id="brandFilter" aria-label="브랜드"><option value="all">전체 브랜드</option><option value="perma">Perma Blend (펄마)</option><option value="tina">Tina Davies (티나 데이비스)</option><option value="evenflo">Evenflo (이븐플로)</option><option value="luxe">LUXE (럭스)</option></select><div id="catalog" class="pal-list"></div><strong>선택한 내 팔레트 · 누르면 제외</strong><div id="picked" class="pal-picked"></div><div id="paletteStatus" class="pal-status" role="status"></div><button id="applyPalette">적용 완료</button></section>
+<section id="customMaker" class="pal" hidden role="dialog" aria-label="컬러 만들기"><header><strong>컬러 만들기</strong><button id="closeMaker">돌아가기</button></header><div class="pal-row"><input id="customColor" type="color" value="#c45f78" aria-label="직접 색 선택"><input id="customHex" value="#c45f78" aria-label="HEX 색상 코드"></div><input id="customName" placeholder="컬러 이름" aria-label="컬러 이름"><div class="pal-row"><button id="loadColorPhoto">사진 불러오기</button><button id="sampleColor" aria-pressed="false">스포이드</button></div><input id="colorPhotoFile" type="file" accept="image/*" hidden><img id="makerPhoto" hidden alt="색 추출용 사진"><small id="makerHint">색을 직접 고르거나 사진에서 원하는 부분을 찍어 주세요.</small><button id="addCustomColor">내 팔레트에 추가</button></section>
+<script>
+const pigmentCatalog=[{"id":"perma:Orange Crush","brand":"perma","name":"Orange Crush (오렌지 크러시)","hex":"#EA0003","category":"03 / 중화·보정 컬러"},{"id":"perma:Tres Pink","brand":"perma","name":"Tres Pink (트레스 핑크)","hex":"#CF5254","category":"01 / 입술 컬러"},{"id":"perma:Mauve","brand":"perma","name":"Mauve (모브)","hex":"#A74A39","category":"01 / 입술 컬러"},{"id":"perma:Passion Red","brand":"perma","name":"Passion Red (패션 레드)","hex":"#DD1134","category":"01 / 입술 컬러"},{"id":"perma:Bazooka","brand":"perma","name":"Bazooka (바주카)","hex":"#F95385","category":"01 / 입술 컬러"},{"id":"perma:Sweet Melissa","brand":"perma","name":"Sweet Melissa (스위트 멜리사)","hex":"#A13837","category":"01 / 입술 컬러"},{"id":"perma:French Fancy","brand":"perma","name":"French Fancy (프렌치 팬시)","hex":"#B04944","category":"01 / 입술 컬러"},{"id":"perma:Royal Red","brand":"perma","name":"Royal Red (로얄 레드)","hex":"#C51232","category":"01 / 입술 컬러"},{"id":"perma:Blushed","brand":"perma","name":"Blushed (블러시드)","hex":"#DC453C","category":"01 / 입술 컬러"},{"id":"perma:Lush Pink","brand":"perma","name":"Lush Pink (러시 핑크)","hex":"#E81154","category":"01 / 입술 컬러"},{"id":"perma:Lady Bug","brand":"perma","name":"Lady Bug (레이디 버그)","hex":"#D00018","category":"01 / 입술 컬러"},{"id":"perma:Creme De Pink","brand":"perma","name":"Creme De Pink (크림 드 핑크)","hex":"#FDC4B1","category":"01 / 입술 컬러"},{"id":"perma:Raspberry","brand":"perma","name":"Raspberry (라즈베리)","hex":"#C30241","category":"01 / 입술 컬러"},{"id":"perma:Pillowtalk","brand":"perma","name":"Pillowtalk (필로우토크)","hex":"#961E2A","category":"01 / 입술 컬러"},{"id":"perma:Wildflower","brand":"perma","name":"Wildflower (와일드플라워)","hex":"#8E3724","category":"01 / 입술 컬러"},{"id":"perma:Date Night","brand":"perma","name":"Date Night (데이트 나이트)","hex":"#9B1120","category":"01 / 입술 컬러"},{"id":"perma:Squash","brand":"perma","name":"Squash (스쿼시)","hex":"#E16F29","category":"03 / 중화·보정 컬러"},{"id":"perma:Hen Party","brand":"perma","name":"Hen Party (헨 파티)","hex":"#F4354D","category":"02 / Inga (잉가) 입술 컬러"},{"id":"perma:Latte","brand":"perma","name":"Latte (라테)","hex":"#A55139","category":"01 / 입술 컬러"},{"id":"perma:Nutmeg","brand":"perma","name":"Nutmeg (넛메그)","hex":"#8C3A22","category":"01 / 입술 컬러"},{"id":"perma:Orchid","brand":"perma","name":"Orchid (오키드)","hex":"#984631","category":"01 / 입술 컬러"},{"id":"perma:Hollywood Punch","brand":"perma","name":"Hollywood Punch (할리우드 펀치)","hex":"#7D011B","category":"01 / 입술 컬러"},{"id":"perma:Tender Caramel","brand":"perma","name":"Tender Caramel (텐더 캐러멜)","hex":"#A9665C","category":"02 / Inga (잉가) 입술 컬러"},{"id":"perma:Fiery Fuchsia","brand":"perma","name":"Fiery Fuchsia (파이어리 퓨시아)","hex":"#BD0066","category":"01 / 입술 컬러"},{"id":"perma:Dusky Crimson","brand":"perma","name":"Dusky Crimson (더스키 크림슨)","hex":"#931E27","category":"01 / 입술 컬러"},{"id":"perma:Cinnamon","brand":"tina","name":"Cinnamon (시나몬)","hex":"#BA6D67","category":"04 / Tina Davies (티나 데이비스) 입술 컬러"},{"id":"perma:Dusty Pink","brand":"tina","name":"Dusty Pink (더스티 핑크)","hex":"#B85A65","category":"04 / Tina Davies (티나 데이비스) 입술 컬러"},{"id":"perma:Nude","brand":"tina","name":"Nude (누드)","hex":"#C1615F","category":"04 / Tina Davies (티나 데이비스) 입술 컬러"},{"id":"perma:Pink Rose","brand":"tina","name":"Pink Rose (핑크 로즈)","hex":"#B9384F","category":"04 / Tina Davies (티나 데이비스) 입술 컬러"},{"id":"perma:Wine","brand":"tina","name":"Wine (와인)","hex":"#73132F","category":"04 / Tina Davies (티나 데이비스) 입술 컬러"},{"id":"perma:Pink Coral","brand":"tina","name":"Pink Coral (핑크 코랄)","hex":"#DE6364","category":"04 / Tina Davies (티나 데이비스) 입술 컬러"},{"id":"perma:Perfect Pink","brand":"tina","name":"Perfect Pink (퍼펙트 핑크)","hex":"#D7677B","category":"04 / Tina Davies (티나 데이비스) 입술 컬러"},{"id":"perma:Magenta","brand":"tina","name":"Magenta (마젠타)","hex":"#B8446B","category":"04 / Tina Davies (티나 데이비스) 입술 컬러"},{"id":"perma:Orange Coral","brand":"tina","name":"Orange Coral (오렌지 코랄)","hex":"#D96156","category":"04 / Tina Davies (티나 데이비스) 입술 컬러"},{"id":"perma:Peach","brand":"tina","name":"Peach (피치)","hex":"#E27779","category":"04 / Tina Davies (티나 데이비스) 입술 컬러"},{"id":"perma:Flame","brand":"tina","name":"Flame (플레임)","hex":"#CC472E","category":"04 / Tina Davies (티나 데이비스) 입술 컬러"},{"id":"perma:Soft Red","brand":"tina","name":"Soft Red (소프트 레드)","hex":"#9C2424","category":"04 / Tina Davies (티나 데이비스) 입술 컬러"},{"id":"perma:Bad Girl","brand":"perma","name":"Bad Girl (배드 걸)","hex":"#E44D63","category":"02 / Inga (잉가) 입술 컬러"},{"id":"perma:Creamy Coral","brand":"perma","name":"Creamy Coral (크리미 코랄)","hex":"#FA4A41","category":"02 / Inga (잉가) 입술 컬러"},{"id":"perma:Tea Rose","brand":"perma","name":"Tea Rose (티 로즈)","hex":"#E06A75","category":"02 / Inga (잉가) 입술 컬러"},{"id":"perma:Cheeky","brand":"perma","name":"Cheeky (치키)","hex":"#B57D5A","category":"01 / 입술 컬러"},{"id":"perma:Coco","brand":"perma","name":"Coco (코코)","hex":"#AA5A41","category":"01 / 입술 컬러"},{"id":"perma:Sunkissed","brand":"perma","name":"Sunkissed (선키스트)","hex":"#C77756","category":"01 / 입술 컬러"},{"id":"perma:Pink Pizzazz","brand":"perma","name":"Pink Pizzazz (핑크 피자즈)","hex":"#B82446","category":"01 / 입술 컬러"},{"id":"perma:Cinnamon Stick","brand":"perma","name":"Cinnamon Stick (시나몬 스틱)","hex":"#C8724F","category":"01 / 입술 컬러"},{"id":"perma:Gourd Toner","brand":"perma","name":"Gourd Toner (고드 토너)","hex":"#B15B00","category":"05 / 중화·보정 컬러 (눈썹·기타)"},{"id":"perma:Soft Yellow Corrector","brand":"perma","name":"Soft Yellow Corrector (소프트 옐로우 코렉터)","hex":"#E7A54F","category":"05 / 중화·보정 컬러 (눈썹·기타)"},{"id":"perma:Tina’s Gold Sunrise","brand":"tina","name":"Tina’s Gold Sunrise (티나스 골드 선라이즈)","hex":"#9D5E01","category":"05 / 중화·보정 컬러 (눈썹·기타)"},{"id":"perma:Pumpkin Corrector","brand":"perma","name":"Pumpkin Corrector (펌킨 코렉터)","hex":"#D06600","category":"05 / 중화·보정 컬러 (눈썹·기타)"},{"id":"perma:Olive Corrector","brand":"perma","name":"Olive Corrector (올리브 코렉터)","hex":"#A58000","category":"05 / 중화·보정 컬러 (눈썹·기타)"},{"id":"perma:Scandal","brand":"perma","name":"Scandal (스캔들)","hex":"#CC2A4A","category":"01 / 입술 컬러"},{"id":"evenflo:Rose","brand":"evenflo","name":"Rose (로즈)","hex":"#F6516E","category":"01 / 입술 컬러"},{"id":"evenflo:Malina","brand":"evenflo","name":"Malina (말리나)","hex":"#BE4041","category":"01 / 입술 컬러"},{"id":"evenflo:Bare","brand":"evenflo","name":"Bare (베어)","hex":"#D8524F","category":"01 / 입술 컬러"},{"id":"evenflo:Pinker","brand":"evenflo","name":"Pinker (핑커)","hex":"#861A53","category":"01 / 입술 컬러"},{"id":"evenflo:Malbec","brand":"evenflo","name":"Malbec (말벡)","hex":"#980608","category":"01 / 입술 컬러"},{"id":"evenflo:Clay","brand":"evenflo","name":"Clay (클레이)","hex":"#961109","category":"01 / 입술 컬러"},{"id":"evenflo:Malina Ice","brand":"evenflo","name":"Malina Ice (말리나 아이스)","hex":"#C42836","category":"01 / 입술 컬러"},{"id":"evenflo:Yellow Clay","brand":"evenflo","name":"Yellow Clay (옐로우 클레이)","hex":"#E14334","category":"01 / 입술 컬러"},{"id":"evenflo:Naturalista","brand":"evenflo","name":"Naturalista (내추럴리스타)","hex":"#B13931","category":"02 / True Lips (트루 립스)"},{"id":"evenflo:Dirty French","brand":"evenflo","name":"Dirty French (더티 프렌치)","hex":"#AA3536","category":"02 / True Lips (트루 립스)"},{"id":"evenflo:Royal Mauve","brand":"evenflo","name":"Royal Mauve (로얄 모브)","hex":"#A4343A","category":"02 / True Lips (트루 립스)"},{"id":"evenflo:Neutralizer","brand":"evenflo","name":"Neutralizer (뉴트럴라이저)","hex":"#C82A1F","category":"03 / 중화·보정 컬러"},{"id":"evenflo:Illume","brand":"evenflo","name":"Illume (일룸)","hex":"#BC6A00","category":"03 / 중화·보정 컬러"},{"id":"evenflo:Colorizer","brand":"evenflo","name":"Colorizer (컬러라이저)","hex":"#C91810","category":"03 / 중화·보정 컬러"},{"id":"evenflo:Alter White","brand":"evenflo","name":"Alter White (올터 화이트)","hex":"#D6D6D6","category":"03 / 중화·보정 컬러"},{"id":"luxe:Victorian Rose","brand":"luxe","name":"Victorian Rose (빅토리안 로즈)","hex":"#A84E5A","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Cotton Candy","brand":"luxe","name":"Cotton Candy (코튼 캔디)","hex":"#FBC2BB","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Berry","brand":"luxe","name":"Berry (베리)","hex":"#7E2A41","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Amelia Rose","brand":"luxe","name":"Amelia Rose (아멜리아 로즈)","hex":"#AE4C55","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Cranberry","brand":"luxe","name":"Cranberry (크랜베리)","hex":"#84000B","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Cherry Red","brand":"luxe","name":"Cherry Red (체리 레드)","hex":"#BE0011","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Rosewood","brand":"luxe","name":"Rosewood (로즈우드)","hex":"#B03B44","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Red Apple","brand":"luxe","name":"Red Apple (레드 애플)","hex":"#C10000","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Vintage Maroon","brand":"luxe","name":"Vintage Maroon (빈티지 마룬)","hex":"#762126","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Vivid Koral","brand":"luxe","name":"Vivid Koral (비비드 코랄)","hex":"#DF3B46","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Rose Royale","brand":"luxe","name":"Rose Royale (로즈 로얄)","hex":"#B54D50","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Henna","brand":"luxe","name":"Henna (헤나)","hex":"#B4594B","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Blossom","brand":"luxe","name":"Blossom (블라썸)","hex":"#B7423B","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Hot Pink","brand":"luxe","name":"Hot Pink (핫 핑크)","hex":"#DC5B7F","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Pink Gala","brand":"luxe","name":"Pink Gala (핑크 갈라)","hex":"#CC3058","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Boudoir","brand":"luxe","name":"Boudoir (부두아)","hex":"#93182F","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Saffron","brand":"luxe","name":"Saffron (사프론)","hex":"#BA4E27","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Rouge","brand":"luxe","name":"Rouge (루즈)","hex":"#8E382B","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Cardinal","brand":"luxe","name":"Cardinal (카디널)","hex":"#D71826","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Peach Veil","brand":"luxe","name":"Peach Veil (피치 베일)","hex":"#CB8169","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Pomegranate","brand":"luxe","name":"Pomegranate (포메그래니트)","hex":"#A60030","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Subdued Sienna","brand":"luxe","name":"Subdued Sienna (서브듀드 시에나)","hex":"#BA6848","category":"01 / LUXE LIP COLOURS"},{"id":"luxe:Dirty French","brand":"luxe","name":"Dirty French (더티 프렌치)","hex":"#AA3536","category":"02 / LUXE EVENFLO TRUE LIPS"},{"id":"luxe:Rock Rose","brand":"luxe","name":"Rock Rose (록 로즈)","hex":"#AC1B27","category":"02 / LUXE EVENFLO TRUE LIPS"},{"id":"luxe:Divanizer","brand":"luxe","name":"Divanizer (디바나이저)","hex":"#C0475F","category":"02 / LUXE EVENFLO TRUE LIPS"},{"id":"luxe:Naturalista","brand":"luxe","name":"Naturalista (내추럴리스타)","hex":"#B13931","category":"02 / LUXE EVENFLO TRUE LIPS"},{"id":"luxe:Romance","brand":"luxe","name":"Romance (로맨스)","hex":"#E3446E","category":"02 / LUXE EVENFLO TRUE LIPS"},{"id":"luxe:Royal Mauve","brand":"luxe","name":"Royal Mauve (로얄 모브)","hex":"#A4343A","category":"02 / LUXE EVENFLO TRUE LIPS"},{"id":"luxe:Marlo","brand":"luxe","name":"Marlo (말로)","hex":"#D24959","category":"03 / SCULPTED ENHANCE"},{"id":"luxe:Popi","brand":"luxe","name":"Popi (포피)","hex":"#C00000","category":"03 / SCULPTED ENHANCE"},{"id":"luxe:Haze","brand":"luxe","name":"Haze (헤이즈)","hex":"#452A19","category":"03 / SCULPTED ENHANCE"},{"id":"luxe:Glam","brand":"luxe","name":"Glam (글램)","hex":"#D3316C","category":"03 / SCULPTED ENHANCE"},{"id":"luxe:Gin","brand":"luxe","name":"Gin (진)","hex":"#E53B3E","category":"03 / SCULPTED ENHANCE"},{"id":"luxe:Joy","brand":"luxe","name":"Joy (조이)","hex":"#B00000","category":"03 / SCULPTED ENHANCE"},{"id":"luxe:Lala","brand":"luxe","name":"Lala (랄라)","hex":"#CB1433","category":"03 / SCULPTED ENHANCE"},{"id":"luxe:Orange Peel","brand":"luxe","name":"Orange Peel (오렌지 필)","hex":"#DA3F00","category":"04 / NEUTRALIZERS + MODIFIERS"},{"id":"luxe:Muted Orange","brand":"luxe","name":"Muted Orange (뮤티드 오렌지)","hex":"#B05745","category":"04 / NEUTRALIZERS + MODIFIERS"},{"id":"luxe:Mod 1","brand":"luxe","name":"Mod 1 (모드 1)","hex":"#FEF751","category":"04 / NEUTRALIZERS + MODIFIERS"},{"id":"luxe:Base 1","brand":"luxe","name":"Base 1 (베이스 1)","hex":"#FFDC01","category":"04 / NEUTRALIZERS + MODIFIERS"},{"id":"luxe:Base 2","brand":"luxe","name":"Base 2 (베이스 2)","hex":"#FD7F00","category":"04 / NEUTRALIZERS + MODIFIERS"},{"id":"luxe:Mod 2","brand":"luxe","name":"Mod 2 (모드 2)","hex":"#F69173","category":"04 / NEUTRALIZERS + MODIFIERS"},{"id":"luxe:Mod 3","brand":"luxe","name":"Mod 3 (모드 3)","hex":"#F49EAB","category":"04 / NEUTRALIZERS + MODIFIERS"},{"id":"luxe:Base 3","brand":"luxe","name":"Base 3 (베이스 3)","hex":"#EB351F","category":"04 / NEUTRALIZERS + MODIFIERS"},{"id":"luxe:Base 4","brand":"luxe","name":"Base 4 (베이스 4)","hex":"#CB1433","category":"04 / NEUTRALIZERS + MODIFIERS"}];
+
+const paletteKey='suri.L2.myPalette.v1';try{if(localStorage.getItem(paletteKey)===null){const previous=localStorage.getItem('suri.L1.myPalette.v1');if(previous)localStorage.setItem(paletteKey,previous)}}catch(e){}let myColors=[],draft=[],sampling=false,makerURL=null;
+try{const v=JSON.parse(localStorage.getItem(paletteKey)||'[]');if(Array.isArray(v))myColors=v.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&/^#[0-9a-f]{6}$/i.test(x.hex))}catch(e){}
+function syncMyPalette(){lipProfileCache.clear();for(const key of Object.keys(palettes)){palettes[key]=myColors.map(x=>[x.name,x.hex]);if(Number.isInteger(selected[key])&&selected[key]>=0)selected[key]=myColors.length?Math.min(selected[key],myColors.length-1):null}render()}
+function drawCatalog(){
+ const catalog=$('catalog'),scroll=catalog.scrollTop;
+ catalog.replaceChildren();
+ for(const [brand,label] of [['perma','Perma Blend (펄마)'],['tina','Tina Davies (티나 데이비스)'],['evenflo','Evenflo (이븐플로)'],['luxe','LUXE (럭스)']]){
+  const title=document.createElement('h2');title.className='catalog-brand';title.textContent=label;catalog.append(title);
+  pigmentCatalog.filter(x=>x.brand===brand).forEach(x=>{
+   const button=makeColorButton(x.name,x.hex,draft.some(c=>c.id===x.id));button.title=x.name;
+   button.onclick=()=>{const i=draft.findIndex(c=>c.id===x.id);if(i<0)draft.push({...x});else draft.splice(i,1);drawCatalog()};
+   catalog.append(button);
+  });
+ }
+ catalog.scrollTop=scroll;
+ $('picked').replaceChildren();
+ draft.forEach((x,i)=>{const button=makeColorButton(x.name,x.hex);button.onclick=()=>{draft.splice(i,1);drawCatalog()};$('picked').append(button)});
+}
+$('openPalette').onclick=()=>{draft=myColors.map(x=>({...x}));$('paletteBuilder').hidden=false;$('paletteStatus').textContent='';drawCatalog()};$('brandFilter').onchange=drawCatalog;$('closePalette').onclick=()=>{$('paletteBuilder').hidden=true};
+$('applyPalette').onclick=()=>{try{localStorage.setItem(paletteKey,JSON.stringify(draft))}catch(e){$('paletteStatus').textContent='저장 공간을 확인해 주세요. 팔레트를 저장하지 못했어요.';return}myColors=draft.map(x=>({...x}));syncMyPalette();$('paletteBuilder').hidden=true};
+function stopSampling(){sampling=false;document.body.classList.remove('sampling');$('sampleColor').setAttribute('aria-pressed','false')}
+function closeMaker(){stopSampling();$('customMaker').hidden=true;$('paletteBuilder').hidden=false;drawCatalog()}
+$('openMaker').onclick=()=>{$('paletteBuilder').hidden=true;$('customMaker').hidden=false};$('closeMaker').onclick=closeMaker;
+function setCustomColor(hex){$('customColor').value=hex;$('customHex').value=hex}
+$('customColor').oninput=e=>setCustomColor(e.target.value);$('customHex').onchange=e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value))setCustomColor(e.target.value);else e.target.value=$('customColor').value};
+$('addCustomColor').onclick=()=>{const name=$('customName').value.trim()||'내 컬러 '+(draft.filter(x=>x.brand==='custom').length+1);draft.push({id:'custom:'+Date.now()+':'+Math.random(),brand:'custom',name,hex:$('customColor').value});$('customName').value='';closeMaker()};
+$('loadColorPhoto').onclick=()=>$('colorPhotoFile').click();$('colorPhotoFile').onchange=e=>{const f=e.target.files[0];if(!f)return;if(makerURL)URL.revokeObjectURL(makerURL);makerURL=URL.createObjectURL(f);const img=$('makerPhoto');img.onload=()=>{img.hidden=false};img.onerror=()=>{$('makerHint').textContent='사진을 불러오지 못했어요. JPG 또는 PNG로 다시 시도해 주세요.'};img.src=makerURL;e.target.value=''};
+$('sampleColor').onclick=()=>{sampling=!sampling;document.body.classList.toggle('sampling',sampling);$('sampleColor').setAttribute('aria-pressed',String(sampling));$('makerHint').textContent=sampling?'사진 또는 불러온 색에서 원하는 부분을 찍어 주세요.':'색을 직접 고르거나 사진에서 원하는 부분을 찍어 주세요.'};
+function pixelAt(img,e,transformed=false){const r=img.getBoundingClientRect(),scale=Math.min(r.width/img.naturalWidth,r.height/img.naturalHeight),w=img.naturalWidth*scale,h=img.naturalHeight*scale,x=(e.clientX-r.left-(r.width-w)/2)/scale,y=(e.clientY-r.top-(r.height-h)/2)/scale;if(x<0||y<0||x>=img.naturalWidth||y>=img.naturalHeight)return;const c=document.createElement('canvas');c.width=c.height=1;const ctx=c.getContext('2d');ctx.drawImage(img,Math.floor(x),Math.floor(y),1,1,0,0,1,1);const v=ctx.getImageData(0,0,1,1).data;setCustomColor('#'+[...v].slice(0,3).map(n=>n.toString(16).padStart(2,'0')).join(''));stopSampling();$('makerHint').textContent='찍은 색을 가져왔어요. 이름을 정하고 추가해 주세요.'}
+$('makerPhoto').onclick=e=>{if(sampling)pixelAt(e.currentTarget,e)};
+const sampleStage=document.querySelector('.stage');sampleStage.addEventListener('pointerdown',e=>{if(!sampling||$('customMaker').hidden)return;e.stopImmediatePropagation();e.preventDefault();if(P.naturalWidth)pixelAt(P,e)},true);
+$('photoGridToggle').onclick=()=>{const on=$('photoGrid').classList.toggle('on');$('photoGridToggle').textContent='격자 '+(on?'ON':'OFF');$('photoGridToggle').setAttribute('aria-pressed',String(on))};syncMyPalette();
+
+</script><section id="lipBlendDialog" class="lip-blend-dialog" hidden role="dialog" aria-modal="true" aria-label="컬러 블랜딩">
+ <header><strong>블랜딩</strong><div class="blend-header-actions"><button id="blendClose">닫기</button><button id="blendComplete">완료</button></div></header>
+ <div class="blend-top"><div class="blend-chosen-wrap"><div id="blendChosen"></div><p id="blendEmpty">아래 내 팔레트에서<br>컬러를 선택해 주세요</p></div><span class="blend-equals">＝</span><button id="blendResult" class="blend-result" disabled><span class="chip"></span><span>완성 · 적용</span></button></div>
+ <div id="blendRatio" class="blend-ratio"></div>
+ <div id="blendDropEditor" class="blend-drop-editor" hidden><span id="blendDropName"></span><div><button id="blendDropMinus" aria-label="한 방울 빼기">−</button><input id="blendDropCount" type="number" min="1" max="99" inputmode="numeric" aria-label="방울 수"><span>방울</span><button id="blendDropPlus" aria-label="한 방울 추가">＋</button><button id="blendDropDone">완료</button></div></div>
+ <strong class="blend-palette-title">내 팔레트 <small>최대 4색 선택</small></strong><p id="blendMessage" role="status"></p><div id="blendPalette"></div>
+ </section>
+ <script>
+ $('blendClose').onclick=()=>{$('lipBlendDialog').hidden=true};
+ $('blendResult').onclick=saveBlendResult;
+ $('blendComplete').onclick=saveBlendResult;
+ $('blendDropMinus').onclick=()=>changeBlendDrops(blendDraft[dropEditor]?.drops-1);
+ $('blendDropPlus').onclick=()=>changeBlendDrops(blendDraft[dropEditor]?.drops+1);
+ $('blendDropCount').onchange=e=>changeBlendDrops(e.target.value);
+ $('blendDropDone').onclick=()=>{dropEditor=null;drawLipBlend()};
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')$('lipBlendDialog').hidden=true});
+ </script>
+<script id="lip-layer-eraser">
+const lipErase={on:false,tool:'erase',mode:'erase',group:'톤업',masks:{},history:[],pointers:new Map(),stroke:null,last:null,pinch:null,lensFrame:0,lensPoint:null};
+const lipMaskSize=1024;
+function makeLipMask(){const ratio=Math.min(1,lipMaskSize/Math.max(P.naturalWidth,P.naturalHeight));const w=Math.max(1,Math.round(P.naturalWidth*ratio)),h=Math.max(1,Math.round(P.naturalHeight*ratio));return {w,h,data:new Uint8Array(w*h).fill(255)}}
+function ensureLipMask(kind){return lipErase.masks[kind]||(lipErase.masks[kind]=makeLipMask())}
+function lipLayerVisibility(kind,x,y,w,h){const m=lipErase.masks[kind];return m?m.data[Math.min(m.h-1,Math.max(0,Math.floor(y/h*m.h)))*m.w+Math.min(m.w-1,Math.max(0,Math.floor(x/w*m.w)))]/255:1}
+const lipWorkHistory=[],lipStrengths={'톤업':65,'베이스':65,'포인트':65};
+function captureLipWork(){return {applied:{...lipState.applied},selected:{...selected},strength:lipState.strength,strengths:{...lipStrengths},points:lipState.points?.map(p=>({...p})),slots:JSON.parse(JSON.stringify(blendSlots)),layerState:{applyMode:{...lipLayers.applyMode},order:[...lipLayers.order],hidden:[...lipLayers.hidden],auto:{...lipLayers.auto},manual:Object.fromEntries(Object.entries(lipLayers.manual).map(([k,m])=>[k,copyLipMask(m)]))},masks:Object.fromEntries(Object.entries(lipErase.masks).map(([k,m])=>[k,{w:m.w,h:m.h,data:m.data.slice()}]))}}
+function pushLipUndo(){lipWorkHistory.push(captureLipWork());let bytes=0;for(let i=lipWorkHistory.length-1;i>=0;i--){bytes+=[...Object.values(lipWorkHistory[i].masks),...Object.values(lipWorkHistory[i].layerState?.manual||{})].reduce((n,m)=>n+m.data.length,0);if(i<lipWorkHistory.length-1&&(bytes>24*1024*1024||lipWorkHistory.length-i>30)){lipWorkHistory.splice(0,i+1);break}}syncLipUndo()}
+function syncLipUndo(){const b=$('lipGlobalUndo');b.hidden=!P.naturalWidth;b.disabled=!lipWorkHistory.length}
+function undoLipWork(){if(lipErase.on){undoLipErase();return}const st=lipWorkHistory.pop();if(!st)return;lipState.applied={...st.applied};Object.assign(selected,st.selected);Object.assign(lipStrengths,st.strengths);lipState.strength=lipStrengths[group];lipState.points=st.points?.map(p=>({...p}));Object.assign(blendSlots,st.slots);lipErase.masks=st.masks;if(st.layerState)Object.assign(lipLayers,st.layerState);$('lipStrength').value=lipState.strength;$('lipStrengthValue').value=lipState.strength+'%';render();drawBoundary();paintLips();syncLipUndo()}
+$('lipGlobalUndo').onclick=undoLipWork;
+function lipEdgeProfile(t,h=+$('leh').value/100){const soft=Math.max(0,1-t),hardWidth=.85*(1-h)+.002*h,hard=t<=1-hardWidth?1:Math.max(0,(1-t)/hardWidth),blend=h<=.5?0:h<=.7?.25*(h-.5)/.2:.25+.75*(h-.7)/.3;return soft*(1-blend)+hard*blend}
+function lipBrushUI(){const d=+$('les').value,a=+$('leo').value/100,hardness=+$('leh').value/100;for(const [id,text] of [['lest',d+'px'],['leht',$('leh').value+'%'],['leot',$('leo').value+'%']])$(id).textContent=text;const stops=[];for(let i=0;i<=100;i+=2)stops.push('rgba(217,139,171,'+(a*.7*lipEdgeProfile(i/100,hardness)).toFixed(5)+') '+i+'%');const dot=$('lipEraseDot');dot.style.width=dot.style.height=d+'px';dot.style.background='radial-gradient(circle closest-side,'+stops.join(',')+')';dot.style.border='none'}
+for(const id of ['les','leh','leo'])$(id).oninput=lipBrushUI;
+function setLipBrushMode(mode){lipErase.mode=mode;for(const [id,m] of [['lePaint',lipErase.tool==='erase'?'restore':'paint'],['leErase','erase']]){$(id).classList.toggle('selected',mode===m);$(id).setAttribute('aria-pressed',String(mode===m))}lipBrushUI()}
+$('leErase').onclick=()=>setLipBrushMode('erase');
+function openLipErase(mode='erase'){
+ if(!lipState.points){lipStatus('먼저 사진의 입술 영역을 잡아 주세요.');return}
+ closeLipLayers();
+ if(!lipState.applied[group]){lipStatus('먼저 '+group+' 컬러를 선택해 주세요.');return}
+ if(lipState.editing)finishBoundary(true);
+ lipErase.tool=mode==='paint'?'paint':'erase';
+ $('lePaint').textContent=lipErase.tool==='erase'?'복원':'브러시';
+ const actions=$('lePaint').parentElement;actions.insertBefore(lipErase.tool==='erase'?$('leErase'):$('lePaint'),actions.firstElementChild);
+ lipErase.on=true;lipErase.group=group;lipErase.history=[];lipErase.pointers.clear();lipErase.stroke=null;lipErase.last=null;lipErase.pinch=null;ensureLipMask(group);
+ document.querySelector('.app').classList.add('lip-erasing');$('lipErasePanel').hidden=false;setLipBrushMode(mode);$('lipBrushTitle').textContent=group+(mode==='paint'?' · 브러시':' · 영역 지우기');$('lipBrushClear').hidden=lipErase.tool==='erase';$('leUndo').disabled=true;
+}
+function closeLipErase(){endLipEraseStroke();lipErase.on=false;lipErase.pointers.clear();lipErase.pinch=null;document.querySelector('.app').classList.remove('lip-erasing');$('lipErasePanel').hidden=true;hideLipEraseLens();flushLipPaint();syncLipUndo()}
+$('lipEraseToggle').onclick=()=>openLipErase('erase');$('lipBrushToggle').onclick=()=>{chooseLipApplyMode('brush');if(lipState.applied[group])openLipErase('paint');else{panelOpen=true;$('color-panel').hidden=false;render();lipStatus(group+' · 색을 고른 뒤 원하는 부분만 칠해 주세요.')}};$('lePaint').onclick=()=>setLipBrushMode(lipErase.tool==='erase'?'restore':'paint');$('lipBrushClear').onclick=clearLipAutoArea;$('leDone').onclick=closeLipErase;
+function undoLipErase(){endLipEraseStroke();const st=lipErase.history.pop();if(st){if(lipWorkHistory.at(-1)===st.work)lipWorkHistory.pop();restoreLipBrushSnapshot(st);paintLips();syncLipUndo()}$('leUndo').disabled=!lipErase.history.length;hideLipEraseLens()}
+$('leUndo').onclick=undoLipErase;
+function erasePhotoPoint(e){const rect=stage.getBoundingClientRect(),sw=stage.clientWidth,sh=stage.clientHeight,w=P.naturalWidth,h=P.naturalHeight,fit=Math.min(sw/w,sh/h),rw=w*fit,rh=h*fit;return{x:((e.clientX-rect.left-sw/2-panX)/zoom+sw/2-(sw-rw)/2)/rw,y:((e.clientY-rect.top-sh/2-panY)/zoom+sh/2-(sh-rh)/2)/rh,cx:e.clientX,cy:e.clientY}}
+function beginLipEraseStroke(e){pushLipUndo();const m=ensureLipMask(lipErase.group),manual=ensureLipManual(lipErase.group),saved={w:m.w,h:m.h,data:m.data.slice(),manual:copyLipMask(manual),auto:lipLayers.auto[lipErase.group],work:lipWorkHistory.at(-1)};lipErase.history.push(saved);if(lipErase.history.length>20)lipErase.history.shift();lipErase.stroke={base:m.data.slice(),paintBase:manual.data.slice()};lipErase.last=null;$('leUndo').disabled=false;lipEraseLine(erasePhotoPoint(e));showLipEraseLens(e)}
+function lipEraseDab(p){
+ const m=ensureLipMask(lipErase.group),base=lipErase.stroke?.base;if(!base)return;
+ const fit=Math.min(stage.clientWidth/P.naturalWidth,stage.clientHeight/P.naturalHeight),rx=+$('les').value/2/zoom/fit/P.naturalWidth*m.w,ry=+$('les').value/2/zoom/fit/P.naturalHeight*m.h,px=p.x*m.w,py=p.y*m.h;
+ const x0=Math.max(0,Math.floor(px-rx)),x1=Math.min(m.w,Math.ceil(px+rx)),y0=Math.max(0,Math.floor(py-ry)),y1=Math.min(m.h,Math.ceil(py+ry)),opacity=+$('leo').value/100,hardness=+$('leh').value/100,manual=lipErase.mode==='paint'?ensureLipManual(lipErase.group):null;
+ for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){const r=Math.hypot((x+.5-px)/rx,(y+.5-py)/ry);if(r>=1)continue;const i=y*m.w+x,t=opacity*lipEdgeProfile(r,hardness);if(lipErase.mode==='paint'){const pb=lipErase.stroke.paintBase;manual.data[i]=Math.max(manual.data[i],Math.round(pb[i]+(255-pb[i])*t));m.data[i]=Math.max(m.data[i],Math.round(base[i]+(255-base[i])*t));const b=manual.bounds;manual.bounds=b?[Math.min(b[0],x),Math.min(b[1],y),Math.max(b[2],x+1),Math.max(b[3],y+1)]:[x,y,x+1,y+1]}else if(lipErase.mode==='restore')m.data[i]=Math.max(m.data[i],Math.round(base[i]+(255-base[i])*t));else m.data[i]=Math.min(m.data[i],Math.round(base[i]*(1-t)))}
+}
+function lipEraseLine(p){const q=lipErase.last;if(!q)lipEraseDab(p);else{const n=Math.max(1,Math.ceil(Math.hypot(p.cx-q.cx,p.cy-q.cy)/Math.max(1,+$('les').value*.18)));for(let i=1;i<=n;i++){const t=i/n;lipEraseDab({x:q.x+(p.x-q.x)*t,y:q.y+(p.y-q.y)*t})}}lipErase.last=p;scheduleLipPaint()}
+function endLipEraseStroke(){lipErase.stroke=null;lipErase.last=null;hideLipEraseLens()}
+stage.addEventListener('pointerdown',e=>{
+ if(!lipErase.on||e.target.closest('button'))return;e.preventDefault();e.stopImmediatePropagation();
+ lipErase.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});stage.setPointerCapture(e.pointerId);
+ if(lipErase.pointers.size===1){beginLipEraseStroke(e)}
+ else{
+  // Roll back the first touch when a two-finger zoom starts.
+  if(lipErase.stroke){const prev=lipErase.history.pop();if(prev)restoreLipBrushSnapshot(prev);lipWorkHistory.pop();syncLipUndo();paintLips()}
+  endLipEraseStroke();const p=[...lipErase.pointers.values()];lipErase.pinch={distance:Math.max(1,Math.hypot(p[1].x-p[0].x,p[1].y-p[0].y)),zoom,panX,panY,x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2};
+ }
+},true);
+stage.addEventListener('pointermove',e=>{
+ if(!lipErase.on||!lipErase.pointers.has(e.pointerId))return;e.preventDefault();e.stopImmediatePropagation();lipErase.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(lipErase.pointers.size>=2&&lipErase.pinch){const p=[...lipErase.pointers.values()],st=lipErase.pinch;zoom=Math.max(1,Math.min(8,st.zoom*Math.hypot(p[1].x-p[0].x,p[1].y-p[0].y)/st.distance));panX=st.panX+(p[0].x+p[1].x)/2-st.x;panY=st.panY+(p[0].y+p[1].y)/2-st.y;setWorld();return}
+ if(lipErase.stroke){lipEraseLine(erasePhotoPoint(e));showLipEraseLens(e)}
+},true);
+function endLipErasePointer(e){if(!lipErase.on||!lipErase.pointers.has(e.pointerId))return;e.preventDefault();e.stopImmediatePropagation();lipErase.pointers.delete(e.pointerId);endLipEraseStroke();if(!lipErase.pointers.size)lipErase.pinch=null}
+stage.addEventListener('pointerup',endLipErasePointer,true);stage.addEventListener('pointercancel',endLipErasePointer,true);
+const eraseCursor=document.createElement('div');eraseCursor.id='lipEraseCursor';document.body.append(eraseCursor);
+const eraseLens=document.createElement('div');eraseLens.id='lipEraseLens';const eraseLensCanvas=document.createElement('canvas');eraseLensCanvas.width=eraseLensCanvas.height=480;eraseLens.append(eraseLensCanvas);document.body.append(eraseLens);
+function hideLipEraseLens(){eraseCursor.style.display=eraseLens.style.display='none';lipErase.lensPoint=null}
+function showLipEraseLens(e){lipErase.lensPoint={clientX:e.clientX,clientY:e.clientY};if(!lipErase.lensFrame)lipErase.lensFrame=requestAnimationFrame(()=>{lipErase.lensFrame=0;renderLipEraseLens()})}
+function renderLipEraseLens(){
+ const t=lipErase.lensPoint;if(!t||!lipErase.on||!lipErase.stroke)return;
+ const p=erasePhotoPoint(t),fit=Math.min(stage.clientWidth/P.naturalWidth,stage.clientHeight/P.naturalHeight),src=80/(zoom*fit),n=480,c=eraseLensCanvas.getContext('2d'),ix=p.x*P.naturalWidth,iy=p.y*P.naturalHeight;
+ c.clearRect(0,0,n,n);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(P,ix-src/2,iy-src/2,src,src,0,0,n,n);c.drawImage($('lipOverlay'),ix-src/2,iy-src/2,src,src,0,0,n,n);
+ const d=+$('les').value;c.beginPath();c.arc(n/2,n/2,d*3,0,Math.PI*2);c.strokeStyle='#fff';c.lineWidth=5;c.stroke();c.strokeStyle='#d98bab';c.lineWidth=2.5;c.stroke();
+ eraseCursor.style.width=eraseCursor.style.height=d+'px';eraseCursor.style.left=t.clientX+'px';eraseCursor.style.top=t.clientY+'px';eraseCursor.style.display='block';
+ eraseLens.style.left=Math.max(82,Math.min(innerWidth-82,t.clientX+100))+'px';eraseLens.style.top=Math.max(82,Math.min(innerHeight-82,t.clientY-128))+'px';eraseLens.style.display='block';
+}
+const originalScheduleLipPaint=scheduleLipPaint;
+scheduleLipPaint=function(){originalScheduleLipPaint();if(lipErase.on&&lipErase.lensPoint)showLipEraseLens(lipErase.lensPoint)};
+const previousDetectLips=detectLips;detectLips=async function(){if(lipErase.on)closeLipErase();lipErase.masks={};lipLayers.manual={};lipLayers.auto={};lipLayers.hidden=[];lipErase.history=[];lipWorkHistory.length=0;closeLipLayers();syncLipUndo();return previousDetectLips()};
+const previousStrengthInput=$('lipStrength').oninput;let strengthUndoPending=false;
+$('lipStrength').addEventListener('pointerdown',()=>{if(!strengthUndoPending){pushLipUndo();strengthUndoPending=true}});
+$('lipStrength').oninput=e=>{previousStrengthInput(e);lipStrengths[group]=lipState.strength};
+$('lipStrength').addEventListener('change',()=>{strengthUndoPending=false});
+document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>{if(lipErase.on)closeLipErase();lipState.strength=lipStrengths[group];$('lipStrength').value=lipState.strength;$('lipStrengthValue').value=lipState.strength+'%';paintLips()}));
+const oldSyncBoundaryButtons=syncBoundaryButtons;syncBoundaryButtons=function(){oldSyncBoundaryButtons();$('manualLip').hidden=true;$('lipEraseToggle').hidden=lipState.editing;$('lipBrushToggle').hidden=lipState.editing;syncLipUndo()};
+window.addEventListener('blur',()=>{endLipEraseStroke();lipErase.pointers.clear()});
+function copyLipMask(m){return m?{w:m.w,h:m.h,data:m.data.slice(),bounds:m.bounds?[...m.bounds]:null}:null}
+function ensureLipManual(kind){if(!lipLayers.manual[kind]){const m=makeLipMask();m.data.fill(0);m.bounds=null;lipLayers.manual[kind]=m}return lipLayers.manual[kind]}
+function lipManualVisibility(kind,x,y,w,h){const m=lipLayers.manual[kind];if(!m)return 0;const ix=Math.min(m.w-1,Math.max(0,Math.floor(x/w*m.w))),iy=Math.min(m.h-1,Math.max(0,Math.floor(y/h*m.h)));return m.data[iy*m.w+ix]/255}
+function restoreLipBrushSnapshot(st){lipErase.masks[lipErase.group]={w:st.w,h:st.h,data:st.data};if(st.manual)lipLayers.manual[lipErase.group]=copyLipMask(st.manual);else delete lipLayers.manual[lipErase.group];if(st.auto===undefined)delete lipLayers.auto[lipErase.group];else lipLayers.auto[lipErase.group]=st.auto}
+function clearLipAutoArea(){
+ if(!lipErase.on)return;endLipEraseStroke();pushLipUndo();const k=lipErase.group,m=ensureLipMask(k),manual=ensureLipManual(k);
+ lipErase.history.push({w:m.w,h:m.h,data:m.data.slice(),manual:copyLipMask(manual),auto:lipLayers.auto[k],work:lipWorkHistory.at(-1)});
+ if(lipErase.history.length>20)lipErase.history.shift();lipLayers.applyMode[k]='brush';lipLayers.auto[k]=false;syncLipApplyMode();manual.data.fill(0);manual.bounds=null;m.data.fill(255);$('leUndo').disabled=false;setLipBrushMode('paint');flushLipPaint();lipStatus(k+' 자동 영역을 비웠어요 · 브러시로 원하는 부분을 칠해 주세요.');
+}
+function closeLipLayers(){$('lipLayersPanel').hidden=true;$('lipLayersToggle').setAttribute('aria-expanded','false')}
+$('lipLayersToggle').onclick=()=>{if(lipErase.on)closeLipErase();const open=$('lipLayersPanel').hidden;$('lipLayersPanel').hidden=!open;$('lipLayersToggle').setAttribute('aria-expanded',String(open));if(open){$('color-panel').hidden=true;panelOpen=false;renderLipLayers()}};
+$('lipLayersClose').onclick=closeLipLayers;
+function selectLipLayer(kind){if(lipErase.on)closeLipErase();group=kind;lipState.strength=lipStrengths[kind];$('lipStrength').value=lipState.strength;$('lipStrengthValue').value=lipState.strength+'%';render();paintLips()}
+function moveLipLayer(kind,action){const order=[...lipLayers.order],i=order.indexOf(kind);if(i<0)return;const j=action==='top'?order.length-1:action==='bottom'?0:action==='up'?Math.min(order.length-1,i+1):Math.max(0,i-1);if(j===i)return;pushLipUndo();order.splice(i,1);order.splice(j,0,kind);lipLayers.order=order;renderLipLayers();paintLips()}
+for(const b of document.querySelectorAll('[data-layer-move]'))b.onclick=()=>moveLipLayer(group,b.dataset.layerMove);
+let lipLayerSuppressUntil=0;
+function renderLipLayers(){
+ const list=$('lipLayerRows');if(!list)return;list.replaceChildren();
+ [...lipLayers.order].reverse().forEach(kind=>{
+  const row=document.createElement('div');row.className='lip-layer-row'+(group===kind?' selected':'');row.dataset.layerKind=kind;
+  const select=document.createElement('button');select.className='lip-layer-select';const chip=document.createElement('span');chip.className='lip-layer-chip';chip.style.background=lipState.applied[kind]||'#fff';const label=document.createElement('span');label.textContent=kind+(lipState.applied[kind]?' · '+(lipLayers.auto[kind]===false?'브러시 영역':'컬러 적용'):' · 비어 있음');select.append(chip,label);select.onclick=()=>{if(Date.now()>=lipLayerSuppressUntil)selectLipLayer(kind)};
+  const eye=document.createElement('button');eye.textContent=lipLayers.hidden.includes(kind)?'숨김':'보임';eye.setAttribute('aria-label',kind+' 레이어 보이기/숨기기');eye.onclick=()=>{pushLipUndo();const i=lipLayers.hidden.indexOf(kind);if(i<0)lipLayers.hidden.push(kind);else lipLayers.hidden.splice(i,1);renderLipLayers();paintLips()};
+  const del=document.createElement('button');del.textContent='×';del.setAttribute('aria-label',kind+' 레이어 삭제');del.onclick=()=>{if(!lipState.applied[kind])return;pushLipUndo();delete lipState.applied[kind];delete lipErase.masks[kind];delete lipLayers.manual[kind];delete lipLayers.auto[kind];blendSlots[kind]=null;render();paintLips()};
+  row.append(select,eye,del);list.append(row);let drag=null;
+  row.addEventListener('pointerdown',e=>{if(e.target.closest('button')!==select&&!select.contains(e.target))return;drag={id:e.pointerId,y:e.clientY,moved:false,target:kind}});
+  row.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;if(Math.abs(e.clientY-drag.y)>6){drag.moved=true;row.classList.add('dragging');try{row.setPointerCapture(e.pointerId)}catch(_){}}if(!drag.moved)return;e.preventDefault();let nearest=Infinity;for(const other of list.querySelectorAll('.lip-layer-row')){const r=other.getBoundingClientRect(),d=Math.abs(e.clientY-r.top-r.height/2);if(d<nearest){nearest=d;drag.target=other.dataset.layerKind}}});
+  const finish=e=>{if(!drag||drag.id!==e.pointerId)return;const st=drag;drag=null;row.classList.remove('dragging');if(!st.moved)return;lipLayerSuppressUntil=Date.now()+400;e.preventDefault();if(e.type==='pointercancel'||st.target===kind)return;pushLipUndo();const order=[...lipLayers.order],from=order.indexOf(kind),to=order.indexOf(st.target);order.splice(from,1);order.splice(to,0,kind);lipLayers.order=order;renderLipLayers();paintLips()};
+  row.addEventListener('pointerup',finish);row.addEventListener('pointercancel',finish);
+ });
+ const photo=document.createElement('div');photo.className='lip-layer-photo';photo.textContent='원본 사진 · 고정';list.append(photo);
+ for(const b of document.querySelectorAll('[data-layer-move]')){const i=lipLayers.order.indexOf(group),up=['up','top'].includes(b.dataset.layerMove);b.disabled=up?i===lipLayers.order.length-1:i===0}
+}
+const renderBeforeLipLayers=render;render=function(){renderBeforeLipLayers();renderLipLayers()};
+const boundaryClickBeforeLayers=$('boundaryToggle').onclick;$('boundaryToggle').onclick=e=>{closeLipLayers();boundaryClickBeforeLayers(e)};
+
+
+function chooseLipApplyMode(mode){
+ if(lipErase.on)closeLipErase();
+ if(lipLayers.applyMode[group]!==mode){pushLipUndo();lipLayers.applyMode[group]=mode;
+ if(mode==='full'){lipLayers.auto[group]=true;paintLips()}
+ else if(!lipState.applied[group])lipLayers.auto[group]=false;
+ }
+ syncLipApplyMode();
+}
+function applyLipColor(kind,color){
+ if(lipLayers.applyMode[kind]==='brush'){if(!lipState.applied[kind])lipLayers.auto[kind]=false}
+ else lipLayers.auto[kind]=true;
+ lipState.applied[kind]=color;
+}
+function startSelectedLipBrush(kind){if(kind===group&&lipLayers.applyMode[kind]==='brush'&&lipState.points)openLipErase('paint')}
+$('lipApplyFull').onclick=()=>chooseLipApplyMode('full');
+$('lipApplyBrush').onclick=()=>{chooseLipApplyMode('brush');if(lipState.applied[group])openLipErase('paint');else lipStatus(group+' · 색을 고르면 브러시 창이 열려요.');};
+syncLipApplyMode();
+
+lipBrushUI();syncLipUndo();renderLipLayers();
+</script></body></html>
+
+
+
