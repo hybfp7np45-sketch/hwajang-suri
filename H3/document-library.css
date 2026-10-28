@@ -11,3 +11,7 @@
 .library-count{font-size:13px;font-weight:600;margin:14px 0 8px;color:#283b4b}
 #allForms .library-help{font-size:12px;margin:0 0 12px}
 #documentLibraryNotice:empty{display:none}
+
+#allForms .library-header-actions button,#allForms #applyHomeDocuments{background:#287cac;color:#fff;border:0;outline:0;box-shadow:none;border-radius:8px}
+#allForms .library-header-actions button:focus,#allForms .library-header-actions button:focus-visible{outline:0;box-shadow:none}
+#allForms .library-header-actions button:focus-visible{filter:brightness(.86)}
