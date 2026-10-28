@@ -26,8 +26,10 @@ form.addEventListener('submit',e=>e.preventDefault());
 byId('toPractitioner').addEventListener('click',()=>{byId('practitionerSection').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});});
 for(const input of form.querySelectorAll('input[type=tel]'))input.addEventListener('input',()=>{const digits=input.value.replace(/\D/g,'');if(digits.startsWith('010')&&digits.length===11)input.value=digits.replace(/(\d{3})(\d{4})(\d{4})/,'$1-$2-$3');});
 const canvas=()=>document.createElement('canvas');
-function layer(d){return M.renderOverlay(canvas(),M.build(type,d));}
+function layer(d){return drawing.drawTo(M.renderOverlay(canvas(),M.build(type,d)));}
 async function background(){const image=new Image();image.decoding='async';await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(new Error('원래 차트 양식을 불러오지 못했어요. 다시 시도해 주세요.'));image.src=`./charts/${type}.jpg?v=${M.VERSION}`;});return image;}
+const drawingHost=document.createElement('div');byId('practitionerFields').before(drawingHost);
+const drawing=window.ChartDrawing.create({type,host:drawingHost,onChange:invalidate,isBusy:()=>busy,loadBackground:background});
 function status(message,error=false){byId('status').textContent=message;byId('status').classList.toggle('error',error);}
 function setBusy(value){busy=value;for(const id of ['previewChart','saveChart','saveChartBottom'])byId(id).disabled=value;for(const control of form.querySelectorAll('input,textarea,button'))control.disabled=value;}
 byId('previewChart').addEventListener('click',async()=>{
