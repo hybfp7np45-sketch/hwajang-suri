@@ -16,7 +16,7 @@
     const stored = JSON.parse(localStorage.getItem(key));
     if (Array.isArray(stored) && stored.length === 6 && new Set(stored).size === 6 && stored.every(id => documents.some(doc => doc.id === id))) selected = stored;
   } catch (_) {}
-  let draft = selected.slice(), editing = false;
+  
   let menuOrder = [...selected, ...documents.map(doc => doc.id).filter(id => !selected.includes(id))];
   const byId = id => document.getElementById(id);
   const dialog = byId('allForms');
@@ -46,92 +46,46 @@
     }));
   }
   function renderLibrary(focusId, direction) {
-    const order = editing ? draft : menuOrder.slice(0, 6);
-    byId('selectionCount').textContent = editing ? `홈 표시 ${draft.length} / 6개` : `모든 문서 ${documents.length}개`;
-    byId('editHomeDocuments').textContent = '홈 표시 선택';
-    byId('applyHomeDocuments').hidden = editing;
-    byId('saveDocumentSelection').textContent = '완료';
-    byId('editHomeDocuments').hidden = editing;
-    byId('documentSelectionActions').hidden = !editing;
-    byId('documentSelectionMessage').textContent = editing ? (draft.length === 6 ? '완료를 누르면 전체보기로 돌아갑니다.' : '홈에 표시할 문서를 6개 선택해 주세요.') : '';
-    byId('saveDocumentSelection').disabled = draft.length !== 6;
+    byId('selectionCount').textContent = `모든 문서 ${documents.length}개`;
     const list = byId('documentLibraryList'); list.replaceChildren();
-    const heading = text => { const h = document.createElement('h3'); h.className = 'document-group-title'; h.textContent = text; list.append(h); };
-    heading(`홈에 표시할 문서 ${order.length}개`);
-    const sorted = editing ? [...order, ...menuOrder.filter(id => !order.includes(id))].map(id => documents.find(doc => doc.id === id)) : menuOrder.map(id => documents.find(doc => doc.id === id));
-    sorted.forEach((doc, index) => {
-      if (index === order.length) heading('홈에 표시하지 않는 문서');
-      const position = order.indexOf(doc.id);
-      const row = document.createElement('div'); row.className = 'document-row'; row.dataset.document = doc.id;
-      const title = document.createElement('span'); title.className = 'document-title'; title.textContent = doc.title;
-      if (editing) {
-        const label = document.createElement('label'); label.className = 'document-choice';
-        const input = document.createElement('input'); input.type = 'checkbox'; input.checked = position !== -1;
-        input.setAttribute('aria-label', doc.title + ' 홈 표시');
-        input.addEventListener('change', () => {
-          if (input.checked && draft.length >= 6) {
-            input.checked = false;
-            byId('documentSelectionMessage').textContent = '최대 6개까지 표시할 수 있어요. 다른 문서를 먼저 해제해 주세요.';
-            return;
-          }
-          draft = input.checked ? [...draft, doc.id] : draft.filter(id => id !== doc.id);
-          renderLibrary(doc.id);
-        });
-        label.append(input); if (position !== -1) label.append(homeMark(position)); label.append(title); row.append(label);
-        if (position !== -1) {
-          const controls = document.createElement('div'); controls.className = 'document-order';
-          const number = document.createElement('span'); number.textContent = position + 1; number.className = 'document-position'; controls.append(number);
-          [['up','↑',-1],['down','↓',1]].forEach(([name, text, offset]) => {
-            const button = document.createElement('button'); button.type = 'button'; button.textContent = text; button.dataset.direction = name;
-            button.setAttribute('aria-label', doc.title + (offset < 0 ? ' 위로 이동' : ' 아래로 이동'));
-            button.disabled = position + offset < 0 || position + offset >= order.length;
-            button.addEventListener('click', () => {
-              [draft[position], draft[position + offset]] = [draft[position + offset], draft[position]];
-              renderLibrary(doc.id, name);
-            }); controls.append(button);
-          }); row.append(controls);
-        }
-      } else {
-        const a = document.createElement('a'); a.href = doc.href;
-        if (position !== -1) a.append(homeMark(position)); a.append(title); row.append(a);
-        const controls = document.createElement('div'); controls.className = 'document-order';
-        [['up','↑',-1],['down','↓',1]].forEach(([name,text,offset]) => {
-          const button = document.createElement('button'); button.type = 'button'; button.textContent = text; button.dataset.direction = name;
-          button.setAttribute('aria-label', doc.title + (offset < 0 ? ' 위로 이동' : ' 아래로 이동'));
-          button.disabled = index + offset < 0 || index + offset >= menuOrder.length;
-          button.addEventListener('click', () => {
-            [menuOrder[index], menuOrder[index + offset]] = [menuOrder[index + offset], menuOrder[index]];
-            byId('documentLibraryNotice').textContent = '순서를 바꿨어요. 홈에 적용을 누르면 저장됩니다.';
-            renderLibrary(doc.id,name);
-          }); controls.append(button);
-        }); row.append(controls);
+    menuOrder.forEach((id, index) => {
+      const doc = documents.find(item => item.id === id);
+      if (index === 6) {
+        const h = document.createElement('h3'); h.className = 'document-group-title';
+        h.textContent = '홈에 표시하지 않는 문서'; list.append(h);
       }
-      list.append(row);
+      const row = document.createElement('div'); row.className = 'document-row'; row.dataset.document = id;
+      const a = document.createElement('a'); a.href = doc.href;
+      if (index < 6) a.append(homeMark(index));
+      const title = document.createElement('span'); title.className = 'document-title'; title.textContent = doc.title;
+      a.append(title); row.append(a);
+      const controls = document.createElement('div'); controls.className = 'document-order';
+      [['up','↑',-1],['down','↓',1]].forEach(([name,label,offset]) => {
+        const button = document.createElement('button'); button.type = 'button'; button.textContent = label; button.dataset.direction = name;
+        button.setAttribute('aria-label',doc.title + (offset < 0 ? ' 위로 이동' : ' 아래로 이동'));
+        button.disabled = index + offset < 0 || index + offset >= menuOrder.length;
+        button.addEventListener('click', () => {
+          [menuOrder[index], menuOrder[index+offset]] = [menuOrder[index+offset], menuOrder[index]];
+          byId('documentLibraryNotice').textContent = '';
+          renderLibrary(id,name);
+        }); controls.append(button);
+      });
+      row.append(controls); list.append(row);
     });
     if (focusId) {
       const row = list.querySelector(`[data-document="${focusId}"]`);
-      const target = direction ? row.querySelector(`[data-direction="${direction}"]:not(:disabled)`) || row.querySelector('.document-order button:not(:disabled)') : row.querySelector('input');
+      const target = row.querySelector(`[data-direction="${direction}"]:not(:disabled)`) || row.querySelector('button:not(:disabled)');
       if (target) target.focus({preventScroll:true});
     }
   }
-  function resetMenu() {
-    menuOrder = [...selected, ...documents.map(doc => doc.id).filter(id => !selected.includes(id))];
-    draft = selected.slice(); editing = false;
-  }
-  byId('openDocumentLibrary').addEventListener('click', () => { resetMenu(); byId('documentLibraryNotice').textContent = ''; renderLibrary(); dialog.showModal(); });
-  byId('closeDocumentLibrary').addEventListener('click', () => dialog.close());
-  byId('editHomeDocuments').addEventListener('click', () => { editing = true; draft = menuOrder.slice(0,6); renderLibrary(); });
-  byId('cancelDocumentSelection').addEventListener('click', () => { editing = false; renderLibrary(); });
-  byId('saveDocumentSelection').addEventListener('click', () => {
-    if (draft.length !== 6) return;
-    menuOrder = [...draft, ...menuOrder.filter(id => !draft.includes(id))];
-    editing = false; renderLibrary();
-    byId('documentLibraryNotice').textContent = '선택을 마쳤어요. 순서를 확인한 뒤 홈에 적용해 주세요.';
-    byId('applyHomeDocuments').focus();
+  byId('openDocumentLibrary').addEventListener('click', () => {
+    menuOrder = [...selected,...documents.map(doc => doc.id).filter(id => !selected.includes(id))];
+    byId('documentLibraryNotice').textContent = ''; renderLibrary(); dialog.showModal();
   });
+  byId('closeDocumentLibrary').addEventListener('click', () => dialog.close());
   byId('applyHomeDocuments').addEventListener('click', () => {
     const next = menuOrder.slice(0,6);
-    try { localStorage.setItem(key, JSON.stringify(next)); }
+    try { localStorage.setItem(key,JSON.stringify(next)); }
     catch (_) { byId('documentLibraryNotice').textContent = '저장하지 못했어요. 다시 시도해 주세요.'; return; }
     selected = next; renderHome(); renderLibrary();
     byId('documentLibraryNotice').textContent = '선택한 6개와 순서를 홈에 적용했어요.';
