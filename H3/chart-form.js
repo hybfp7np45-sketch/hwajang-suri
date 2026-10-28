@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const M=window.ChartModel,byId=id=>document.getElementById(id);
-const type=new URLSearchParams(location.search).get('type'),config=M.configs[type];
+const type=new URLSearchParams(location.search).get('type'),config=Object.hasOwn(M.configs,type)?M.configs[type]:null;
 if(!config){byId('main').textContent='차트를 찾을 수 없습니다. 홈에서 다시 선택해 주세요.';document.querySelectorAll('header button').forEach(b=>b.hidden=true);return;}
 document.title=config.title+' · 화장수리';byId('chartTitle').textContent=config.title;
 const form=byId('chartForm'),allFields=M.fieldsFor(type);
