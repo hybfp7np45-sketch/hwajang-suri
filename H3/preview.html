@@ -1,28 +1,24 @@
 <!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>화장수리 · 미리보기</title>
-<style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;background:#fff}
-body{display:flex;flex-direction:column;height:100dvh}
-nav{flex:none;min-height:44px;padding:calc(5px + env(safe-area-inset-top)) 12px 5px;display:flex;align-items:center;gap:12px;background:#f1f9ff;border-bottom:1px solid #dcecf5}
-a{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:5px 10px;border-radius:10px;text-decoration:none;background:#fff;color:#285d7c;font-size:14px;font-weight:650}
-a svg{width:19px;height:19px}span{font-size:13px;color:#607c8d}
-iframe{display:block;width:100%;flex:1;min-height:0;border:0;background:#fff}
-</style>
-</head>
-<body>
-<nav aria-label="홈 이동"><a href="./index.html" aria-label="H3 홈으로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9"/></svg>홈으로</a><span id="name"></span></nav>
-<iframe id="preview" title="미리보기" allow="camera; fullscreen" allowfullscreen></iframe>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>화장수리 · 미리보기</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff}iframe{display:block;width:100%;height:100%;height:100dvh;border:0}</style></head>
+<body><iframe id="preview" title="미리보기" allow="camera; fullscreen" allowfullscreen></iframe>
 <script>
 const lip=new URLSearchParams(location.search).get('type')==='lip';
 const label=lip?'입술 컬러 미리보기':'눈썹 디자인 미리보기';
 document.title='화장수리 · '+label;
-document.getElementById('name').textContent=label;
 const frame=document.getElementById('preview');
 frame.title=label;
+frame.addEventListener('load',()=>{
+ const doc=frame.contentDocument;
+ if(!doc||doc.getElementById('h3-home'))return;
+ const camera=doc.querySelector('header button[aria-label="촬영"]');
+ if(!camera)return;
+ const home=doc.createElement('button');
+ home.type='button';home.id='h3-home';home.className=camera.className;
+ home.setAttribute('aria-label','홈으로 돌아가기');home.title='홈으로 돌아가기';
+ home.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9"/></svg>';
+ home.addEventListener('click',()=>{location.href='./index.html';});
+ camera.before(home);
+});
 frame.src=lip?'../L1/index.html?v=61f92555':'../v18.8/index.html?v=0bb2abf3';
-</script>
-</body></html>
+</script></body></html>
