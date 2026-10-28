@@ -22,10 +22,10 @@
   const dialog = byId('allForms');
   const icons = {'consent': '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4h17l10 10v29H12a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3Z"/><path d="M29 4v11h10M16 23h16M16 30h16"/></svg>', 'record': '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M30 10h5a3 3 0 0 1 3 3v11M33 42H9V10h8M17 10V6h5a4 4 0 0 1 8 0h4v6H17Z"/><path d="M15 21h3m5 0h8M15 28h3m5 0h5M23 40l2-9 13-13 6 6-13 13-8 3ZM35 21l6 6"/></svg>', 'minor': '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="19" cy="14" r="9"/><path d="M3 42v-4a16 16 0 0 1 32 0v4H3ZM32 7a8 8 0 0 1 0 16m5 5a13 13 0 0 1 8 12v2h-6"/></svg>'};
   const svg = paths => `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
-  icons.brow = '<svg viewBox="0 0 29 35" aria-hidden="true"><image href="./assets/brow-selected.svg" width="29" height="35"/></svg>';
-  icons.scalp = '<svg viewBox="0 0 29 35" aria-hidden="true"><image href="./assets/scalp-selected.svg" width="29" height="35"/></svg>';
+  icons.brow = '<svg viewBox="0 0 29 35" aria-hidden="true"><image href="./assets/brow-selected.svg?v=2" width="29" height="35"/></svg>';
+  icons.scalp = '<svg viewBox="0 0 29 35" aria-hidden="true"><image href="./assets/scalp-selected.svg?v=2" width="29" height="35"/></svg>';
   icons.lip = svg('<path d="M4 25c8-4 13-13 20-7 7-6 12 3 20 7-9 16-31 16-40 0Z"/><path d="M4 25c12 3 28 3 40 0"/>');
-  icons.eyeliner = '<svg viewBox="0 0 29 35" aria-hidden="true"><image href="./assets/eyeliner-selected.svg" width="29" height="35"/></svg>';
+  icons.eyeliner = '<svg viewBox="0 0 29 35" aria-hidden="true"><image href="./assets/eyeliner-selected.svg?v=2" width="29" height="35"/></svg>';
   function documentIcon(id) {
     const symbol = document.createElement('span'); symbol.className = 'form-icon'; symbol.innerHTML = icons[id]; return symbol;
   }
@@ -84,7 +84,8 @@
     try { localStorage.setItem(key,JSON.stringify(next)); }
     catch (_) { byId('documentLibraryNotice').textContent = '저장하지 못했어요. 다시 시도해 주세요.'; return; }
     selected = next; renderHome(); renderLibrary();
-    byId('documentLibraryNotice').textContent = '선택한 6개와 순서를 홈에 적용했어요.';
+    byId('documentLibraryNotice').textContent = '';
+    dialog.close();
   });
   renderHome();
 })();
