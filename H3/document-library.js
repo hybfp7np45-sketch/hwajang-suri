@@ -50,10 +50,6 @@
     const list = byId('documentLibraryList'); list.replaceChildren();
     menuOrder.forEach((id, index) => {
       const doc = documents.find(item => item.id === id);
-      if (index === 6) {
-        const h = document.createElement('h3'); h.className = 'document-group-title';
-        h.textContent = '홈에 표시하지 않는 문서'; list.append(h);
-      }
       const row = document.createElement('div'); row.className = 'document-row'; row.dataset.document = id;
       const a = document.createElement('a'); a.href = doc.href;
       if (index < 6) a.append(homeMark(index));
