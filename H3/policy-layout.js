@@ -8,7 +8,7 @@ for(const el of [...paper.children]){
  else if(section&&!el.classList.contains('notice'))section.append(el);
 }
 for(const p of paper.querySelectorAll('.policy-section>p')){
- p.className='policy-copy';p.dataset.label=termLabel(p.textContent);
+ p.className='policy-copy';p.dataset.label=p.dataset.label||termLabel(p.textContent);
  const label=document.createElement('strong');label.className='policy-term-label';label.textContent=p.dataset.label;
  const text=document.createElement('span');text.className='policy-term-text';
  for(const sentence of p.textContent.replace(/^(목적|항목):\s*/,'').split(/(?<=\.)\s+/)){const line=document.createElement('span');line.textContent=sentence;text.append(line);}
@@ -39,7 +39,7 @@ window.renderPolicyPdf=async()=>{
  function signatures(el){ensure(190);line(L,y,R,'#829ba9');draw(['동의일: '+(el.querySelector('input')?.value||'        년       월       일')],L,y+14,20);y+=57;const sigs=[...el.querySelectorAll('.sig')],width=CW/sigs.length;for(let i=0;i<sigs.length;i++){const x=L+i*width;ctx.strokeStyle='#bdcdd7';ctx.strokeRect(x,y,width,112);draw([sigs[i].closest('.signrow').querySelector('span').textContent],x+15,y+13,19,true);const image=sigs[i].querySelector('img');if(image){const ratio=Math.min((width-175)/image.naturalWidth,75/image.naturalHeight),w=image.naturalWidth*ratio,h=image.naturalHeight*ratio;ctx.drawImage(image,x+158+(width-175-w)/2,y+30,w,h);}else draw(['(서명)'],x+width-90,y+73,18,false,'#7a8f9c');}y+=130;}
  page();
  for(const section of paper.querySelectorAll('.policy-section')){
-  const h=section.querySelector('h2');if(h.dataset.number==='03'&&['photoRecord','photoUse'].includes(new URLSearchParams(location.search).get('type')))page();heading(h.textContent,h.dataset.number);
+  const h=section.querySelector('h2');heading(h.textContent,h.dataset.number);
   for(const el of section.children){if(el===h)continue;if(el.classList.contains('fields'))fields(el);else if(el.classList.contains('policy-copy'))term(el);else if(el.classList.contains('policy-choice'))choice(el);else if(el.classList.contains('signblock'))signatures(el);}
   y+=10;
  }
@@ -47,3 +47,4 @@ window.renderPolicyPdf=async()=>{
  return pdf.save();
 };
 })();
+
