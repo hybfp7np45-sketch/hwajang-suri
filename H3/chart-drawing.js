@@ -44,9 +44,11 @@ window.ChartDrawing={create({type,host,onChange,isBusy,loadBackground,customPage
    fingers.set(e.pointerId,{x:e.clientX,y:e.clientY});
    if(fingers.size>=2){e.preventDefault();e.stopImmediatePropagation();const v=views[firstState.view];v.strokes.length=firstState.strokes;v.history.length=firstState.history;finish();redraw();blocked=true;const p=geometry();gesture={...p,zoom,tx,ty};lockScroll();for(const id of fingers.keys())board.setPointerCapture(id);}
    else if(blocked){e.preventDefault();e.stopImmediatePropagation();}
+   else if(panel.hidden){e.preventDefault();e.stopImmediatePropagation();board.setPointerCapture(e.pointerId);}
   },true);
   board.addEventListener('pointermove',e=>{
-   if(!fingers.has(e.pointerId))return;fingers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   if(!fingers.has(e.pointerId))return;const previous=fingers.get(e.pointerId);fingers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   if(!blocked&&panel.hidden&&fingers.size===1){e.preventDefault();e.stopImmediatePropagation();window.scrollBy({top:previous.y-e.clientY,left:0,behavior:'instant'});return;}
    if(!blocked)return;e.preventDefault();e.stopImmediatePropagation();if(fingers.size>=2&&gesture){const p=geometry(),next=Math.max(1,Math.min(6,gesture.zoom*p.d/gesture.d));tx=p.x-(gesture.x-gesture.tx)*next/gesture.zoom;ty=p.y-(gesture.y-gesture.ty)*next/gesture.zoom;zoom=next;transform();}
   },true);
   function endGesture(e){if(!fingers.has(e.pointerId))return;const wasBlocked=blocked;fingers.delete(e.pointerId);if(wasBlocked){e.preventDefault();e.stopImmediatePropagation();if(board.hasPointerCapture(e.pointerId))board.releasePointerCapture(e.pointerId);if(fingers.size<2)gesture=null;if(!fingers.size){blocked=false;firstState=null;unlockScroll();}}}
