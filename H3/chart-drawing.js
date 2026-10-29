@@ -28,7 +28,7 @@ window.ChartDrawing={create({type,host,onChange,isBusy,loadBackground,customPage
  panel.addEventListener('dblclick',e=>{if(!e.target.closest?.('input,button')){e.preventDefault();setPanel(false);}});
  board.style.touchAction='pan-y';stage.dataset.drawing='false';
  // Only consume touch gestures while the brush popup (drawing mode) is open.
- for(const event of ['touchstart','touchmove'])board.addEventListener(event,e=>{if(!panel.hidden&&e.cancelable)e.preventDefault();},{passive:false});
+ for(const event of ['touchstart','touchmove'])board.addEventListener(event,e=>{if((customPage||!panel.hidden)&&e.cancelable)e.preventDefault();},{passive:false});
  let previousTap=null,strokeStarted=0;
  if(customPage){
   const viewport=document.createElement('div');viewport.className='document-viewport';stage.insertBefore(viewport,board);viewport.append(board);
@@ -48,7 +48,7 @@ window.ChartDrawing={create({type,host,onChange,isBusy,loadBackground,customPage
   },true);
   board.addEventListener('pointermove',e=>{
    if(!fingers.has(e.pointerId))return;const previous=fingers.get(e.pointerId);fingers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-   if(!blocked&&panel.hidden&&fingers.size===1){e.preventDefault();e.stopImmediatePropagation();tx+=e.clientX-previous.x;ty+=e.clientY-previous.y;transform();return;}
+   if(!blocked&&panel.hidden&&fingers.size===1){e.preventDefault();e.stopImmediatePropagation();if(zoom===1){window.scrollBy({top:previous.y-e.clientY,left:0,behavior:'instant'});}else{tx+=e.clientX-previous.x;ty+=e.clientY-previous.y;transform();}return;}
    if(!blocked)return;e.preventDefault();e.stopImmediatePropagation();if(fingers.size>=2&&gesture){const p=geometry(),next=Math.max(1,Math.min(6,gesture.zoom*p.d/gesture.d));tx=p.x-(gesture.x-gesture.tx)*next/gesture.zoom;ty=p.y-(gesture.y-gesture.ty)*next/gesture.zoom;zoom=next;transform();}
   },true);
   function endGesture(e){if(!fingers.has(e.pointerId))return;const wasBlocked=blocked,wasScrolling=panel.hidden&&!blocked;fingers.delete(e.pointerId);if(wasScrolling){e.preventDefault();e.stopImmediatePropagation();if(board.hasPointerCapture(e.pointerId))board.releasePointerCapture(e.pointerId);if(!fingers.size)firstState=null;return;}if(wasBlocked){e.preventDefault();e.stopImmediatePropagation();if(board.hasPointerCapture(e.pointerId))board.releasePointerCapture(e.pointerId);if(fingers.size<2)gesture=null;if(!fingers.size){blocked=false;firstState=null;unlockScroll();}}}
