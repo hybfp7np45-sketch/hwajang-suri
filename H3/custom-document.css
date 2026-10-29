@@ -4,3 +4,6 @@
 
 /* Compact header actions: reduce minimum height by 30% and use smaller labels. */
 header .actions{gap:6px}header .actions button{font-size:12px;line-height:1.4;min-height:30.8px;padding:5px 9px;border-radius:7px}
+
+/* Drag only the document, with a stable tool frame and no page scroll chaining. */
+.custom-page .document-viewport{max-height:62svh;overscroll-behavior:none;contain:layout paint}.custom-page .drawing-stage{overscroll-behavior:none}.custom-page .drawing-tools{touch-action:manipulation}
