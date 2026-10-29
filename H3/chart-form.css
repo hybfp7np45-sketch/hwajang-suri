@@ -13,3 +13,6 @@
 
 /* Reduce only tool button boxes by 20%; keep 28px glyphs unchanged. */
 .drawing-stage .brush-toggle,.drawing-stage .eraser-toggle,.drawing-stage .draw-undo{width:36.8px;height:36.8px;min-height:36.8px;padding:3.4px;border-radius:8px;opacity:1;background-color:#fff}.drawing-stage .brush-toggle[aria-expanded=true],.drawing-stage .eraser-toggle[aria-expanded=true]{background-color:#287fa9}.drawing-stage .draw-undo{right:54.8px}.drawing-stage .draw-undo:disabled{opacity:1;background-color:#fff;color:#246b98}
+
+/* Nine colors: circles 10% smaller, 15% on narrow phones. */
+.drawing-stage .drawing-tools{width:min(310px,calc(100% - 12px));left:6px;background:#e0f1fc;border-color:#aacfe7}.drawing-stage .drawing-tools[data-tool=eraser]{left:auto;right:6px}.drawing-tools .drawing-colors{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:2px;align-items:center}.drawing-tools .color-swatch{width:100%;min-width:0;height:32px;min-height:32px;padding:2px;background:transparent;display:grid;place-items:center}.drawing-tools .color-swatch::before{width:20.7px;height:20.7px;box-sizing:border-box}.drawing-tools .color-swatch[aria-pressed=true]{box-shadow:none}@media(max-width:360px){.drawing-tools .drawing-colors{gap:1px}.drawing-tools .color-swatch{padding:0;height:30px;min-height:30px}.drawing-tools .color-swatch::before{width:19.55px;height:19.55px}}
