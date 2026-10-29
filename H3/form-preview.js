@@ -22,7 +22,7 @@ dialog.addEventListener('close',unlock);
 dialog.querySelector('#closeFormPreview').addEventListener('click',()=>dialog.close());
 button.addEventListener('click',async()=>{
  if(busy)return;busy=true;
- const controls=[button,document.getElementById('print'),document.getElementById('download')];
+ const controls=[button,document.getElementById('print')];
  const previous=controls.map(x=>x.disabled);controls.forEach(x=>x.disabled=true);
  status.textContent='작성본 미리보기를 만들고 있어요…';let pdf;
  try{
