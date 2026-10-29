@@ -1,14 +1,14 @@
 (async () => {
   'use strict';
   const documents = [
-    {id:'consent', title:'시술 동의서', kind:'동의서', href:'./forms.html?v=form-preview1&type=consent'},
-    {id:'health', title:'건강상태 확인서', kind:'확인서', href:'./forms.html?v=form-preview1&type=health'},
-    {id:'privacy',title:'개인정보 수집·이용 동의서',kind:'동의서',href:'./forms.html?v=form-preview1&type=privacy'},
-    {id:'photoRecord',title:'기록용 촬영·보관 동의서',kind:'동의서',href:'./forms.html?v=form-preview1&type=photoRecord'},
-    {id:'photoUse',title:'교육·홍보 활용 동의서',kind:'동의서',href:'./forms.html?v=form-preview1&type=photoUse'},
-    {id:'photoDiscount',title:'할인 조건 교육·홍보 활용 동의서',kind:'동의서',href:'./forms.html?v=form-preview1&type=photoDiscount'},
-    {id:'record', title:'시술 기록지', kind:'기록지', href:'./forms.html?v=form-preview1&type=record'},
-    {id:'minor', title:'미성년자 동의서', kind:'동의서', href:'./forms.html?v=form-preview1&type=minor'},
+    {id:'consent', title:'시술 동의서', kind:'동의서', href:'./forms.html?v=policy-layout1&type=consent'},
+    {id:'health', title:'건강상태 확인서', kind:'확인서', href:'./forms.html?v=policy-layout1&type=health'},
+    {id:'privacy',title:'개인정보 수집·이용 동의서',kind:'동의서',href:'./forms.html?v=policy-layout1&type=privacy'},
+    {id:'photoRecord',title:'기록용 촬영·보관 동의서',kind:'동의서',href:'./forms.html?v=policy-layout1&type=photoRecord'},
+    {id:'photoUse',title:'교육·홍보 활용 동의서',kind:'동의서',href:'./forms.html?v=policy-layout1&type=photoUse'},
+    {id:'photoDiscount',title:'할인 조건 교육·홍보 활용 동의서',kind:'동의서',href:'./forms.html?v=policy-layout1&type=photoDiscount'},
+    {id:'record', title:'시술 기록지', kind:'기록지', href:'./forms.html?v=policy-layout1&type=record'},
+    {id:'minor', title:'미성년자 동의서', kind:'동의서', href:'./forms.html?v=policy-layout1&type=minor'},
     {id:'brow', title:'눈썹 상담차트', kind:'상담차트', href:'./chart.html?type=brow'},
     {id:'scalp', title:'두피 · 헤어라인 상담차트', kind:'상담차트', href:'./chart.html?type=scalp'},
     {id:'lip', title:'입술 상담차트', kind:'상담차트', href:'./chart.html?type=lip'},
@@ -106,5 +106,6 @@
   byId('customNameForm').addEventListener('submit',async e=>{e.preventDefault();if(!pending)return;const title=byId('customDocumentName').value.trim();if(!title){byId('customNameNotice').textContent='문서 이름을 입력해 주세요.';return;}const button=byId('saveCustomImport');button.disabled=true;try{const id='custom-'+crypto.randomUUID(),entry={id,title,mime:pending.mime,pageCount:pending.pageCount,blob:pending.file,createdAt:Date.now()};await CustomDocuments.put(entry);documents.push({id,title,kind:'내 문서',custom:true,href:'./custom-document.html?v=document-pan8&id='+encodeURIComponent(id)});menuOrder.push(id);pending=null;nameDialog.close();renderLibrary();byId('documentLibraryNotice').textContent='문서를 추가했어요. 화살표로 위로 올린 뒤 홈에 적용해 주세요.';}catch(e){byId('customNameNotice').textContent=e.message;}finally{button.disabled=false;}});
   renderHome();
 })();
+
 
 
