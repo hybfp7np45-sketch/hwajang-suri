@@ -1,7 +1,8 @@
 (async () => {
   'use strict';
   const documents = [
-    {id:'consent', title:'시술 동의서 & 건강상태 확인서', kind:'동의서', href:'./customer-forms.html'},
+    {id:'consent', title:'시술 동의서', kind:'동의서', href:'./forms.html?type=consent'},
+    {id:'health', title:'건강상태 확인서', kind:'확인서', href:'./forms.html?type=health'},
     {id:'record', title:'시술 기록지', kind:'기록지', href:'./forms.html?type=record'},
     {id:'minor', title:'미성년자 동의서', kind:'동의서', href:'./forms.html?type=minor'},
     {id:'brow', title:'눈썹 상담차트', kind:'상담차트', href:'./chart.html?type=brow'},
@@ -39,7 +40,7 @@
   function renderHome() {
     byId('homeDocuments').replaceChildren(...selected.map(id => {
       const doc = documents.find(item => item.id === id);
-      const a = document.createElement('a'); a.className = 'item form-card' + (id === 'consent' ? ' combined' : ''); a.href = doc.href; a.dataset.document = id;if(doc.custom)a.classList.add('custom-document');
+      const a = document.createElement('a'); a.className = 'item form-card'; a.href = doc.href; a.dataset.document = id;if(doc.custom)a.classList.add('custom-document');
       const symbol = documentIcon(id);
       const title = document.createElement('strong'); title.textContent = doc.title;
       const arrow = document.createElement('span'); arrow.className = 'document-chevron'; arrow.textContent = '›'; arrow.setAttribute('aria-hidden','true');
