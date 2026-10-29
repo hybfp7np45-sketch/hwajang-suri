@@ -1,4 +1,4 @@
-(() => {
+(async () => {
   'use strict';
   const documents = [
     {id:'consent', title:'시술 동의서 & 건강상태 확인서', kind:'동의서', href:'./customer-forms.html'},
@@ -9,6 +9,7 @@
     {id:'lip', title:'입술 상담차트', kind:'상담차트', href:'./chart.html?type=lip'},
     {id:'eyeliner', title:'아이라인 상담차트', kind:'상담차트', href:'./chart.html?type=eyeliner'}
   ];
+  try {const stored=await CustomDocuments.all();stored.sort((a,b)=>a.createdAt-b.createdAt);documents.push(...stored.map(item=>({id:item.id,title:item.title,kind:'내 문서',custom:true,href:'./custom-document.html?id='+encodeURIComponent(item.id)})));}catch(e){document.getElementById('documentLibraryNotice').textContent=e.message;}
   const key = 'hwajang-suri-h3-home-documents-v1';
   const defaults = ['consent','record','brow','scalp','lip','eyeliner'];
   let selected = defaults.slice();
@@ -27,7 +28,7 @@
   icons.lip = svg('<path d="M4 25c8-4 13-13 20-7 7-6 12 3 20 7-9 16-31 16-40 0Z"/><path d="M4 25c12 3 28 3 40 0"/>');
   icons.eyeliner = '<svg viewBox="0 0 29 35" aria-hidden="true"><image href="./assets/eyeliner-selected.svg?v=2" width="29" height="35"/></svg>';
   function documentIcon(id) {
-    const symbol = document.createElement('span'); symbol.className = 'form-icon'; symbol.innerHTML = icons[id]; return symbol;
+    const symbol = document.createElement('span'); symbol.className = 'form-icon'; symbol.innerHTML = icons[id] || icons.consent; return symbol;
   }
   function homeMark(position) {
     const mark = document.createElement('span'); mark.className = 'home-mark';
@@ -38,7 +39,7 @@
   function renderHome() {
     byId('homeDocuments').replaceChildren(...selected.map(id => {
       const doc = documents.find(item => item.id === id);
-      const a = document.createElement('a'); a.className = 'item form-card' + (id === 'consent' ? ' combined' : ''); a.href = doc.href; a.dataset.document = id;
+      const a = document.createElement('a'); a.className = 'item form-card' + (id === 'consent' ? ' combined' : ''); a.href = doc.href; a.dataset.document = id;if(doc.custom)a.classList.add('custom-document');
       const symbol = documentIcon(id);
       const title = document.createElement('strong'); title.textContent = doc.title;
       const arrow = document.createElement('span'); arrow.className = 'document-chevron'; arrow.textContent = '›'; arrow.setAttribute('aria-hidden','true');
@@ -50,7 +51,7 @@
     const list = byId('documentLibraryList'); list.replaceChildren();
     menuOrder.forEach((id, index) => {
       const doc = documents.find(item => item.id === id);
-      const row = document.createElement('div'); row.className = 'document-row'; row.dataset.document = id;
+      const row = document.createElement('div'); row.className = 'document-row'; row.dataset.document = id;if(doc.custom)row.classList.add('custom-document');
       const a = document.createElement('a'); a.href = doc.href;
       if (index < 6) a.append(homeMark(index));
       const title = document.createElement('span'); title.className = 'document-title'; title.textContent = doc.title;
@@ -87,5 +88,17 @@
     byId('documentLibraryNotice').textContent = '';
     dialog.close();
   });
+  const importButton=byId('importCustomDocument'),fileInput=byId('customDocumentFile'),nameDialog=byId('customNameDialog');let pending=null;
+  importButton.addEventListener('click',()=>{fileInput.value='';fileInput.click();});
+  byId('cancelCustomImport').addEventListener('click',()=>{pending=null;nameDialog.close();});
+  nameDialog.addEventListener('cancel',()=>{pending=null;});
+  fileInput.addEventListener('change',async()=>{const file=fileInput.files[0];if(!file)return;importButton.disabled=true;byId('documentLibraryNotice').textContent='원본을 확인하고 있어요…';try{
+    if(file.size>40*1024*1024)throw new Error('40MB 이하 파일을 선택해 주세요.');let mime=file.type,pageCount=1;
+    if(/\.pdf$/i.test(file.name)||mime==='application/pdf'){const doc=await PDFLib.PDFDocument.load(await file.arrayBuffer());pageCount=doc.getPageCount();if(!pageCount)throw new Error('비어 있는 PDF예요.');if(pageCount>30)throw new Error('30장 이하 PDF를 선택해 주세요.');mime='application/pdf';}
+    else {if(!/\.(png|jpe?g)$/i.test(file.name)&&!['image/png','image/jpeg'].includes(mime))throw new Error('PDF, PNG, JPG 파일을 선택해 주세요.');const url=URL.createObjectURL(file);try{const image=new Image();await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(new Error('이미지를 열 수 없어요. PNG 또는 JPG 파일을 확인해 주세요.'));image.src=url;});}finally{URL.revokeObjectURL(url);}mime=/\.png$/i.test(file.name)||mime==='image/png'?'image/png':'image/jpeg';}
+    pending={file,mime,pageCount};byId('customDocumentName').value=file.name.replace(/\.[^.]+$/,'');byId('documentLibraryNotice').textContent='';byId('customNameNotice').textContent='';nameDialog.showModal();
+  }catch(e){byId('documentLibraryNotice').textContent=e.message.includes('encrypted')?'암호가 없는 PDF로 다시 저장한 뒤 불러와 주세요.':e.message;}finally{importButton.disabled=false;}});
+  byId('customNameForm').addEventListener('submit',async e=>{e.preventDefault();if(!pending)return;const title=byId('customDocumentName').value.trim();if(!title){byId('customNameNotice').textContent='문서 이름을 입력해 주세요.';return;}const button=byId('saveCustomImport');button.disabled=true;try{const id='custom-'+crypto.randomUUID(),entry={id,title,mime:pending.mime,pageCount:pending.pageCount,blob:pending.file,createdAt:Date.now()};await CustomDocuments.put(entry);documents.push({id,title,kind:'내 문서',custom:true,href:'./custom-document.html?id='+encodeURIComponent(id)});menuOrder.push(id);pending=null;nameDialog.close();renderLibrary();byId('documentLibraryNotice').textContent='문서를 추가했어요. 화살표로 위로 올린 뒤 홈에 적용해 주세요.';}catch(e){byId('customNameNotice').textContent=e.message;}finally{button.disabled=false;}});
   renderHome();
 })();
+
