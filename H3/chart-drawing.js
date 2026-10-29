@@ -30,6 +30,31 @@ window.ChartDrawing={create({type,host,onChange,isBusy,loadBackground,customPage
  // Only consume touch gestures while the brush popup (drawing mode) is open.
  for(const event of ['touchstart','touchmove'])board.addEventListener(event,e=>{if(!panel.hidden&&e.cancelable)e.preventDefault();},{passive:false});
  let previousTap=null,strokeStarted=0;
+ if(customPage){
+  const viewport=document.createElement('div');viewport.className='document-viewport';stage.insertBefore(viewport,board);viewport.append(board);
+  viewport.style.aspectRatio=pageWidth+'/'+pageHeight;
+  const zoomControls=document.createElement('div');zoomControls.className='document-zoom-controls';zoomControls.innerHTML='<span class="document-zoom-value">100%</span><button type="button">전체 보기</button>';stage.append(zoomControls);
+  let zoom=1,tx=0,ty=0,gesture=null,blocked=false,firstState=null;const fingers=new Map();
+  function transform(){const w=viewport.clientWidth,h=viewport.clientHeight,baseH=w*pageHeight/pageWidth;tx=Math.min(0,Math.max(w-w*zoom,tx));ty=Math.min(0,Math.max(h-baseH*zoom,ty));board.style.transform='translate('+tx+'px,'+ty+'px) scale('+zoom+')';zoomControls.querySelector('span').textContent=Math.round(zoom*100)+'%';}
+  zoomControls.querySelector('button').addEventListener('click',()=>{finish();zoom=1;tx=ty=0;transform();});
+  function geometry(){const pair=[...fingers.values()].slice(0,2),r=viewport.getBoundingClientRect();return {x:(pair[0].x+pair[1].x)/2-r.left,y:(pair[0].y+pair[1].y)/2-r.top,d:Math.max(1,Math.hypot(pair[0].x-pair[1].x,pair[0].y-pair[1].y))};}
+  board.addEventListener('pointerdown',e=>{
+   if(e.pointerType!=='touch')return;
+   if(!fingers.size){const v=views[active];firstState={view:active,strokes:v.strokes.length,history:v.history.length};}
+   fingers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   if(fingers.size>=2){e.preventDefault();e.stopImmediatePropagation();const v=views[firstState.view];v.strokes.length=firstState.strokes;v.history.length=firstState.history;finish();redraw();blocked=true;const p=geometry();gesture={...p,zoom,tx,ty};lockScroll();for(const id of fingers.keys())board.setPointerCapture(id);}
+   else if(blocked){e.preventDefault();e.stopImmediatePropagation();}
+  },true);
+  board.addEventListener('pointermove',e=>{
+   if(!fingers.has(e.pointerId))return;fingers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   if(!blocked)return;e.preventDefault();e.stopImmediatePropagation();if(fingers.size>=2&&gesture){const p=geometry(),next=Math.max(1,Math.min(6,gesture.zoom*p.d/gesture.d));tx=p.x-(gesture.x-gesture.tx)*next/gesture.zoom;ty=p.y-(gesture.y-gesture.ty)*next/gesture.zoom;zoom=next;transform();}
+  },true);
+  function endGesture(e){if(!fingers.has(e.pointerId))return;const wasBlocked=blocked;fingers.delete(e.pointerId);if(wasBlocked){e.preventDefault();e.stopImmediatePropagation();if(board.hasPointerCapture(e.pointerId))board.releasePointerCapture(e.pointerId);if(fingers.size<2)gesture=null;if(!fingers.size){blocked=false;firstState=null;unlockScroll();}}}
+  board.addEventListener('pointerup',endGesture,true);board.addEventListener('pointercancel',endGesture,true);
+  window.addEventListener('resize',transform);window.addEventListener('blur',()=>{fingers.clear();blocked=false;gesture=null;});
+  stage.dataset.zoomable='true';
+ }
+
  let scrollLock=null;
  function lockScroll(){if(scrollLock)return;const body=document.body,root=document.documentElement;scrollLock={x:window.scrollX,y:window.scrollY,body:body.getAttribute('style'),root:root.getAttribute('style')};body.style.position='fixed';body.style.top=-scrollLock.y+'px';body.style.left=-scrollLock.x+'px';body.style.width='100%';body.style.overflow='hidden';root.style.overflow='hidden';}
  function unlockScroll(){if(!scrollLock)return;const state=scrollLock;scrollLock=null;for(const [el,value] of [[document.body,state.body],[document.documentElement,state.root]]){if(value===null)el.removeAttribute('style');else el.setAttribute('style',value);}window.scrollTo({left:state.x,top:state.y,behavior:'instant'});}
