@@ -29,7 +29,7 @@ window.renderPolicyPdf=async()=>{
  const draw=(lines,x,top,size=20,bold=false,color='#283e4b')=>{font(size,bold);ctx.fillStyle=color;lines.forEach((line,i)=>ctx.fillText(line,x,top+i*size*1.5));};
  const line=(x1,top,x2,color='#c3d0d9')=>{ctx.strokeStyle=color;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x1,top);ctx.lineTo(x2,top);ctx.stroke();};
  const rect=(x,top,w,h,color)=>{ctx.fillStyle=color;ctx.fillRect(x,top,w,h);};
- function page(){canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;ctx=canvas.getContext('2d');rect(0,0,W,H,'#fff');canvases.push(canvas);pageNo++;draw(['상담·시술 서식'],L,46,16,false,'#657d8c');draw(['FORM '+({privacy:'05',photoRecord:'06',photoUse:'07',photoDiscount:'08'}[new URLSearchParams(location.search).get('type')])],R-100,46,16,false,'#657d8c');draw([title+(pageNo>1?' · 계속':'')],L,93,32,false);line(L,152,R,'#829ba9');y=178;}
+ function page(){canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;ctx=canvas.getContext('2d');rect(0,0,W,H,'#fff');canvases.push(canvas);pageNo++;draw(['상담·시술 서식'],L,46,16,false,'#657d8c');draw(['FORM '+({privacy:'05',photoRecord:'06',photoUse:'07',photoDiscount:'08'}[new URLSearchParams(location.search).get('type')])],R-100,46,16,false,'#657d8c');draw([title+(pageNo>1?' · 계속':'')],L,93,32,false);line(L,152,R,'#829ba9');y=compact?168:178;}
  function headingBar(text,num){rect(L,y,CW,compact?38:46,'#edf3f7');draw([num],L+14,y+11,18,true,'#607b8c');draw([text],L+62,y+9,22,true);line(L,y,R,'#869eac');y+=compact?48:58;}
  const ensure=(h,continuation=true)=>{if(h>BOTTOM-250)throw new Error('입력 내용이 너무 깁니다. 긴 내용을 줄인 뒤 다시 확인해 주세요.');if(y+h>BOTTOM){page();if(continuation&&activeHeading)headingBar(activeHeading.text+' (계속)',activeHeading.num);}};
  function heading(text,num){ensure(110,false);activeHeading={text,num};headingBar(text,num);}
@@ -42,7 +42,7 @@ window.renderPolicyPdf=async()=>{
  for(const section of paper.querySelectorAll('.policy-section')){
   const h=section.querySelector('h2');heading(h.textContent,h.dataset.number);
   for(const el of section.children){if(el===h)continue;if(el.classList.contains('fields'))fields(el);else if(el.classList.contains('policy-copy'))term(el);else if(el.classList.contains('policy-choice'))choice(el);else if(el.classList.contains('signblock'))signatures(el);}
-  y+=10;
+  y+=compact?4:10;
  }
  for(let i=0;i<canvases.length;i++){ctx=canvases[i].getContext('2d');line(L,H-62,R);draw(['화장수리 · 검토용 초안'],L,H-45,15,false,'#728692');draw([(i+1)+' / '+canvases.length],R-65,H-45,15,false,'#728692');const png=await pdf.embedPng(canvases[i].toDataURL('image/png'));pdf.addPage([595.28,841.89]).drawImage(png,{x:0,y:0,width:595.28,height:841.89});}
  return pdf.save();
