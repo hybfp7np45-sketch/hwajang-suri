@@ -1090,6 +1090,55 @@ body.suri-photo-erase-active #photo{image-rendering:auto!important;filter:none!i
  document.getElementById('magicEraseToggle')?.addEventListener('click',hide);
 })();
 </script>
+
+<!-- Photo-only viewport rendering: sample the original at the current zoom, never scale a screen-sized photo bitmap. -->
+<style>#stage.suri-photo-detail-ready #world > #photo{opacity:0!important}</style>
+<script>
+(()=>{
+'use strict';
+const stage=document.getElementById('stage'),world=document.getElementById('world'),photo=document.getElementById('photo');
+if(!stage||!world||!photo)return;
+const canvas=document.createElement('canvas');
+canvas.id='suriPhotoDetailViewport';
+canvas.setAttribute('aria-hidden','true');
+canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;';
+stage.insertBefore(canvas,world);
+const ctx=canvas.getContext('2d');
+if(!ctx){canvas.remove();return;}
+let pending=0;
+function draw(){
+ pending=0;
+ const w=stage.clientWidth,h=stage.clientHeight;
+ const dpr=window.devicePixelRatio||1;
+ const bw=Math.round(w*dpr),bh=Math.round(h*dpr);
+ if(!w||!h)return;
+ if(canvas.width!==bw||canvas.height!==bh){canvas.width=bw;canvas.height=bh;}
+ ctx.setTransform(bw/w,0,0,bh/h,0,0);ctx.clearRect(0,0,w,h);
+ if(!photo.complete||!photo.naturalWidth||photo.style.display==='none'){stage.classList.remove('suri-photo-detail-ready');return;}
+ const sr=stage.getBoundingClientRect(),pr=photo.getBoundingClientRect();
+ if(!pr.width||!pr.height){stage.classList.remove('suri-photo-detail-ready');return;}
+ const x=pr.left-sr.left-stage.clientLeft,y=pr.top-sr.top-stage.clientTop;
+ const left=Math.max(0,x),top=Math.max(0,y),right=Math.min(w,x+pr.width),bottom=Math.min(h,y+pr.height);
+ try{
+  if(right>left&&bottom>top){
+   const sx=(left-x)*photo.naturalWidth/pr.width,sy=(top-y)*photo.naturalHeight/pr.height;
+   const sw=(right-left)*photo.naturalWidth/pr.width,sh=(bottom-top)*photo.naturalHeight/pr.height;
+   ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+   ctx.drawImage(photo,sx,sy,sw,sh,left,top,right-left,bottom-top);
+  }
+  stage.classList.add('suri-photo-detail-ready');
+ }catch(_){stage.classList.remove('suri-photo-detail-ready');}
+}
+function schedule(){if(!pending)pending=requestAnimationFrame(draw);}
+new MutationObserver(schedule).observe(world,{attributes:true,attributeFilter:['style']});
+new MutationObserver(schedule).observe(photo,{attributes:true,attributeFilter:['src','style']});
+photo.addEventListener('load',schedule);
+photo.addEventListener('error',()=>{ctx.clearRect(0,0,canvas.width,canvas.height);stage.classList.remove('suri-photo-detail-ready');});
+new ResizeObserver(schedule).observe(stage);
+window.addEventListener('resize',schedule);
+schedule();
+})();
+</script>
 </body></html>
 <style id="v134-eraser-followup">
 /* V13.4: brush guide is shown only inside magnifier */
