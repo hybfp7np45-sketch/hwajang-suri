@@ -23,7 +23,7 @@ window.ChartDrawing={create({type,host,onChange,isBusy,loadBackground,customPage
  for(const [value,label] of [['pen','펜'],['pencil','연필'],['highlighter','형광펜']]){const b=document.createElement('button');b.type='button';b.textContent=label;b.setAttribute('aria-pressed',String(value===kind));b.addEventListener('click',()=>{kind=value;host.querySelectorAll('.brush-kinds button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});host.querySelector('.brush-kinds').append(b);}
  function selectTool(next){const open=panel.hidden||tool!==next;tool=next;panel.dataset.tool=tool;host.querySelector('.size-label').textContent=tool==='eraser'?'지우개 크기':'브러시 크기';slider.max=tool==='eraser'?'60':'12';slider.value=tool==='eraser'?eraseSize:size;host.querySelector('output').value=slider.value;setPanel(open);}
  eraser.addEventListener('click',()=>selectTool('eraser'));
- function setPanel(open){finish();panel.hidden=!open;board.style.touchAction=open?'none':'pan-y';stage.dataset.drawing=String(open);toggle.setAttribute('aria-expanded',String(open&&tool==='brush'));eraser.setAttribute('aria-expanded',String(open&&tool==='eraser'));toggle.setAttribute('aria-label',open?'브러시 끄기':'브러시 켜기');if(open){const header=document.querySelector('header');const top=(header?.getBoundingClientRect().bottom||0)+8;if(panel.getBoundingClientRect().top<top){stage.style.scrollMarginTop=((header?.offsetHeight||0)+panel.offsetHeight+20)+'px';stage.scrollIntoView({block:'start',behavior:'instant'});}}}
+ function setPanel(open){finish();panel.hidden=!open;board.style.touchAction=open?'none':'pan-y';stage.dataset.drawing=String(open);toggle.setAttribute('aria-expanded',String(open&&tool==='brush'));eraser.setAttribute('aria-expanded',String(open&&tool==='eraser'));toggle.setAttribute('aria-label',open?'브러시 끄기':'브러시 켜기');if(open&&!customPage){const header=document.querySelector('header');const top=(header?.getBoundingClientRect().bottom||0)+8;if(panel.getBoundingClientRect().top<top){stage.style.scrollMarginTop=((header?.offsetHeight||0)+panel.offsetHeight+20)+'px';stage.scrollIntoView({block:'start',behavior:'instant'});}}}
  toggle.addEventListener('click',()=>selectTool('brush'));
  panel.addEventListener('dblclick',e=>{if(!e.target.closest?.('input,button')){e.preventDefault();setPanel(false);}});
  board.style.touchAction='pan-y';stage.dataset.drawing='false';
@@ -48,17 +48,17 @@ window.ChartDrawing={create({type,host,onChange,isBusy,loadBackground,customPage
   },true);
   board.addEventListener('pointermove',e=>{
    if(!fingers.has(e.pointerId))return;const previous=fingers.get(e.pointerId);fingers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-   if(!blocked&&panel.hidden&&fingers.size===1){e.preventDefault();e.stopImmediatePropagation();window.scrollBy({top:previous.y-e.clientY,left:0,behavior:'instant'});return;}
+   if(!blocked&&panel.hidden&&fingers.size===1){e.preventDefault();e.stopImmediatePropagation();tx+=e.clientX-previous.x;ty+=e.clientY-previous.y;transform();return;}
    if(!blocked)return;e.preventDefault();e.stopImmediatePropagation();if(fingers.size>=2&&gesture){const p=geometry(),next=Math.max(1,Math.min(6,gesture.zoom*p.d/gesture.d));tx=p.x-(gesture.x-gesture.tx)*next/gesture.zoom;ty=p.y-(gesture.y-gesture.ty)*next/gesture.zoom;zoom=next;transform();}
   },true);
-  function endGesture(e){if(!fingers.has(e.pointerId))return;const wasBlocked=blocked;fingers.delete(e.pointerId);if(wasBlocked){e.preventDefault();e.stopImmediatePropagation();if(board.hasPointerCapture(e.pointerId))board.releasePointerCapture(e.pointerId);if(fingers.size<2)gesture=null;if(!fingers.size){blocked=false;firstState=null;unlockScroll();}}}
+  function endGesture(e){if(!fingers.has(e.pointerId))return;const wasBlocked=blocked,wasScrolling=panel.hidden&&!blocked;fingers.delete(e.pointerId);if(wasScrolling){e.preventDefault();e.stopImmediatePropagation();if(board.hasPointerCapture(e.pointerId))board.releasePointerCapture(e.pointerId);if(!fingers.size)firstState=null;return;}if(wasBlocked){e.preventDefault();e.stopImmediatePropagation();if(board.hasPointerCapture(e.pointerId))board.releasePointerCapture(e.pointerId);if(fingers.size<2)gesture=null;if(!fingers.size){blocked=false;firstState=null;unlockScroll();}}}
   board.addEventListener('pointerup',endGesture,true);board.addEventListener('pointercancel',endGesture,true);
   window.addEventListener('resize',transform);window.addEventListener('blur',()=>{fingers.clear();blocked=false;gesture=null;});
   stage.dataset.zoomable='true';
  }
 
  let scrollLock=null;
- function lockScroll(){if(scrollLock)return;const body=document.body,root=document.documentElement;scrollLock={x:window.scrollX,y:window.scrollY,body:body.getAttribute('style'),root:root.getAttribute('style')};body.style.position='fixed';body.style.top=-scrollLock.y+'px';body.style.left=-scrollLock.x+'px';body.style.width='100%';body.style.overflow='hidden';root.style.overflow='hidden';}
+ function lockScroll(){if(customPage||scrollLock)return;const body=document.body,root=document.documentElement;scrollLock={x:window.scrollX,y:window.scrollY,body:body.getAttribute('style'),root:root.getAttribute('style')};body.style.position='fixed';body.style.top=-scrollLock.y+'px';body.style.left=-scrollLock.x+'px';body.style.width='100%';body.style.overflow='hidden';root.style.overflow='hidden';}
  function unlockScroll(){if(!scrollLock)return;const state=scrollLock;scrollLock=null;for(const [el,value] of [[document.body,state.body],[document.documentElement,state.root]]){if(value===null)el.removeAttribute('style');else el.setAttribute('style',value);}window.scrollTo({left:state.x,top:state.y,behavior:'instant'});}
  document.addEventListener('touchmove',e=>{if(scrollLock&&e.cancelable)e.preventDefault();},{passive:false});
  window.addEventListener('blur',()=>finish());
