@@ -1041,4 +1041,53 @@ document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>
 const oldSyncBoundaryButtons=syncBoundaryButtons;syncBoundaryButtons=function(){oldSyncBoundaryButtons();$('manualLip').hidden=true;$('lipEraseToggle').hidden=lipState.editing;syncLipUndo()};
 window.addEventListener('blur',()=>{endLipEraseStroke();lipErase.pointers.clear()});
 lipBrushUI();syncLipUndo();
-</script></body></html>
+</script><!-- Photo-only viewport rendering: sample the original at the current zoom, never scale a screen-sized photo bitmap. -->
+<style>.stage.suri-photo-detail-ready > #photo{opacity:0!important}</style>
+<script>
+(()=>{
+'use strict';
+const stage=document.querySelector('.stage'),photo=document.getElementById('photo');
+if(!stage||!photo)return;
+const canvas=document.createElement('canvas');
+canvas.id='suriPhotoDetailViewport';
+canvas.setAttribute('aria-hidden','true');
+canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;';
+stage.insertBefore(canvas,photo);
+const ctx=canvas.getContext('2d');
+if(!ctx){canvas.remove();return;}
+let pending=0;
+function draw(){
+ pending=0;
+ const w=stage.clientWidth,h=stage.clientHeight;
+ const dpr=window.devicePixelRatio||1;
+ const bw=Math.round(w*dpr),bh=Math.round(h*dpr);
+ if(!w||!h)return;
+ if(canvas.width!==bw||canvas.height!==bh){canvas.width=bw;canvas.height=bh;}
+ ctx.setTransform(bw/w,0,0,bh/h,0,0);ctx.clearRect(0,0,w,h);
+ if(!photo.complete||!photo.naturalWidth||photo.style.display==='none'){stage.classList.remove('suri-photo-detail-ready');return;}
+ const sr=stage.getBoundingClientRect(),pr=photo.getBoundingClientRect();
+ if(!pr.width||!pr.height){stage.classList.remove('suri-photo-detail-ready');return;}
+ const fit=Math.min(pr.width/photo.naturalWidth,pr.height/photo.naturalHeight);
+ const pw=photo.naturalWidth*fit,ph=photo.naturalHeight*fit;
+ const x=pr.left-sr.left-stage.clientLeft+(pr.width-pw)/2,y=pr.top-sr.top-stage.clientTop+(pr.height-ph)/2;
+ const left=Math.max(0,x),top=Math.max(0,y),right=Math.min(w,x+pw),bottom=Math.min(h,y+ph);
+ try{
+  if(right>left&&bottom>top){
+   const sx=(left-x)*photo.naturalWidth/pw,sy=(top-y)*photo.naturalHeight/ph;
+   const sw=(right-left)*photo.naturalWidth/pw,sh=(bottom-top)*photo.naturalHeight/ph;
+   ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+   ctx.drawImage(photo,sx,sy,sw,sh,left,top,right-left,bottom-top);
+  }
+  stage.classList.add('suri-photo-detail-ready');
+ }catch(_){stage.classList.remove('suri-photo-detail-ready');}
+}
+function schedule(){if(!pending)pending=requestAnimationFrame(draw);}
+new MutationObserver(schedule).observe(photo,{attributes:true,attributeFilter:['src','style']});
+photo.addEventListener('load',schedule);
+photo.addEventListener('error',()=>{ctx.clearRect(0,0,canvas.width,canvas.height);stage.classList.remove('suri-photo-detail-ready');});
+new ResizeObserver(schedule).observe(stage);
+window.addEventListener('resize',schedule);
+schedule();
+})();
+</script>
+</body></html>
