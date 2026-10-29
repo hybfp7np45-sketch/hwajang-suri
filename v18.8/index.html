@@ -200,7 +200,7 @@ document.addEventListener('pointerdown',e=>{if(e.target.closest('.brow,#editbar,
 let selected=null,brows=[],nextId=3,faceAxisX=null,zoom=1,panX=0,panY=0,touches=new Map(),pinch=null;
 function apply(el){el.style.transform='rotate('+(+el.dataset.rot||0)+'deg)';const im=el.querySelector('img');if(im){im.style.transform='scaleX('+(el.dataset.flip==='1'?-1:1)+')';im.style.transformOrigin='center';const n=(+el.dataset.intensity||100)/100;im.style.opacity=Math.max(.1,Math.min(1,n));im.style.backgroundColor='transparent';im.style.mixBlendMode='normal'}}
 function select(el){brows.forEach(x=>x.classList.remove('selected'));selected=el;if(el){el.classList.add('selected');edit.classList.add('show');const iv=$('#intensity');if(iv){iv.value=el.dataset.intensity||100;$('#intensityVal').textContent=iv.value+'%'}}else{edit.classList.remove('show');colorbar?.classList.remove('show')}renderLayers()}
-function addBrow(opts={}){globalUndoSnapshotV185();const el=document.createElement('div');el.className='brow';el.dataset.id=String(nextId++);el.dataset.name=opts.name||'생성 눈썹';el.dataset.flip=opts.flip?'1':'0';el.dataset.rot=String(opts.rot||0);el.dataset.color=opts.color||'';el.dataset.intensity=String(opts.intensity||100);el.dataset.src=opts.src||'';el.dataset.imgscale=String(opts.imgScale||1);const imgScale=opts.imgScale||1;el.innerHTML=(opts.src?'<img src="'+opts.src+'" style="width:100%;height:100%;object-fit:fill;object-position:center;pointer-events:none;transform:scale('+imgScale+');transform-origin:center">':browSVG)+handles;world.appendChild(el);const initialScreenPlacement=opts.left==null&&opts.top==null&&opts.w==null&&opts.h==null;const stageRect=stage.getBoundingClientRect();const worldRect=world.getBoundingClientRect();const currentZoom=initialScreenPlacement&&Number.isFinite(zoom)&&zoom>0?zoom:1;const desiredScreenWidth=stageRect.width*.34;const w=opts.w||(initialScreenPlacement?desiredScreenWidth/currentZoom:stage.clientWidth*.34);const place=h=>{el.style.width=w+'px';el.style.height=h+'px';if(initialScreenPlacement){/* Convert the fixed on-screen spawn point to world coordinates. */const screenCenterX=stageRect.left+stageRect.width*.5;const screenCenterY=stageRect.top+stageRect.height/3;const originX=worldRect.left+worldRect.width*.5;const originY=worldRect.top+worldRect.height*.5;const localCenterX=world.clientWidth*.5+(screenCenterX-originX)/currentZoom;const localCenterY=world.clientHeight*.5+(screenCenterY-originY)/currentZoom;el.style.left=(localCenterX-w*.5)+'px';el.style.top=(localCenterY-h*.45)+'px'}else{el.style.left=(opts.left??stage.clientWidth*.5-w*.5)+'px';el.style.top=(opts.top??stage.clientHeight/3-h*.45)+'px'}};if(opts.h)place(opts.h);else if(opts.ratio)place(w*opts.ratio);else if(opts.src){const im=el.querySelector('img');const setNatural=()=>place(w*(im.naturalHeight/im.naturalWidth));if(im.complete&&im.naturalWidth)setNatural();else im.addEventListener('load',setNatural,{once:true})}else place(w*330/700);brows.push(el);editor(el);apply(el);sizeHandles(el);select(el);syncZ();return el}
+function addBrow(opts={}){globalUndoSnapshotV185();const el=document.createElement('div');el.className='brow';el.dataset.id=String(nextId++);el.dataset.name=opts.name||'생성 눈썹';el.dataset.flip=opts.flip?'1':'0';el.dataset.rot=String(opts.rot||0);el.dataset.color=opts.color||'';el.dataset.intensity=String(opts.intensity||100);el.dataset.src=opts.src||'';el.dataset.imgscale=String(opts.imgScale||1);const imgScale=opts.imgScale||1;el.innerHTML=(opts.src?'<img src="'+opts.src+'" style="width:100%;height:100%;object-fit:fill;object-position:center;pointer-events:none;transform:scale('+imgScale+');transform-origin:center">':browSVG)+handles;world.appendChild(el);const initialScreenPlacement=opts.left==null&&opts.top==null&&opts.w==null&&opts.h==null;const stageRect=stage.getBoundingClientRect();const worldRect=world.getBoundingClientRect();const currentZoom=initialScreenPlacement&&Number.isFinite(zoom)&&zoom>0?zoom:1;const desiredScreenWidth=stageRect.width*.34;const w=opts.w||(initialScreenPlacement?desiredScreenWidth/currentZoom:stage.clientWidth*.34);const place=h=>{el.style.width=w+'px';el.style.height=h+'px';if(opts.autoCenter){el.style.left=(opts.autoCenter.x-w/2)+'px';el.style.top=(opts.autoCenter.y-h/2)+'px';sizeHandles(el)}else if(initialScreenPlacement){/* Convert the fixed on-screen spawn point to world coordinates. */const screenCenterX=stageRect.left+stageRect.width*.5;const screenCenterY=stageRect.top+stageRect.height/3;const originX=worldRect.left+worldRect.width*.5;const originY=worldRect.top+worldRect.height*.5;const localCenterX=world.clientWidth*.5+(screenCenterX-originX)/currentZoom;const localCenterY=world.clientHeight*.5+(screenCenterY-originY)/currentZoom;el.style.left=(localCenterX-w*.5)+'px';el.style.top=(localCenterY-h*.45)+'px'}else{el.style.left=(opts.left??stage.clientWidth*.5-w*.5)+'px';el.style.top=(opts.top??stage.clientHeight/3-h*.45)+'px'}};if(opts.h)place(opts.h);else if(opts.ratio)place(w*opts.ratio);else if(opts.src){const im=el.querySelector('img');const setNatural=()=>place(w*(im.naturalHeight/im.naturalWidth));if(im.complete&&im.naturalWidth)setNatural();else im.addEventListener('load',setNatural,{once:true})}else place(w*330/700);brows.push(el);editor(el);apply(el);sizeHandles(el);select(el);syncZ();return el}
 function deleteBrow(el){globalUndoSnapshotV185();brows=brows.filter(x=>x!==el);el.remove();select(brows.at(-1)||null);syncZ()}
 function renderLayers(){const prior=[...layers.querySelectorAll('.layerrow')].map(r=>r.dataset.id||r.dataset.fixed);layers.innerHTML='<button class="layerclose" type="button">레이어 닫기 ▴</button><div style="font-size:10px;color:#777;text-align:center;padding:2px 0">끌어서 순서 변경 · 많으면 위아래 스크롤</div>';
  [...brows].reverse().forEach(el=>{const b=document.createElement('button');b.dataset.id=el.dataset.id;b.className='layerrow '+(el===selected?'on':'');b.innerHTML='<span>레이어 '+el.dataset.id+' · '+(el.dataset.name||'생성 눈썹')+'</span>';layers.appendChild(b)});
@@ -210,7 +210,7 @@ function renderLayers(){const prior=[...layers.querySelectorAll('.layerrow')].ma
  if(prior.length){const map=new Map([...layers.querySelectorAll('.layerrow')].map(r=>[r.dataset.id||r.dataset.fixed,r]));prior.forEach(k=>{const r=map.get(k);if(r&&k!=='skin')layers.insertBefore(r,skin)})}}
 function syncZ(){P.style.zIndex=1;let z=10;brows.forEach(el=>el.style.zIndex=z++);EB.style.zIndex=100;renderLayers()}
 const personalBrowInput=document.createElement('input');personalBrowInput.type='file';personalBrowInput.accept='image/png';personalBrowInput.style.display='none';document.body.appendChild(personalBrowInput);let personalTargetDesign='';
-rail.onclick=e=>{const add=e.target.closest('.personal-add');if(add){personalTargetDesign=add.dataset.design||currentBrowDesign;personalBrowInput.value='';personalBrowInput.click();return}const c=e.target.closest('.tech-card');if(!c)return;if(!P.src)return alert('먼저 사진을 불러와 주세요.');const n=c.dataset.name,src=c.dataset.src||browAssets[n];addBrow({name:n,src,flip:false,ratio:null,imgScale:n.includes('섀도우')?.88:1})};
+rail.onclick=async e=>{const add=e.target.closest('.personal-add');if(add){personalTargetDesign=add.dataset.design||currentBrowDesign;personalBrowInput.value='';personalBrowInput.click();return}const c=e.target.closest('.tech-card');if(!c)return;if(!P.src)return alert('먼저 사진을 불러와 주세요.');const n=c.dataset.name,src=c.dataset.src||browAssets[n],photoSource=P.src;if(c.dataset.placing)return;c.dataset.placing='1';let placement;try{placement=await window.suriBrowPlacement?.()}finally{delete c.dataset.placing}if(P.src!==photoSource)return;addBrow({name:n,src,flip:false,ratio:null,imgScale:n.includes('섀도우')?.88:1,...(placement||{})})};
 let personalNameHold=null;
 function personalBrowMenu(btn){
  const id=btn.dataset.personalId;if(!id)return;
@@ -1152,6 +1152,49 @@ window.addEventListener('resize',schedule);
 schedule();
 })();
 </script>
+
+<script id="brow-photo-placement">
+(()=>{
+const photo=document.getElementById('photo');
+let source='',job=null,targets=null,mesh=null,queue=Promise.resolve(),nextSide=0;
+const sets=[[70,63,105,66,107,55,65,52,53,46],[300,293,334,296,336,285,295,282,283,276]];
+async function detect(image){
+ if(!window.FaceMesh)return null;
+ if(!mesh){mesh=new FaceMesh({locateFile:f=>'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/'+f});mesh.setOptions({maxNumFaces:1,refineLandmarks:true,minDetectionConfidence:.55,staticImageMode:true});}
+ let result=null;mesh.onResults(r=>{result=r.multiFaceLandmarks?.[0]||null;});
+ await mesh.send({image});return result;
+}
+function prepare(){
+ const current=photo.currentSrc||photo.src;
+ if(current===source&&job)return job;
+ source=current;targets=null;nextSide=0;
+ if(!photo.complete||!photo.naturalWidth)return Promise.resolve(null);
+ const input=document.createElement('canvas'),scale=Math.min(1,1024/Math.max(photo.naturalWidth,photo.naturalHeight));
+ input.width=Math.round(photo.naturalWidth*scale);input.height=Math.round(photo.naturalHeight*scale);input.getContext('2d').drawImage(photo,0,0,input.width,input.height);
+ const work=queue.then(()=>detect(input));queue=work.catch(()=>null);
+ job=work.then(points=>{
+  if(source!==current||!points)return null;
+  const found=sets.map(ids=>{
+   const ps=ids.map(i=>points[i]);
+   const left=Math.min(...ps.map(p=>p.x)),right=Math.max(...ps.map(p=>p.x)),top=Math.min(...ps.map(p=>p.y)),bottom=Math.max(...ps.map(p=>p.y));
+   const a=ps.reduce((a,p)=>p.x<a.x?p:a),b=ps.reduce((a,p)=>p.x>a.x?p:a);
+   return {x:(left+right)/2,y:(top+bottom)/2,width:right-left,dx:b.x-a.x,dy:b.y-a.y};
+  }).sort((a,b)=>a.x-b.x);
+  if(found.some(t=>!Number.isFinite(t.width)||t.width<.015||t.width>.5))return null;
+  targets=found;return found;
+ }).catch(()=>null);return job;
+}
+photo.addEventListener('load',prepare);
+window.suriBrowPlacement=async function(){
+ let timer;await Promise.race([prepare(),new Promise(r=>{timer=setTimeout(r,12000)})]);clearTimeout(timer);
+ if(!targets||source!==(photo.currentSrc||photo.src))return null;
+ const side=nextSide++%2,t=targets[side],pw=parseFloat(photo.style.width),ph=parseFloat(photo.style.height);
+ if(!pw||!ph)return null;
+ return {w:t.width*pw*1.05,autoCenter:{x:(parseFloat(photo.style.left)||0)+t.x*pw,y:(parseFloat(photo.style.top)||0)+t.y*ph},rot:Math.atan2(t.dy*ph,t.dx*pw)*180/Math.PI,flip:side===1};
+};
+})();
+</script>
+
 </body></html>
 <style id="v134-eraser-followup">
 /* V13.4: brush guide is shown only inside magnifier */
