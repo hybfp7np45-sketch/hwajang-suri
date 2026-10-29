@@ -81,7 +81,7 @@ window.ChartDrawing={create({type,host,onChange,isBusy,loadBackground,customPage
  undo.addEventListener('click',()=>{finish();const v=views[active];if(v.history.length)v.strokes=v.history.pop();onChange();redraw();});
  clear.addEventListener('click',()=>{finish();const v=views[active];v.history.push(v.strokes.slice());v.strokes=[];onChange();redraw();});
  redraw();loadBackground().then(image=>{bg=image;message.textContent=views.length>1?'정면 · 위에서 · 측면을 하나씩 선택해 그려 주세요.':'브러시를 켜면 그리기 · 끄면 화면 이동';redraw();}).catch(()=>{message.textContent='그림을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.';});
- return {close(){setPanel(false);},drawTo(canvas){finish();const out=canvas.getContext('2d');out.save();out.setTransform(canvas.width/pageWidth,0,0,canvas.height/pageHeight,0,0);for(const v of views){out.save();out.beginPath();out.rect(...v.box);out.clip();out.translate(v.box[0],v.box[1]);out.drawImage(ink(v),0,0,v.box[2],v.box[3]);out.restore();}out.restore();return canvas;}};
+ return {resetZoom(){host.querySelector(".document-zoom-controls button")?.click();},close(){setPanel(false);},drawTo(canvas){finish();const out=canvas.getContext('2d');out.save();out.setTransform(canvas.width/pageWidth,0,0,canvas.height/pageHeight,0,0);for(const v of views){out.save();out.beginPath();out.rect(...v.box);out.clip();out.translate(v.box[0],v.box[1]);out.drawImage(ink(v),0,0,v.box[2],v.box[3]);out.restore();}out.restore();return canvas;}};
 }};
 })();
 
