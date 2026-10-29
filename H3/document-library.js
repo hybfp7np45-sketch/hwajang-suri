@@ -3,7 +3,6 @@
   const documents = [
     {id:'consent', title:'시술 동의서', kind:'동의서', href:'./forms.html?type=consent'},
     {id:'health', title:'건강상태 확인서', kind:'확인서', href:'./forms.html?type=health'},
-    {id:'health',title:'건강상태 확인서',kind:'확인서',href:'./forms.html?type=health'},
     {id:'privacy',title:'개인정보 수집·이용 동의서',kind:'동의서',href:'./forms.html?type=privacy'},
     {id:'photoRecord',title:'기록용 촬영·보관 동의서',kind:'동의서',href:'./forms.html?type=photoRecord'},
     {id:'photoUse',title:'교육·홍보 활용 동의서',kind:'동의서',href:'./forms.html?type=photoUse'},
