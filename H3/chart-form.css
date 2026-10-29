@@ -16,3 +16,6 @@
 
 /* Nine colors: circles 10% smaller, 15% on narrow phones. */
 .drawing-stage .drawing-tools{width:min(310px,calc(100% - 12px));left:6px;background:#e0f1fc;border-color:#aacfe7}.drawing-stage .drawing-tools[data-tool=eraser]{left:auto;right:6px}.drawing-tools .drawing-colors{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:2px;align-items:center}.drawing-tools .color-swatch{width:100%;min-width:0;height:32px;min-height:32px;padding:2px;background:transparent;display:grid;place-items:center}.drawing-tools .color-swatch::before{width:20.7px;height:20.7px;box-sizing:border-box}.drawing-tools .color-swatch[aria-pressed=true]{box-shadow:none}@media(max-width:360px){.drawing-tools .drawing-colors{gap:1px}.drawing-tools .color-swatch{padding:0;height:30px;min-height:30px}.drawing-tools .color-swatch::before{width:19.55px;height:19.55px}}
+
+/* Mix the existing sky blue with 50% white; keep eleven swatches readable. */
+.drawing-stage .drawing-tools{background:#f0f8fe}.drawing-tools .drawing-colors{grid-template-columns:repeat(6,minmax(0,1fr));row-gap:2px}
