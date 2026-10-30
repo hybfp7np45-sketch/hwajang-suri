@@ -464,7 +464,13 @@ const colorbar=$('#colorbar'),colorpicker=$('#colorpicker'),colors=$('#colors');
 const cv=$('#camview'),video=$('#camvideo'),grid=$('#grid');
 let cameraSession=0,cameraBusy=false;
 const knownCameras={user:null,environment:null};
-function applyCamZoom(){video.style.transform='scale('+camZoom+')'}
+function applyCamZoom(){video.style.transform='scale('+camZoom+') scaleX('+(facing==='user'?-1:1)+')'}
+// Match the centered object-fit:cover preview, including pinch zoom.
+function cameraCaptureRect(vw,vh,bw,bh,z){
+ const scale=Math.max(bw/vw,bh/vh)*z;
+ const sw=bw/scale,sh=bh/scale;
+ return {sx:(vw-sw)/2,sy:(vh-sh)/2,sw,sh};
+}
 function disposeCamera(s){s?.getTracks().forEach(t=>t.stop())}
 async function stopCamStream(){const old=stream;stream=null;video.pause();video.srcObject=null;disposeCamera(old);await new Promise(r=>setTimeout(r,180))}
 function cameraControls(busy){cameraBusy=busy;$('#flipcam').disabled=busy;$('#shot').disabled=busy;$('#flipcam').setAttribute('aria-busy',String(busy))}
@@ -532,7 +538,24 @@ function closeCam(){++cameraSession;cameraControls(false);cv.classList.remove('s
 video.addEventListener('touchstart',e=>{if(e.touches.length===2){const a=e.touches[0],b=e.touches[1];camPinch={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),z:camZoom};e.preventDefault()}},{passive:false});
 video.addEventListener('touchmove',e=>{if(e.touches.length===2&&camPinch){const a=e.touches[0],b=e.touches[1],d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);camZoom=Math.max(1,Math.min(4,camPinch.z*d/camPinch.d));applyCamZoom();e.preventDefault()}},{passive:false});
 video.addEventListener('touchend',e=>{if(e.touches.length<2)camPinch=null},{passive:false});
-$('#shot').onclick=()=>{if(cameraBusy||!stream||!video.videoWidth||!video.videoHeight)return;const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.videoWidth,vh=video.videoHeight;c.width=vw;c.height=vh;const sw=vw/camZoom,sh=vh/camZoom,sx=(vw-sw)/2,sy=(vh-sh)/2;ctx.drawImage(video,sx,sy,sw,sh,0,0,vw,vh);c.toBlob(blob=>{showBlob(blob);closeCam()},'image/jpeg',.94)};
+$('#shot').onclick=()=>{
+ if(cameraBusy||!stream||!video.videoWidth||!video.videoHeight)return;
+ const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.videoWidth,vh=video.videoHeight;
+ const bw=video.clientWidth,bh=video.clientHeight;
+ if(!ctx||!bw||!bh)return;
+ const crop=cameraCaptureRect(vw,vh,bw,bh,camZoom),session=cameraSession;
+ c.width=Math.max(1,Math.round(crop.sw));c.height=Math.max(1,Math.round(crop.sh));
+ ctx.save();
+ if(facing==='user'){ctx.translate(c.width,0);ctx.scale(-1,1)}
+ ctx.drawImage(video,crop.sx,crop.sy,crop.sw,crop.sh,0,0,c.width,c.height);
+ ctx.restore();
+ cameraControls(true);
+ c.toBlob(blob=>{
+  if(session!==cameraSession)return;
+  if(!blob){cameraControls(false);alert('촬영한 사진을 불러오지 못했어요. 다시 촬영해 주세요.');return}
+  showBlob(blob);closeCam();
+ },'image/jpeg',.94);
+};
 </script><script src="../v18.3/opacity-panel.js?cb=504031e0"></script><script src="brow-color.js?cb=eyedropper5-syntaxfix-20261020"></script><style id="palette-force-v2">#colorbar .colors{display:flex!important;align-items:center!important}#colorbar .brow-color-grid{display:grid!important;grid-template-columns:repeat(9,28px)!important;grid-template-rows:repeat(2,28px)!important;gap:6px 8px!important}#colorbar .brow-custom.empty{display:block!important;background:#fff!important;border:1.5px dashed #c7b7bd!important;box-shadow:none!important}.brow-current-color{display:inline-block!important}#colorbar .brow-custom.empty{position:static!important;inset:auto!important;display:block!important;width:28px!important;height:28px!important;background:#fff!important;border:1.5px solid #d8cbd0!important;border-radius:50%!important}.brow-custom.empty[style*="outline"]{border-color:#d94f7c!important}.brow-rainbow{margin-left:2px!important}</style><style id="brow-eraser-v2">
 #browEraseCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:2!important;pointer-events:none}
 #browEraseBtn{position:absolute!important;left:10px!important;top:6px!important;visibility:visible!important;opacity:1!important;width:30px!important;height:26px!important;min-width:30px!important;border:1px solid #d9eef8!important;background:#f4fbfe!important;color:#72c7f2!important;border-radius:13px!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important}
