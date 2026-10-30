@@ -1319,13 +1319,14 @@ function prepare(){
 function mapDesign(points,asset,pw,ph){
  const pixel=i=>({x:points[i].x*pw,y:points[i].y*ph});
  // Face-local vertical follows head tilt; 244/464 mark the nasal side of the
- // inner canthus, 129/358 the lateral nasal wing, 33/263 the outer eye corner.
+ // inner canthus, 129/358 the lateral nasal wing. Keep 33/263 for head tilt;
+ // use the outer eyelid junction 130/359 for the tail ray, beyond the eye opening.
  const p0=pixel(33),p1=pixel(263),length=Math.hypot(p1.x-p0.x,p1.y-p0.y);
  if(!length)return null;
  const ux=(p1.x-p0.x)/length,uy=(p1.y-p0.y)/length;
  const local=p=>({x:p.x*ux+p.y*uy,y:-p.x*uy+p.y*ux});
  const at=i=>local(pixel(i));
- const configs=[{head:244,nose:129,eye:33,inner:133,ids:sets[0]},{head:464,nose:358,eye:263,inner:362,ids:sets[1]}];
+ const configs=[{head:244,nose:129,eye:33,tailEye:130,inner:133,ids:sets[0]},{head:464,nose:358,eye:263,tailEye:359,inner:362,ids:sets[1]}];
  const found=configs.map(c=>{
   const ps=c.ids.map(at),minX=Math.min(...ps.map(p=>p.x)),maxX=Math.max(...ps.map(p=>p.x));
   const a=ps.reduce((a,p)=>p.x<a.x?p:a),b=ps.reduce((a,p)=>p.x>a.x?p:a);
@@ -1334,17 +1335,22 @@ function mapDesign(points,asset,pw,ph){
  const result=found.map((c,side)=>{
   const nose=at(c.nose),eye=at(c.eye),inner=at(c.inner),head=at(c.head),eyeWidth=Math.hypot(eye.x-inner.x,eye.y-inner.y);
   if(Math.abs(eye.y-nose.y)<eyeWidth*.4)return null;
-  const slope=(eye.x-nose.x)/(eye.y-nose.y),cy=(Math.min(...c.ps.map(p=>p.y))+Math.max(...c.ps.map(p=>p.y)))/2;
+  const tailEye=at(c.tailEye);
+  const slope=(tailEye.x-nose.x)/(tailEye.y-nose.y),cy=(Math.min(...c.ps.map(p=>p.y))+Math.max(...c.ps.map(p=>p.y)))/2;
   const flip=side===0,sign=flip?-1:1,cs=Math.cos(c.angle),sn=Math.sin(c.angle);
   const offset=(x,y)=>{const dx=sign*(x-.5),dy=(y-.5)*asset.ratio;return {x:dx*cs-dy*sn,y:dx*sn+dy*cs};};
   const h=offset(asset.head,asset.headY),t=offset(asset.tail,asset.tailY);
-  // Solve both constraints together: head lies on vertical x=head.x and tail
-  // lies on the nasal-wing/outer-canthus ray, preserving the asset aspect ratio.
-  const denominator=t.x-h.x-slope*t.y;
-  const w=(nose.x+slope*(cy-nose.y)-head.x)/denominator;
+  // Preserve the complete existing head position (including its height), then
+  // extend the same asset until its tail meets the outer eyelid-junction ray.
+  const oldSlope=(eye.x-nose.x)/(eye.y-nose.y);
+  const oldWidth=(nose.x+oldSlope*(cy-nose.y)-head.x)/(t.x-h.x-oldSlope*t.y);
+  if(!Number.isFinite(oldWidth))return null;
+  const headY=cy+oldWidth*h.y;
+  const denominator=t.x-h.x-slope*(t.y-h.y);
+  const w=(nose.x+slope*(headY-nose.y)-head.x)/denominator;
   if(!Number.isFinite(w)||w<eyeWidth*.6||w>eyeWidth*3.5)return null;
-  const cx=head.x-w*h.x;
-  return {w,autoCenter:{x:cx*ux-cy*uy,y:cx*uy+cy*ux},rot:(c.angle+Math.atan2(uy,ux))*180/Math.PI,flip};
+  const cx=head.x-w*h.x,centerY=headY-w*h.y;
+  return {w,autoCenter:{x:cx*ux-centerY*uy,y:cx*uy+centerY*ux},rot:(c.angle+Math.atan2(uy,ux))*180/Math.PI,flip};
  });
  return result.every(Boolean)?result:null;
 }
@@ -1422,4 +1428,5 @@ body.suri-photo-erase-active .brow,body.suri-photo-erase-active .brow *{pointer-
 body.suri-photo-erase-active .brow .rh,body.suri-photo-erase-active .brow .handle,body.suri-photo-erase-active .brow .handles{visibility:hidden!important}
 body.suri-photo-erase-active #stage{touch-action:none!important}
 </style>
+
 
