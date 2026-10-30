@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>화장수리 회원관리 무료 운영 검증</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eff7fa;color:#1c3540;font:15px -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;padding:22px 14px}main{max-width:560px;margin:auto}h1{font-size:24px;margin:10px 0}h2{font-size:17px;margin:0 0 15px}.muted{color:#58717e;line-height:1.55}.box{background:#fff;padding:18px;border-radius:15px;margin-top:14px;border:1px solid #d7e9ef}.warn{border:1px solid #edd49b;background:#fff9e9;border-radius:12px;padding:13px;font-size:13px;line-height:1.6;color:#765b25}.row{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}button{font:600 14px inherit;font-size:14px;background:#e7f3f8;border:1px solid #c4dce6;border-radius:10px;padding:12px 5px;color:#205470;min-height:48px}button.primary{background:#2387b1;color:#fff;border-color:#2387b1}button.red{color:#b74b4b;background:#fff0f0;border-color:#f3cccc}#status{padding:13px;background:#eff8fc;border-radius:10px;min-height:58px;line-height:1.6;margin-top:15px}#log{font-size:12px;color:#506e7b;line-height:1.8;max-height:160px;overflow:auto}b.num{font-size:26px}.sub{font-size:12px;color:#617b87}small{display:block;margin:14px 0;line-height:1.5;color:#667b84}
+</style></head><body><main>
+<span class="sub">화장수리 · 기존 앱과 분리된 시험 페이지</span><h1>회원관리 무료 운영 테스트</h1>
+<p class="muted">구매자만 사용하고, 한 기기에서 다른 기기로 이용권을 옮기는 규칙을 직접 확인하는 화면입니다.</p>
+<div class="warn"><b>실제 Firebase와 연결되지 않은 모의 테스트입니다.</b> 서버비 0원 여부, 실제 결제·로그인 보안은 이 화면에서 확인되지 않습니다. 실제 판매에 사용하면 안 됩니다.</div>
+<section class="box"><h2>① 이용권 발급 시험</h2><div class="row"><button onclick="action('guest')">미구매자 접근 시도</button><button class="primary" onclick="action('buy')">가상 구매 승인</button></div></section>
+<section class="box"><h2>② 기기 이전 시험</h2><div class="row"><button onclick="action('iphone')">아이폰 로그인</button><button onclick="action('ipad')">아이패드 로그인</button><button onclick="action('transfer')">아이패드로 이전</button><button onclick="action('old')">기존 아이폰 다시 확인</button></div></section>
+<section class="box"><h2>③ 검사 결과</h2><div id="status">검사 시작 전입니다.</div><div class="row" style="margin-top:16px"><div><b class="num" id="reads">0</b><div class="sub">모의 읽기 / 50,000건·일</div></div><div><b class="num" id="writes">0</b><div class="sub">모의 쓰기 / 20,000건·일</div></div></div><ol id="log"></ol><div class="row"><button class="primary" onclick="action('auto')">자동검사 7개 실행</button><button class="red" onclick="action('reset')">초기화</button></div></section>
+<small>기존 H4, v18.8, 입술 기능은 수정하지 않았습니다. 기기에서 자동 저장한 이용권은 다른 기기로 권한 이전 후 서버와 재동기화되기 전까지 남아 있을 수 있습니다.</small>
+</main><script>
+function blank(){return {users:{buyer:{paid:false,device:null,revision:0},guest:{paid:false,device:null,revision:0}},sessions:{},reads:0,writes:0,seq:0,history:[]}}
+let state=blank(),iphoneToken=null,ipadToken=null;
+function note(s){state.history.unshift(s);state.history=state.history.slice(0,14)}
+function buy(){const u=state.users.buyer;u.paid=true;u.revision++;state.writes++;note('가상 구매 이용권 발급');return true}
+function login(userId,device){state.reads++;const u=state.users[userId];if(!u||!u.paid)return {ok:false,reason:'NOT_PAID'};if(u.device&&u.device!==device)return {ok:false,reason:'TRANSFER_REQUIRED'};if(!u.device){u.device=device;u.revision++;state.writes++}const token='mock-'+(++state.seq);state.sessions[token]={userId,device,revision:u.revision};note(userId+' '+device+' 로그인');return {ok:true,token}}
+function transfer(){state.reads++;const u=state.users.buyer;if(!u.paid)return {ok:false,reason:'NOT_PAID'};u.device='iPad';u.revision++;state.writes++;note('아이폰 → 아이패드 이용권 이전');return login('buyer','iPad')}
+function check(token){state.reads++;const s=state.sessions[token];if(!s)return {ok:false,reason:'NO_SESSION'};const u=state.users[s.userId];return (u.paid&&u.device===s.device&&u.revision===s.revision)?{ok:true}:{ok:false,reason:'REVOKED'}}
+function render(message){document.getElementById('status').textContent=message;document.getElementById('reads').textContent=state.reads;document.getElementById('writes').textContent=state.writes;document.getElementById('log').innerHTML=state.history.map(x=>'<li>'+x+'</li>').join('')}
+function action(a){let r;if(a==='guest'){r=login('guest','iPhone');return render(r.reason==='NOT_PAID'?'통과: 미구매 회원 접근 차단':'오류: 접근 허용됨')}
+if(a==='buy'){buy();return render('통과: 가상 구매자에게 영구 이용권 기록 발급')}
+if(a==='iphone'){r=login('buyer','iPhone');if(r.ok)iphoneToken=r.token;return render(r.ok?'통과: 아이폰 이용 가능':'먼저 가상 구매 승인을 해주세요. 또는 이미 아이패드로 이전했습니다.')}
+if(a==='ipad'){r=login('buyer','iPad');if(r.ok)ipadToken=r.token;return render(r.ok?'아이패드 이용 가능':r.reason==='TRANSFER_REQUIRED'?'통과: 기기 이전 없이 아이패드 접근 차단':'먼저 구매 승인이 필요합니다.')}
+if(a==='transfer'){r=transfer();if(r.ok)ipadToken=r.token;return render(r.ok?'통과: 아이패드로 이용권 이전':'먼저 구매 승인이 필요합니다.')}
+if(a==='old'){r=check(iphoneToken);return render(r.reason==='REVOKED'?'통과: 이전 아이폰이 서버에 다시 확인하면 사용 차단':'아이폰 로그인 → 이용권 이전 후 다시 시험하세요.')}
+if(a==='reset'){state=blank();iphoneToken=null;ipadToken=null;return render('모의 데이터 초기화 완료')}
+if(a==='auto'){state=blank();iphoneToken=null;ipadToken=null;const t=[];t.push(login('guest','iPhone').reason==='NOT_PAID');t.push(login('buyer','iPhone').reason==='NOT_PAID');buy();t.push(state.users.buyer.paid);const p=login('buyer','iPhone');t.push(p.ok);t.push(login('buyer','iPad').reason==='TRANSFER_REQUIRED');const q=transfer();t.push(q.ok&&check(p.token).reason==='REVOKED');t.push(check(q.token).ok);render('모의 검사 '+t.filter(Boolean).length+'/7 통과. 실제 Firebase 연결 및 과금 검증 전 단계입니다.')}
+}
+</script></body></html>
