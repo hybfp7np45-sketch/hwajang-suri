@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>화장수리 회원관리 · 실제 Firebase 테스트</title>
+<style>
+*{box-sizing:border-box}body{background:#eff7fb;color:#254351;margin:0;padding:18px 12px;font:15px -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif}main{max-width:570px;margin:auto}h1{font-size:24px}h2{font-size:17px;margin-top:0}p{line-height:1.6}.card{background:white;border:1px solid #d7e6ed;border-radius:16px;padding:16px;margin:14px 0}.alert{background:#fff8eb;border:1px solid #ead6ab;border-radius:10px;padding:13px;line-height:1.6;font-size:13px;color:#715a2f}button{border:1px solid #cadfe8;border-radius:9px;background:#e9f4f9;color:#21607d;font-weight:600;padding:12px 6px;min-height:44px}button:disabled{opacity:.45}.primary{background:#3192b7;color:white;border-color:#3192b7}.row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}input,textarea{display:block;width:100%;padding:12px;border:1px solid #c7dbe3;border-radius:9px;font-size:14px;margin:7px 0 12px}textarea{height:115px;font:12px monospace}small{color:#667c87;line-height:1.6}#status{white-space:pre-wrap;padding:13px;background:#edf7fb;border-radius:9px;line-height:1.6}code{word-break:break-all;font-size:12px;background:#e9f2f6}
+</style></head><body><main>
+<small>화장수리 · 기존 H4 / 눈썹 18.8과 분리된 테스트</small><h1>회원관리 실서버 테스트</h1>
+<div class="alert"><b>시험용 페이지입니다.</b> 가상 구매는 실제 결제가 아닙니다. 실제 Firebase 설정과 규칙을 연결하기 전에는 서버 검사가 불가능합니다. 회원 사진 및 고객정보는 입력하지 마세요. 등록한 기기 변경은 이전 기기가 다시 서버에 연결해서 확인할 때 반영됩니다.</div>
+<section class="card"><h2>1. Firebase 프로젝트 연결</h2><small>Firebase 웹앱 구성(JSON)만 입력하세요. 비밀번호나 서비스 계정 비밀키는 입력하지 마세요. 이 값은 GitHub에 저장되지 않습니다.</small>
+<textarea id="cfg" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}'></textarea><button class="primary" id="connect">Firebase 연결</button></section>
+<section class="card"><h2>2. 실제 회원 가입 / 로그인</h2><input id="email" type="email" autocomplete="email" placeholder="테스트 이메일"><input id="pass" type="password" autocomplete="new-password" placeholder="테스트 비밀번호 (6자 이상)">
+<div class="row"><button id="signup" disabled>회원가입</button><button id="login" disabled>로그인</button><button id="logout" disabled>로그아웃</button><button id="refresh" disabled>서버 재확인</button></div><p><small>계정: <span id="who">미로그인</span><br>현재 기기: <code id="device"></code></small></p></section>
+<section class="card"><h2>3. 가상 구매 및 기기 제한</h2><small>결제 검증과 분리된 labSeats 실험 데이터만 사용합니다. 실제 판매 권한은 발급하지 않습니다.</small><div class="row"><button id="buy" disabled>가상 구매 승인</button><button id="claim" disabled>현재 기기 등록</button><button id="transfer" disabled>이 기기로 이전</button><button id="check" disabled>사용 가능 여부 검사</button></div><p><small>구매 상태: <b id="paid">—</b><br>등록 기기: <code id="active">—</code><br>이전 횟수: <b id="count">—</b></small></p></section>
+<section class="card"><h2>4. 검사 결과</h2><div id="status" role="status">서버 연결 전입니다. 무료 요금제 및 실제 기능은 아직 검증되지 않았습니다.</div><p><small>실제 Firestore 읽기·쓰기 사용량은 Firebase 콘솔의 사용량 메뉴에서 확인해야 합니다. 이 화면은 비용 0원을 보증하지 않습니다.</small></p></section>
+</main>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
+import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+import {getFirestore,doc,getDocFromServer,runTransaction,setDoc} from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+const el=id=>document.getElementById(id), btns=['signup','login','logout','refresh','buy','claim','transfer','check'];
+let auth=null,db=null,user=null,seat=null,busy=false;
+let device=localStorage.getItem('hs-auth-lab-device');
+if(!device){device='dev-'+crypto.randomUUID();localStorage.setItem('hs-auth-lab-device',device)}
+el('device').textContent=device;
+function tell(s){el('status').textContent=s}
+function access(s){if(!s||!s.mockPaid)return '구매 없음';if(!s.activeDevice)return '첫 기기 등록 전';return s.activeDevice===device?'현재 기기 승인':'다른 기기로 등록됨 — 사용 제한'}
+function draw(){el('who').textContent=user?user.email:'미로그인';el('paid').textContent=seat?(seat.mockPaid?'시험 구매됨':'구매 전'):'—';el('active').textContent=seat?.activeDevice||'—';el('count').textContent=seat?String(seat.transferCount):'—';for(const x of btns)el(x).disabled=busy||!auth||(x==='logout'?!user:['signup','login'].includes(x)?false:!user||!seat)}
+function ref(){return doc(db,'labSeats',user.uid)}
+async function read(){if(!user)return;const s=await getDocFromServer(ref());seat=s.exists()?s.data():null;draw();return seat}
+async function ensure(){const s=await getDocFromServer(ref());if(s.exists()){seat=s.data();draw();return}try{await setDoc(ref(),{ownerUid:user.uid,mockPaid:false,activeDevice:null,transferCount:0,revision:0})}catch(e){const again=await getDocFromServer(ref());if(!again.exists())throw e}await read()}
+async function modify(type){await runTransaction(db,async t=>{const r=ref(),s=await t.get(r);if(!s.exists())throw Error('회원 시험 데이터가 없습니다.');const v=s.data();let n={...v,revision:v.revision+1};if(type==='buy'){if(v.mockPaid)throw Error('이미 시험 구매 상태입니다.');n.mockPaid=true}else if(type==='claim'){if(!v.mockPaid)throw Error('먼저 가상 구매를 눌러주세요.');if(v.activeDevice&&v.activeDevice!==device)throw Error('다른 기기로 등록됐습니다. 이전 버튼을 사용하세요.');if(v.activeDevice===device)return;n.activeDevice=device}else if(type==='transfer'){if(!v.mockPaid||!v.activeDevice||v.activeDevice===device)throw Error('다른 기기에서 최초 등록한 뒤 이전할 수 있습니다.');n.activeDevice=device;n.transferCount=v.transferCount+1}t.set(r,n)});await read();tell(type==='buy'?'Firebase에 가상 구매가 기록됐습니다. 실제 결제 아님.':type==='claim'?'현재 기기가 서버에 등록됐습니다.':'이용 기기가 서버에서 이전됐습니다. 기존 기기는 다시 확인할 때 차단됩니다.')}
+async function guarded(fn){if(busy)return;busy=true;draw();try{await fn()}catch(e){tell('실행 실패: '+(e.code||e.message||e)+'\nFirebase 보안 규칙 또는 연결 설정을 확인해야 합니다.')}finally{busy=false;draw()}}
+el('connect').onclick=()=>guarded(async()=>{if(auth){tell('이미 연결됐습니다.');return}const c=JSON.parse(el('cfg').value);for(const key of ['apiKey','authDomain','projectId','appId'])if(typeof c[key]!=='string'||!c[key])throw Error('구성 값 누락: '+key);const app=initializeApp(c);auth=getAuth(app);db=getFirestore(app);el('cfg').value='';tell('Firebase SDK가 초기화됐습니다. 실제 로그인/DB 권한은 별도 확인 필요.');onAuthStateChanged(auth,async u=>{user=u;seat=null;draw();if(u){try{await ensure();tell('회원 로그인 확인. 서버 권한: '+access(seat))}catch(e){tell('서버 데이터 접근 실패: '+(e.code||e.message)+' — Firestore 규칙이 아직 기본 차단 상태일 수 있습니다.')}}});});
+el('signup').onclick=()=>guarded(async()=>{await createUserWithEmailAndPassword(auth,el('email').value.trim(),el('pass').value);tell('Firebase 회원가입 성공')});
+el('login').onclick=()=>guarded(async()=>{await signInWithEmailAndPassword(auth,el('email').value.trim(),el('pass').value);tell('Firebase 로그인 성공')});
+el('logout').onclick=()=>guarded(async()=>{await signOut(auth);seat=null;tell('로그아웃')});
+el('refresh').onclick=()=>guarded(async()=>{await read();tell('실제 서버 확인: '+access(seat))});
+el('check').onclick=()=>guarded(async()=>{await read();tell('실제 서버 확인: '+access(seat))});
+el('buy').onclick=()=>guarded(()=>modify('buy'));
+el('claim').onclick=()=>guarded(()=>modify('claim'));
+el('transfer').onclick=()=>guarded(()=>modify('transfer'));
+draw();
+</script></body></html>
