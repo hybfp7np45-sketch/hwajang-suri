@@ -36,7 +36,7 @@ const style=document.createElement('style');style.textContent=`
 #profileSignature{width:100%;height:92px;background:white!important;border-style:dashed!important}
 #profileSignature img{width:100%;height:70px;object-fit:contain}
 #practitionerDialog p{font-size:12px;color:#607d8b}
-#profileSignDialog{width:min(96vw,740px);padding:16px}
+#profileSignDialog{width:min(96vw,740px);padding:16px;overflow:hidden;overscroll-behavior:none;touch-action:none}\n#profileSignDialog button{touch-action:manipulation}\n#profileSignCanvas{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 #profileSignCanvas{display:block;width:100%;height:clamp(180px,45dvh,370px);background:white;border:1px solid #bfd7e4;border-radius:12px;touch-action:none}
 .library-header-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 `;document.head.append(style);
@@ -52,17 +52,30 @@ let signature='',savedStrokes=[],strokes=[],active=null,pointer=null;
 function showPreview(){preview.replaceChildren();if(signature){const img=new Image();img.src=signature;img.alt='저장할 시술자 사인';preview.append(img)}else preview.textContent='눌러서 사인하기'}
 open.onclick=()=>{const p=read()||{};['name','shop','phone'].forEach(k=>form.elements[k].value=p[k]||'');signature=p.signature||'';savedStrokes=p.strokes||[];showPreview();dialog.querySelector('#profileStatus').textContent='';dialog.showModal()};
 dialog.querySelector('#profileCancel').onclick=()=>dialog.close();
-function draw(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,3);canvas.width=Math.round(r.width*d);canvas.height=Math.round(r.height*d);ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,r.width,r.height);ctx.strokeStyle=ctx.fillStyle='#233744';ctx.lineWidth=2.5;ctx.lineCap=ctx.lineJoin='round';for(const s of strokes){if(!s.length)continue;ctx.beginPath();ctx.arc(s[0].x*r.width,s[0].y*r.height,1.25,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.moveTo(s[0].x*r.width,s[0].y*r.height);s.slice(1).forEach(p=>ctx.lineTo(p.x*r.width,p.y*r.height));ctx.stroke()}}
-preview.onclick=()=>{strokes=JSON.parse(JSON.stringify(savedStrokes));sign.showModal();requestAnimationFrame(draw)};
-canvas.onpointerdown=e=>{if(pointer!==null)return;e.preventDefault();pointer=e.pointerId;canvas.setPointerCapture(pointer);active=[];strokes.push(active);point(e)};
-function point(e){const r=canvas.getBoundingClientRect();active.push({x:Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),y:Math.max(0,Math.min(1,(e.clientY-r.top)/r.height))});draw()}
-canvas.onpointermove=e=>{if(e.pointerId!==pointer||!active)return;e.preventDefault();point(e)};
-function end(e){if(e.pointerId===pointer){pointer=null;active=null}}
+function draw(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,3);const w=Math.round(r.width*d),h=Math.round(r.height*d);if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,r.width,r.height);ctx.strokeStyle=ctx.fillStyle='#233744';ctx.lineWidth=2.5;ctx.lineCap=ctx.lineJoin='round';for(const s of strokes){if(!s.length)continue;ctx.beginPath();ctx.arc(s[0].x*r.width,s[0].y*r.height,1.25,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.moveTo(s[0].x*r.width,s[0].y*r.height);s.slice(1).forEach(p=>ctx.lineTo(p.x*r.width,p.y*r.height));ctx.stroke()}}
+let scrollLock=null,strokeRect=null;
+function lockSignScroll(){
+ const elements=[document.documentElement,document.body,dialog,document.getElementById('allForms')].filter(Boolean);
+ scrollLock={x:window.scrollX,y:window.scrollY,styles:elements.map(el=>({el,style:el.getAttribute('style'),top:el.scrollTop}))};
+ document.activeElement?.blur();
+ document.documentElement.style.overflow='hidden';
+ Object.assign(document.body.style,{position:'fixed',top:-scrollLock.y+'px',left:-scrollLock.x+'px',width:'100%',overflow:'hidden'});
+ [dialog,document.getElementById('allForms')].filter(Boolean).forEach(el=>{el.style.overflow='hidden';el.style.overscrollBehavior='none';});
+}
+function unlockSignScroll(){if(!scrollLock)return;const saved=scrollLock;scrollLock=null;for(const entry of saved.styles){if(entry.style===null)entry.el.removeAttribute('style');else entry.el.setAttribute('style',entry.style);entry.el.scrollTop=entry.top;}window.scrollTo(saved.x,saved.y);}
+preview.onclick=()=>{if(sign.open)return;strokes=JSON.parse(JSON.stringify(savedStrokes));lockSignScroll();sign.showModal();requestAnimationFrame(draw)};
+sign.addEventListener('cancel',e=>e.preventDefault());
+sign.addEventListener('touchmove',e=>{if(e.cancelable)e.preventDefault();e.stopPropagation();},{passive:false});
+canvas.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();});
+canvas.onpointerdown=e=>{if(pointer!==null)return;e.preventDefault();e.stopPropagation();strokeRect=canvas.getBoundingClientRect();pointer=e.pointerId;canvas.setPointerCapture(pointer);active=[];strokes.push(active);point(e)};
+function point(e){const r=strokeRect||canvas.getBoundingClientRect();active.push({x:Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),y:Math.max(0,Math.min(1,(e.clientY-r.top)/r.height))});draw()}
+canvas.onpointermove=e=>{if(e.pointerId!==pointer||!active)return;e.preventDefault();e.stopPropagation();point(e)};
+function end(e){e.stopPropagation();if(e.cancelable)e.preventDefault();if(e.pointerId===pointer){pointer=null;active=null;strokeRect=null}}
 canvas.onpointerup=end;canvas.onpointercancel=end;canvas.onlostpointercapture=end;
 sign.querySelector('#profileSignClear').onclick=()=>{strokes=[];active=null;pointer=null;draw()};
 sign.querySelector('#profileSignCancel').onclick=()=>sign.close();
 sign.querySelector('#profileSignDone').onclick=()=>{signature=strokes.length?canvas.toDataURL('image/png'):'';savedStrokes=JSON.parse(JSON.stringify(strokes));showPreview();sign.close()};
-sign.addEventListener('close',()=>{pointer=null;active=null});
+sign.addEventListener('close',()=>{pointer=null;active=null;strokeRect=null;unlockSignScroll()});
 window.addEventListener('resize',()=>{if(sign.open)draw()});
 form.onsubmit=e=>{e.preventDefault();const p={name:form.elements.name.value.trim(),shop:form.elements.shop.value.trim(),phone:form.elements.phone.value.trim(),signature,strokes:savedStrokes};try{localStorage.setItem(KEY,JSON.stringify(p));apply();dialog.close();const notice=document.getElementById('documentLibraryNotice');if(notice)notice.textContent='시술자 정보를 저장했어요.'}catch(_){dialog.querySelector('#profileStatus').textContent='저장 공간을 사용할 수 없어요. 브라우저 설정을 확인해 주세요.'}};
 })();
