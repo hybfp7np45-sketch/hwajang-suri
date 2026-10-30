@@ -4,7 +4,7 @@ const KEY='suri-practitioner-profile-v1';
 function read(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(_){return null}}
 function apply(){
  const p=read();if(!p)return;
- const names=new Set(['담당 시술자','시술자','대표자']);
+ const names=new Set(['담당 시술자','시술자']);
  const shops=new Set(['상호','업소 상호','정보를 처리하는 업소명']);
  const phones=new Set(['업소 연락처','문의·철회 요청 연락처']);
  document.querySelectorAll('label.field').forEach(label=>{
