@@ -37,7 +37,7 @@ const style=document.createElement('style');style.textContent=`
 #profileSignature img{width:100%;height:70px;object-fit:contain}
 #practitionerDialog p{font-size:12px;color:#607d8b}
 #profileSignDialog{width:min(96vw,740px);padding:16px;overflow:hidden;overscroll-behavior:none;touch-action:none}\n#profileSignDialog button{touch-action:manipulation}\n#profileSignCanvas{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-#profileSignCanvas{display:block;width:100%;height:clamp(180px,45dvh,370px);background:white;border:1px solid #bfd7e4;border-radius:12px;touch-action:none}
+#profileSignCanvas{display:block;box-sizing:content-box;width:100%;height:clamp(180px,45dvh,370px);background:white;border:0;outline:1px solid #bfd7e4;border-radius:12px;touch-action:none}
 .library-header-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 `;document.head.append(style);
 const open=document.createElement('button');open.type='button';open.id='openPractitioner';open.textContent='시술자 정보';host.prepend(open);
@@ -49,10 +49,11 @@ sign.innerHTML='<h2>시술자 사인</h2><canvas id="profileSignCanvas" aria-lab
 document.body.append(sign);
 const form=dialog.querySelector('form'),preview=dialog.querySelector('#profileSignature'),canvas=sign.querySelector('canvas'),ctx=canvas.getContext('2d');
 let signature='',savedStrokes=[],strokes=[],active=null,pointer=null;
+let canvasRect=null,resizeFrame=0;
 function showPreview(){preview.replaceChildren();if(signature){const img=new Image();img.src=signature;img.alt='저장할 시술자 사인';preview.append(img)}else preview.textContent='눌러서 사인하기'}
 open.onclick=()=>{const p=read()||{};['name','shop','phone'].forEach(k=>form.elements[k].value=p[k]||'');signature=p.signature||'';savedStrokes=p.strokes||[];showPreview();dialog.querySelector('#profileStatus').textContent='';dialog.showModal()};
 dialog.querySelector('#profileCancel').onclick=()=>dialog.close();
-function draw(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,3);const w=Math.round(r.width*d),h=Math.round(r.height*d);if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,r.width,r.height);ctx.strokeStyle=ctx.fillStyle='#233744';ctx.lineWidth=2.5;ctx.lineCap=ctx.lineJoin='round';for(const s of strokes){if(!s.length)continue;ctx.beginPath();ctx.arc(s[0].x*r.width,s[0].y*r.height,1.25,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.moveTo(s[0].x*r.width,s[0].y*r.height);s.slice(1).forEach(p=>ctx.lineTo(p.x*r.width,p.y*r.height));ctx.stroke()}}
+function draw(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,3);const w=Math.round(r.width*d),h=Math.round(r.height*d);if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,r.width,r.height);canvasRect=r;ctx.strokeStyle=ctx.fillStyle='#233744';ctx.lineWidth=2.5;ctx.lineCap=ctx.lineJoin='round';for(const s of strokes){if(!s.length)continue;ctx.beginPath();ctx.arc(s[0].x*r.width,s[0].y*r.height,1.25,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.moveTo(s[0].x*r.width,s[0].y*r.height);s.slice(1).forEach(p=>ctx.lineTo(p.x*r.width,p.y*r.height));ctx.stroke()}}
 let scrollLock=null,strokeRect=null;
 function lockSignScroll(){
  const elements=[document.documentElement,document.body,dialog,document.getElementById('allForms')].filter(Boolean);
@@ -67,15 +68,53 @@ preview.onclick=()=>{if(sign.open)return;strokes=JSON.parse(JSON.stringify(saved
 sign.addEventListener('cancel',e=>e.preventDefault());
 sign.addEventListener('touchmove',e=>{if(e.cancelable)e.preventDefault();e.stopPropagation();},{passive:false});
 canvas.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();});
-canvas.onpointerdown=e=>{if(pointer!==null)return;e.preventDefault();e.stopPropagation();strokeRect=canvas.getBoundingClientRect();pointer=e.pointerId;canvas.setPointerCapture(pointer);active=[];strokes.push(active);point(e)};
-function point(e){const r=strokeRect||canvas.getBoundingClientRect();active.push({x:Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),y:Math.max(0,Math.min(1,(e.clientY-r.top)/r.height))});draw()}
-canvas.onpointermove=e=>{if(e.pointerId!==pointer||!active)return;e.preventDefault();e.stopPropagation();point(e)};
-function end(e){e.stopPropagation();if(e.cancelable)e.preventDefault();if(e.pointerId===pointer){pointer=null;active=null;strokeRect=null}}
+// Keep drawing events inside the top dialog, including compatibility mouse events.
+for(const type of ['pointerdown','pointermove','pointerup','pointercancel','mousedown','mousemove','mouseup','touchstart','touchend','click','dblclick']){
+ sign.addEventListener(type,e=>e.stopPropagation());
+}
+sign.setAttribute('closedby','none');
+canvas.onpointerdown=e=>{
+ if(pointer!==null||e.isPrimary===false||(e.pointerType==='mouse'&&e.button!==0))return;
+ e.preventDefault();e.stopPropagation();
+ strokeRect=canvasRect||canvas.getBoundingClientRect();pointer=e.pointerId;
+ canvas.setPointerCapture(pointer);active=[];strokes.push(active);point(e);
+};
+function point(e){
+ const r=strokeRect;if(!active||!r)return;
+ const p={x:Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),y:Math.max(0,Math.min(1,(e.clientY-r.top)/r.height))};
+ const previous=active[active.length-1];
+ if(previous&&p.x===previous.x&&p.y===previous.y)return;
+ active.push(p);
+ // Draw only the new segment; resizing or reopening replays the stored strokes.
+ if(previous){ctx.beginPath();ctx.moveTo(previous.x*r.width,previous.y*r.height);ctx.lineTo(p.x*r.width,p.y*r.height);ctx.stroke();}
+ else{ctx.beginPath();ctx.arc(p.x*r.width,p.y*r.height,1.25,0,Math.PI*2);ctx.fill();}
+}
+canvas.onpointermove=e=>{
+ if(e.pointerId!==pointer||!active)return;
+ e.preventDefault();e.stopPropagation();
+ const samples=typeof e.getCoalescedEvents==='function'?e.getCoalescedEvents():[];
+ for(const sample of samples)point(sample);
+ point(e);
+};
+function end(e){
+ if(e.pointerId!==pointer)return;
+ e.stopPropagation();if(e.cancelable)e.preventDefault();
+ if(e.type==='pointerup')point(e);
+ const captured=pointer;pointer=null;active=null;strokeRect=null;
+ if(canvas.hasPointerCapture(captured))canvas.releasePointerCapture(captured);
+ if(resizeFrame){cancelAnimationFrame(resizeFrame);resizeFrame=0;draw();}
+}
 canvas.onpointerup=end;canvas.onpointercancel=end;canvas.onlostpointercapture=end;
 sign.querySelector('#profileSignClear').onclick=()=>{strokes=[];active=null;pointer=null;draw()};
 sign.querySelector('#profileSignCancel').onclick=()=>sign.close();
 sign.querySelector('#profileSignDone').onclick=()=>{signature=strokes.length?canvas.toDataURL('image/png'):'';savedStrokes=JSON.parse(JSON.stringify(strokes));showPreview();sign.close()};
 sign.addEventListener('close',()=>{pointer=null;active=null;strokeRect=null;unlockSignScroll()});
-window.addEventListener('resize',()=>{if(sign.open)draw()});
+function scheduleResize(){
+ if(!sign.open)return;
+ if(resizeFrame)cancelAnimationFrame(resizeFrame);
+ resizeFrame=requestAnimationFrame(()=>{resizeFrame=0;if(sign.open&&pointer===null)draw();});
+}
+window.addEventListener('resize',scheduleResize);
+window.visualViewport?.addEventListener('resize',scheduleResize);
 form.onsubmit=e=>{e.preventDefault();const p={name:form.elements.name.value.trim(),shop:form.elements.shop.value.trim(),phone:form.elements.phone.value.trim(),signature,strokes:savedStrokes};try{localStorage.setItem(KEY,JSON.stringify(p));apply();dialog.close();const notice=document.getElementById('documentLibraryNotice');if(notice)notice.textContent='시술자 정보를 저장했어요.'}catch(_){dialog.querySelector('#profileStatus').textContent='저장 공간을 사용할 수 없어요. 브라우저 설정을 확인해 주세요.'}};
 })();
