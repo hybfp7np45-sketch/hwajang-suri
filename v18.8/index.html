@@ -460,34 +460,79 @@ async function saveComposite(){
  }catch(e){alert('사진 저장을 완료하지 못했어요. 다시 시도해 주세요.')}
 }
 $('#save').onclick=saveComposite;renderLayers();
-const colorbar=$('#colorbar'),colorpicker=$('#colorpicker'),colors=$('#colors');function savedColors(){try{return JSON.parse(localStorage.getItem('hwajang-brow-colors')||'[]')}catch(e){return[]}}function renderColors(){[...colors.querySelectorAll('.swatch')].forEach(x=>x.remove());savedColors().forEach(c=>{const b=document.createElement('button');b.className='swatch';b.style.background=c;b.dataset.c=c;colors.appendChild(b)})}function setBrowColor(c){globalUndoSnapshotV185();if(!selected||selected.dataset.name.includes('엠보'))return;selected.dataset.color=c;apply(selected)}function openOpacityPanel(e){if(e){e.preventDefault();e.stopPropagation()}if(!selected)return;layers.classList.remove('show');colorbar.classList.add('show');const iv=$('#intensity');iv.value=selected.dataset.intensity||100;$('#intensityVal').textContent=iv.value+'%'}const colorBtn=$('#colorbtn');colorpicker.oninput=e=>setBrowColor(e.target.value);const intensity=$('#intensity');intensity.oninput=e=>{if(!selected)return;globalUndoSnapshotV185();selected.dataset.intensity=e.target.value;$('#intensityVal').textContent=e.target.value+'%';apply(selected)};colors.onclick=e=>{const b=e.target.closest('.swatch');if(b)setBrowColor(b.dataset.c)};$('#savecolor').onclick=()=>{const c=colorpicker.value,a=savedColors();if(!a.includes(c)){a.unshift(c);localStorage.setItem('hwajang-brow-colors',JSON.stringify(a.slice(0,10)));renderColors()}};renderColors();</script><div id="build-badge-v5" style="position:fixed;right:8px;top:8px;z-index:99999;background:#111;color:#fff;font:11px/1.2 sans-serif;padding:4px 6px;border-radius:6px;opacity:.72">V18.8 · INT8 새 설치</div><div class="camview" id="camview"><video id="camvideo" autoplay playsinline muted></video><div class="grid" id="grid"></div><button class="camclose" id="camclose">닫기</button><button class="gridbtn" id="gridbtn">Guide ON</button><button class="flipcam" id="flipcam" aria-label="카메라 전환">↻</button><div class="camctl"><button class="shot" id="shot" aria-label="촬영"></button></div><canvas id="camcanvas" hidden></canvas></div><script>let stream=null,facing='environment',camZoom=1,camPinch=null,currentDeviceId=null;const cv=$('#camview'),video=$('#camvideo'),grid=$('#grid');
+const colorbar=$('#colorbar'),colorpicker=$('#colorpicker'),colors=$('#colors');function savedColors(){try{return JSON.parse(localStorage.getItem('hwajang-brow-colors')||'[]')}catch(e){return[]}}function renderColors(){[...colors.querySelectorAll('.swatch')].forEach(x=>x.remove());savedColors().forEach(c=>{const b=document.createElement('button');b.className='swatch';b.style.background=c;b.dataset.c=c;colors.appendChild(b)})}function setBrowColor(c){globalUndoSnapshotV185();if(!selected||selected.dataset.name.includes('엠보'))return;selected.dataset.color=c;apply(selected)}function openOpacityPanel(e){if(e){e.preventDefault();e.stopPropagation()}if(!selected)return;layers.classList.remove('show');colorbar.classList.add('show');const iv=$('#intensity');iv.value=selected.dataset.intensity||100;$('#intensityVal').textContent=iv.value+'%'}const colorBtn=$('#colorbtn');colorpicker.oninput=e=>setBrowColor(e.target.value);const intensity=$('#intensity');intensity.oninput=e=>{if(!selected)return;globalUndoSnapshotV185();selected.dataset.intensity=e.target.value;$('#intensityVal').textContent=e.target.value+'%';apply(selected)};colors.onclick=e=>{const b=e.target.closest('.swatch');if(b)setBrowColor(b.dataset.c)};$('#savecolor').onclick=()=>{const c=colorpicker.value,a=savedColors();if(!a.includes(c)){a.unshift(c);localStorage.setItem('hwajang-brow-colors',JSON.stringify(a.slice(0,10)));renderColors()}};renderColors();</script><div id="build-badge-v5" style="position:fixed;right:8px;top:8px;z-index:99999;background:#111;color:#fff;font:11px/1.2 sans-serif;padding:4px 6px;border-radius:6px;opacity:.72">V18.8 · INT8 새 설치</div><div class="camview" id="camview"><video id="camvideo" autoplay playsinline muted></video><div class="grid" id="grid"></div><button class="camclose" id="camclose">닫기</button><button class="gridbtn" id="gridbtn">Guide ON</button><button class="flipcam" id="flipcam" aria-label="카메라 전환">↻</button><div class="camctl"><button class="shot" id="shot" aria-label="촬영"></button></div><canvas id="camcanvas" hidden></canvas></div><script>let stream=null,facing='environment',camZoom=1,camPinch=null,currentDeviceId=null;
+const cv=$('#camview'),video=$('#camvideo'),grid=$('#grid');
+let cameraSession=0,cameraBusy=false;
+const knownCameras={user:null,environment:null};
 function applyCamZoom(){video.style.transform='scale('+camZoom+')'}
-async function stopCamStream(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;await new Promise(r=>setTimeout(r,120))}
+function disposeCamera(s){s?.getTracks().forEach(t=>t.stop())}
+async function stopCamStream(){const old=stream;stream=null;video.pause();video.srcObject=null;disposeCamera(old);await new Promise(r=>setTimeout(r,180))}
+function cameraControls(busy){cameraBusy=busy;$('#flipcam').disabled=busy;$('#shot').disabled=busy;$('#flipcam').setAttribute('aria-busy',String(busy))}
+function cameraSettings(s){return s?.getVideoTracks()[0]?.getSettings?.()||{}}
+function cameraDirection(s){const t=s?.getVideoTracks()[0],settings=cameraSettings(s);if(['user','environment'].includes(settings.facingMode))return settings.facingMode;const label=t?.label||'';if(/front|user|前面|전면/i.test(label))return 'user';if(/back|rear|environment|後面|후면/i.test(label))return 'environment';return null}
 async function cameraDevices(){try{return (await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput')}catch(_){return[]}}
-async function requestFacing(target){
- await stopCamStream();
- let s=null;
- try{s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:target},width:{ideal:1280},height:{ideal:1600}},audio:false})}catch(_){}
- if(!s){try{s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:target},width:{ideal:1280},height:{ideal:1600}},audio:false})}catch(_){}}
- return s
+function cameraCancelled(){return new DOMException('Camera closed','AbortError')}
+async function acquireCamera(constraints,session){
+ const s=await navigator.mediaDevices.getUserMedia({video:constraints,audio:false});
+ if(session!==cameraSession){disposeCamera(s);throw cameraCancelled()}
+ return s;
+}
+async function requestFacing(target,session,oldId=null,preferredId=null){
+ const size={width:{ideal:1280},height:{ideal:1600}};
+ const acceptable=s=>{const mode=cameraDirection(s),id=cameraSettings(s).deviceId;return mode?mode===target:!(oldId&&id===oldId)};
+ async function attempt(constraints){
+  if(session!==cameraSession)throw cameraCancelled();
+  try{const s=await acquireCamera(constraints,session);if(acceptable(s))return s;disposeCamera(s)}catch(e){if(session!==cameraSession||['NotAllowedError','SecurityError'].includes(e.name))throw e;}
+  return null;
+ }
+ let next;
+ const saved=preferredId||knownCameras[target];
+ if(saved){next=await attempt({deviceId:{exact:saved},...size});if(next)return next;}
+ // Release the previous track before calling this function. Require the facing
+ // direction first; an ideal direction may silently reopen the same camera.
+ for(const constraints of [{facingMode:{exact:target},...size},{facingMode:{exact:target}}]){next=await attempt(constraints);if(next)return next;}
+ const devices=await cameraDevices();
+ const wanted=target==='user'?/front|user|前面|전면/i:/back|rear|environment|後面|후면/i;
+ const opposite=target==='user'?/back|rear|environment|後面|후면/i:/front|user|前面|전면/i;
+ const candidates=devices.filter(d=>d.deviceId&&d.deviceId!==oldId&&!opposite.test(d.label)).sort((a,b)=>Number(wanted.test(b.label))-Number(wanted.test(a.label)));
+ for(const d of candidates){next=await attempt({deviceId:{exact:d.deviceId},...size});if(next)return next;}
+ next=await attempt({facingMode:{ideal:target},...size});
+ if(!next)throw new Error('No camera for '+target);
+ return next;
+}
+async function attachCamera(next,target,session){
+ if(session!==cameraSession){disposeCamera(next);throw cameraCancelled()}
+ stream=next;video.setAttribute('playsinline','');video.muted=true;video.srcObject=next;
+ try{await video.play()}catch(e){if(stream===next){stream=null;video.srcObject=null;}disposeCamera(next);throw e}
+ if(session!==cameraSession){disposeCamera(next);throw cameraCancelled()}
+ facing=cameraDirection(next)||target;currentDeviceId=cameraSettings(next).deviceId||null;
+ if(currentDeviceId)knownCameras[facing]=currentDeviceId;
+ camZoom=1;camPinch=null;applyCamZoom();
+ $('#flipcam').setAttribute('aria-label',facing==='user'?'후면 카메라로 전환':'전면 카메라로 전환');
 }
 async function openCam(){
+ if(cameraBusy)return;
+ const session=++cameraSession;cameraControls(true);
  cv.style.display='block';cv.classList.add('show');$('#gridbtn').textContent=grid.classList.contains('on')?'Guide OFF':'Guide ON';
- try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('mediaDevices unavailable');stream=await requestFacing(facing);if(!stream)throw new Error('camera unavailable');video.srcObject=stream;video.setAttribute('playsinline','');video.muted=true;await video.play();currentDeviceId=stream.getVideoTracks()[0]?.getSettings?.().deviceId||null;camZoom=1;applyCamZoom()}catch(err){alert('카메라를 열 수 없어요. 카메라 권한을 확인해 주세요.');closeCam()}
+ try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('mediaDevices unavailable');await stopCamStream();const next=await requestFacing(facing,session);await attachCamera(next,facing,session)}catch(e){if(session===cameraSession){alert('카메라를 열 수 없어요. 카메라 권한을 확인해 주세요.');closeCam()}}finally{if(session===cameraSession)cameraControls(false)}
 }
 $('#cam').onclick=openCam;
-$('#flipcam').onclick=async e=>{e.preventDefault();e.stopPropagation();const target=facing==='environment'?'user':'environment';try{
- const oldId=currentDeviceId;let next=await requestFacing(target);
- if(next){let id=next.getVideoTracks()[0]?.getSettings?.().deviceId||null;if(id&&oldId&&id===oldId){next.getTracks().forEach(t=>t.stop());next=null}}
- if(!next){const devs=await cameraDevices();const candidates=devs.filter(d=>d.deviceId&&d.deviceId!==oldId);if(candidates.length){const wanted=candidates.find(d=>target==='user'?/front|user|전면/i.test(d.label):/back|rear|environment|후면/i.test(d.label))||candidates[0];next=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:wanted.deviceId},width:{ideal:1280},height:{ideal:1600}},audio:false})}}
- if(!next)throw new Error('no alternate camera');stream=next;facing=target;video.srcObject=stream;await video.play();currentDeviceId=stream.getVideoTracks()[0]?.getSettings?.().deviceId||null;camZoom=1;applyCamZoom()
- }catch(err){alert('이 기기에서 전·후면 카메라 전환을 완료하지 못했어요. 카메라 권한을 확인해 주세요.')}}
+$('#flipcam').onclick=async e=>{
+ e.preventDefault();e.stopPropagation();if(cameraBusy||!stream)return;
+ const session=cameraSession,previous=cameraDirection(stream)||facing,oldId=currentDeviceId,target=previous==='environment'?'user':'environment';
+ cameraControls(true);
+ try{await stopCamStream();const next=await requestFacing(target,session,oldId);await attachCamera(next,target,session)}catch(e){
+  if(session!==cameraSession)return;
+  try{await stopCamStream();const restored=await requestFacing(previous,session,null,oldId);await attachCamera(restored,previous,session)}catch(_){if(session!==cameraSession)return;closeCam()}
+  if(session===cameraSession)alert('다른 방향의 카메라를 열지 못해 이전 카메라로 돌아왔어요.');
+ }finally{if(session===cameraSession)cameraControls(false)}
+};
 $('#gridbtn').onclick=()=>{grid.classList.toggle('on');$('#gridbtn').textContent=grid.classList.contains('on')?'Guide OFF':'Guide ON'};
-function closeCam(){cv.classList.remove('show');cv.style.display='none';video.style.transform='scale(1)';stopCamStream()}$('#camclose').onclick=closeCam;
+function closeCam(){++cameraSession;cameraControls(false);cv.classList.remove('show');cv.style.display='none';video.style.transform='scale(1)';camPinch=null;currentDeviceId=null;stopCamStream()}$('#camclose').onclick=closeCam;
 video.addEventListener('touchstart',e=>{if(e.touches.length===2){const a=e.touches[0],b=e.touches[1];camPinch={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),z:camZoom};e.preventDefault()}},{passive:false});
 video.addEventListener('touchmove',e=>{if(e.touches.length===2&&camPinch){const a=e.touches[0],b=e.touches[1],d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);camZoom=Math.max(1,Math.min(4,camPinch.z*d/camPinch.d));applyCamZoom();e.preventDefault()}},{passive:false});
 video.addEventListener('touchend',e=>{if(e.touches.length<2)camPinch=null},{passive:false});
-$('#shot').onclick=()=>{const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.videoWidth,vh=video.videoHeight;c.width=vw;c.height=vh;const sw=vw/camZoom,sh=vh/camZoom,sx=(vw-sw)/2,sy=(vh-sh)/2;ctx.drawImage(video,sx,sy,sw,sh,0,0,vw,vh);c.toBlob(blob=>{showBlob(blob);closeCam()},'image/jpeg',.94)};
+$('#shot').onclick=()=>{if(cameraBusy||!stream||!video.videoWidth||!video.videoHeight)return;const c=$('#camcanvas'),ctx=c.getContext('2d'),vw=video.videoWidth,vh=video.videoHeight;c.width=vw;c.height=vh;const sw=vw/camZoom,sh=vh/camZoom,sx=(vw-sw)/2,sy=(vh-sh)/2;ctx.drawImage(video,sx,sy,sw,sh,0,0,vw,vh);c.toBlob(blob=>{showBlob(blob);closeCam()},'image/jpeg',.94)};
 </script><script src="../v18.3/opacity-panel.js?cb=504031e0"></script><script src="brow-color.js?cb=eyedropper5-syntaxfix-20261020"></script><style id="palette-force-v2">#colorbar .colors{display:flex!important;align-items:center!important}#colorbar .brow-color-grid{display:grid!important;grid-template-columns:repeat(9,28px)!important;grid-template-rows:repeat(2,28px)!important;gap:6px 8px!important}#colorbar .brow-custom.empty{display:block!important;background:#fff!important;border:1.5px dashed #c7b7bd!important;box-shadow:none!important}.brow-current-color{display:inline-block!important}#colorbar .brow-custom.empty{position:static!important;inset:auto!important;display:block!important;width:28px!important;height:28px!important;background:#fff!important;border:1.5px solid #d8cbd0!important;border-radius:50%!important}.brow-custom.empty[style*="outline"]{border-color:#d94f7c!important}.brow-rainbow{margin-left:2px!important}</style><style id="brow-eraser-v2">
 #browEraseCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:2!important;pointer-events:none}
 #browEraseBtn{position:absolute!important;left:10px!important;top:6px!important;visibility:visible!important;opacity:1!important;width:30px!important;height:26px!important;min-width:30px!important;border:1px solid #d9eef8!important;background:#f4fbfe!important;color:#72c7f2!important;border-radius:13px!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important}
