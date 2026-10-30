@@ -210,7 +210,7 @@ function renderLayers(){const prior=[...layers.querySelectorAll('.layerrow')].ma
  if(prior.length){const map=new Map([...layers.querySelectorAll('.layerrow')].map(r=>[r.dataset.id||r.dataset.fixed,r]));prior.forEach(k=>{const r=map.get(k);if(r&&k!=='skin')layers.insertBefore(r,skin)})}}
 function syncZ(){P.style.zIndex=1;let z=10;brows.forEach(el=>el.style.zIndex=z++);EB.style.zIndex=100;renderLayers()}
 const personalBrowInput=document.createElement('input');personalBrowInput.type='file';personalBrowInput.accept='image/png';personalBrowInput.style.display='none';document.body.appendChild(personalBrowInput);let personalTargetDesign='';
-rail.onclick=async e=>{const add=e.target.closest('.personal-add');if(add){personalTargetDesign=add.dataset.design||currentBrowDesign;personalBrowInput.value='';personalBrowInput.click();return}const c=e.target.closest('.tech-card');if(!c)return;if(!P.src)return alert('먼저 사진을 불러와 주세요.');const n=c.dataset.name,src=c.dataset.src||browAssets[n],photoSource=P.src;if(c.dataset.placing)return;c.dataset.placing='1';let placement;try{placement=await window.suriBrowPlacement?.()}finally{delete c.dataset.placing}if(P.src!==photoSource)return;const mode=document.getElementById('browPlacementSide').value;const fallbackSides=mode==='both'?[0,1]:mode==='left'?[0]:[1];const placements=placement||fallbackSides.map(side=>({w:stage.clientWidth*.28,autoCenter:{x:stage.clientWidth*(side===0?.32:.68),y:stage.clientHeight/3},flip:side===0}));placements.forEach(p=>addBrow({name:n,src,flip:false,ratio:null,imgScale:n.includes('섀도우')?.88:1,...p}))};
+rail.onclick=async e=>{const add=e.target.closest('.personal-add');if(add){personalTargetDesign=add.dataset.design||currentBrowDesign;personalBrowInput.value='';personalBrowInput.click();return}const c=e.target.closest('.tech-card');if(!c)return;if(!P.src)return alert('먼저 사진을 불러와 주세요.');const n=c.dataset.name,src=c.dataset.src||browAssets[n],photoSource=P.src;if(c.dataset.placing)return;c.dataset.placing='1';let placement;try{placement=await window.suriBrowPlacement?.(src)}finally{delete c.dataset.placing}if(P.src!==photoSource)return;const mode=document.getElementById('browPlacementSide').value;const fallbackSides=mode==='both'?[0,1]:mode==='left'?[0]:[1];const placements=placement||fallbackSides.map(side=>({w:stage.clientWidth*.28,autoCenter:{x:stage.clientWidth*(side===0?.32:.68),y:stage.clientHeight/3},flip:side===0}));placements.forEach(p=>addBrow({name:n,src,flip:false,ratio:null,imgScale:n.includes('섀도우')?.88:1,...p}))};
 let personalNameHold=null;
 function personalBrowMenu(btn){
  const id=btn.dataset.personalId;if(!id)return;
@@ -1158,6 +1158,47 @@ schedule();
 const photo=document.getElementById('photo');
 let source='',job=null,targets=null,mesh=null,queue=Promise.resolve();
 const sets=[[70,63,105,66,107,55,65,52,53,46],[300,293,334,296,336,285,295,282,283,276]];
+const assetCache=new Map();
+// Measure the actual ink, not transparent image margins. On stroke assets the
+// second separate stroke in the lower head region is the head alignment mark.
+function inkAnchors(data,w,h){
+ const hit=(x,y)=>data[(y*w+x)*4+3]>40;
+ let l=w,r=-1,t=h,b=-1;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(hit(x,y)){l=Math.min(l,x);r=Math.max(r,x);t=Math.min(t,y);b=Math.max(b,y);}
+ if(r<=l||b<=t)throw Error('Empty eyebrow image');
+ const candidates=[];
+ for(let y=Math.round(t+(b-t)*.65);y<=Math.round(t+(b-t)*.85);y++){
+  const runs=[];let open=false;
+  for(let x=l;x<=l+(r-l)*.22;x++){
+   const on=hit(x,y);
+   if(on&&!open)runs.push([x,x]);
+   if(on)runs[runs.length-1][1]=x;
+   open=on;
+  }
+  if(runs.length>=2&&runs[0][1]-runs[0][0]<(r-l)*.035&&runs[1][1]-runs[1][0]<(r-l)*.035)candidates.push((runs[1][0]+runs[1][1])/2);
+ }
+ candidates.sort((a,b)=>a-b);
+ const head=candidates.length?candidates[Math.floor(candidates.length/2)]:l+(r-l)*.04;
+ let tailY=0,count=0;
+ for(let y=t;y<=b;y++)if(hit(r,y)){tailY+=y;count++;}
+ return {head:head/w,headY:(t+b)/2/h,tail:r/w,tailY:tailY/count/h,ratio:h/w};
+}
+function getAsset(src){
+ if(assetCache.has(src))return assetCache.get(src);
+ const work=new Promise(resolve=>{
+  const im=new Image();let done=false;
+  const finish=value=>{if(done)return;done=true;clearTimeout(timer);resolve(value);};
+  const timer=setTimeout(()=>finish(null),8000);
+  im.onload=()=>{try{
+   const c=document.createElement('canvas'),scale=Math.min(1,1024/Math.max(im.naturalWidth,im.naturalHeight));
+   c.width=Math.round(im.naturalWidth*scale);c.height=Math.round(im.naturalHeight*scale);
+   const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(im,0,0,c.width,c.height);
+   finish(inkAnchors(ctx.getImageData(0,0,c.width,c.height).data,c.width,c.height));
+  }catch(_){finish(null);}};
+  im.onerror=()=>finish(null);im.src=src;
+ });
+ assetCache.set(src,work);work.then(value=>{if(!value)assetCache.delete(src);});return work;
+}
 async function detect(image){
  if(!window.FaceMesh)return null;
  if(!mesh){mesh=new FaceMesh({locateFile:f=>'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/'+f});mesh.setOptions({maxNumFaces:1,refineLandmarks:true,minDetectionConfidence:.55,staticImageMode:true});}
@@ -1172,27 +1213,55 @@ function prepare(){
  const input=document.createElement('canvas'),scale=Math.min(1,1024/Math.max(photo.naturalWidth,photo.naturalHeight));
  input.width=Math.round(photo.naturalWidth*scale);input.height=Math.round(photo.naturalHeight*scale);input.getContext('2d').drawImage(photo,0,0,input.width,input.height);
  const work=queue.then(()=>detect(input));queue=work.catch(()=>null);
- job=work.then(points=>{
-  if(source!==current||!points)return null;
-  const found=sets.map(ids=>{
-   const ps=ids.map(i=>points[i]);
-   const left=Math.min(...ps.map(p=>p.x)),right=Math.max(...ps.map(p=>p.x)),top=Math.min(...ps.map(p=>p.y)),bottom=Math.max(...ps.map(p=>p.y));
-   const a=ps.reduce((a,p)=>p.x<a.x?p:a),b=ps.reduce((a,p)=>p.x>a.x?p:a);
-   return {x:(left+right)/2,y:(top+bottom)/2,width:right-left,dx:b.x-a.x,dy:b.y-a.y};
-  }).sort((a,b)=>a.x-b.x);
-  if(found.some(t=>!Number.isFinite(t.width)||t.width<.015||t.width>.5))return null;
-  targets=found;return found;
- }).catch(()=>null);return job;
+ job=work.then(points=>{if(source!==current||!points)return null;targets=points;return points;}).catch(()=>null);return job;
+}
+function mapDesign(points,asset,pw,ph){
+ const pixel=i=>({x:points[i].x*pw,y:points[i].y*ph});
+ // Face-local vertical follows head tilt; 244/464 mark the nasal side of the
+ // inner canthus, 129/358 the lateral nasal wing, 33/263 the outer eye corner.
+ const p0=pixel(33),p1=pixel(263),length=Math.hypot(p1.x-p0.x,p1.y-p0.y);
+ if(!length)return null;
+ const ux=(p1.x-p0.x)/length,uy=(p1.y-p0.y)/length;
+ const local=p=>({x:p.x*ux+p.y*uy,y:-p.x*uy+p.y*ux});
+ const at=i=>local(pixel(i));
+ const configs=[{head:244,nose:129,eye:33,inner:133,ids:sets[0]},{head:464,nose:358,eye:263,inner:362,ids:sets[1]}];
+ const found=configs.map(c=>{
+  const ps=c.ids.map(at),minX=Math.min(...ps.map(p=>p.x)),maxX=Math.max(...ps.map(p=>p.x));
+  const a=ps.reduce((a,p)=>p.x<a.x?p:a),b=ps.reduce((a,p)=>p.x>a.x?p:a);
+  return {...c,ps,x:(minX+maxX)/2,angle:Math.atan2(b.y-a.y,b.x-a.x)};
+ }).sort((a,b)=>a.x-b.x);
+ const result=found.map((c,side)=>{
+  const nose=at(c.nose),eye=at(c.eye),inner=at(c.inner),head=at(c.head),eyeWidth=Math.hypot(eye.x-inner.x,eye.y-inner.y);
+  if(Math.abs(eye.y-nose.y)<eyeWidth*.4)return null;
+  const slope=(eye.x-nose.x)/(eye.y-nose.y),cy=(Math.min(...c.ps.map(p=>p.y))+Math.max(...c.ps.map(p=>p.y)))/2;
+  const flip=side===0,sign=flip?-1:1,cs=Math.cos(c.angle),sn=Math.sin(c.angle);
+  const offset=(x,y)=>{const dx=sign*(x-.5),dy=(y-.5)*asset.ratio;return {x:dx*cs-dy*sn,y:dx*sn+dy*cs};};
+  const h=offset(asset.head,asset.headY),t=offset(asset.tail,asset.tailY);
+  // Solve both constraints together: head lies on vertical x=head.x and tail
+  // lies on the nasal-wing/outer-canthus ray, preserving the asset aspect ratio.
+  const denominator=t.x-h.x-slope*t.y;
+  const w=(nose.x+slope*(cy-nose.y)-head.x)/denominator;
+  if(!Number.isFinite(w)||w<eyeWidth*.6||w>eyeWidth*3.5)return null;
+  const cx=head.x-w*h.x;
+  return {w,autoCenter:{x:cx*ux-cy*uy,y:cx*uy+cy*ux},rot:(c.angle+Math.atan2(uy,ux))*180/Math.PI,flip};
+ });
+ return result.every(Boolean)?result:null;
 }
 photo.addEventListener('load',prepare);
-window.suriBrowPlacement=async function(){
- let timer;await Promise.race([prepare(),new Promise(r=>{timer=setTimeout(r,12000)})]);clearTimeout(timer);
- if(!targets||source!==(photo.currentSrc||photo.src))return null;
- const mode=document.getElementById('browPlacementSide').value,sides=mode==='both'?[0,1]:mode==='left'?[0]:[1],pw=parseFloat(photo.style.width),ph=parseFloat(photo.style.height);
+window.suriBrowPlacement=async function(src){
+ const expected=photo.currentSrc||photo.src;
+ let timer;
+ const [,asset]=await Promise.all([Promise.race([prepare(),new Promise(r=>{timer=setTimeout(r,12000)})]),getAsset(src)]);
+ clearTimeout(timer);
+ if(!asset||!targets||source!==expected||expected!==(photo.currentSrc||photo.src))return null;
+ const pw=parseFloat(photo.style.width),ph=parseFloat(photo.style.height);
  if(!pw||!ph)return null;
- return sides.map(side=>{const t=targets[side];return {w:t.width*pw*1.05,autoCenter:{x:(parseFloat(photo.style.left)||0)+t.x*pw,y:(parseFloat(photo.style.top)||0)+t.y*ph},rot:Math.atan2(t.dy*ph,t.dx*pw)*180/Math.PI,flip:side===0};});
+ const all=mapDesign(targets,asset,pw,ph);if(!all)return null;
+ const mode=document.getElementById('browPlacementSide').value,sides=mode==='both'?[0,1]:mode==='left'?[0]:[1];
+ return sides.map(side=>{const p=all[side];p.autoCenter.x+=parseFloat(photo.style.left)||0;p.autoCenter.y+=parseFloat(photo.style.top)||0;return p;});
 };
 })();
+
 </script>
 
 
