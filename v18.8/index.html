@@ -484,7 +484,9 @@ async function acquireCamera(constraints,session){
  return s;
 }
 async function requestFacing(target,session,oldId=null,preferredId=null){
- const size={width:{ideal:1280},height:{ideal:1600}};
+ // Request a high resolution stream; the browser chooses the supported size.
+ const portrait=window.innerHeight>=window.innerWidth;
+ const size={width:{ideal:portrait?2160:3840},height:{ideal:portrait?3840:2160}};
  const acceptable=s=>{const mode=cameraDirection(s),id=cameraSettings(s).deviceId;return mode?mode===target:!(oldId&&id===oldId)};
  async function attempt(constraints){
   if(session!==cameraSession)throw cameraCancelled();
@@ -554,7 +556,7 @@ $('#shot').onclick=()=>{
   if(session!==cameraSession)return;
   if(!blob){cameraControls(false);alert('촬영한 사진을 불러오지 못했어요. 다시 촬영해 주세요.');return}
   showBlob(blob);closeCam();
- },'image/jpeg',.94);
+ },'image/png');
 };
 </script><script src="../v18.3/opacity-panel.js?cb=504031e0"></script><script src="brow-color.js?cb=eyedropper5-syntaxfix-20261020"></script><style id="palette-force-v2">#colorbar .colors{display:flex!important;align-items:center!important}#colorbar .brow-color-grid{display:grid!important;grid-template-columns:repeat(9,28px)!important;grid-template-rows:repeat(2,28px)!important;gap:6px 8px!important}#colorbar .brow-custom.empty{display:block!important;background:#fff!important;border:1.5px dashed #c7b7bd!important;box-shadow:none!important}.brow-current-color{display:inline-block!important}#colorbar .brow-custom.empty{position:static!important;inset:auto!important;display:block!important;width:28px!important;height:28px!important;background:#fff!important;border:1.5px solid #d8cbd0!important;border-radius:50%!important}.brow-custom.empty[style*="outline"]{border-color:#d94f7c!important}.brow-rainbow{margin-left:2px!important}</style><style id="brow-eraser-v2">
 #browEraseCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:2!important;pointer-events:none}
