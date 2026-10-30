@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // TEST PROJECT ONLY: labSeats can simulate purchase. NEVER use as a real paid license.
+    function owned(uid) { return request.auth != null && request.auth.uid == uid; }
+    function valid(d, uid) {
+      return d.keys().hasAll(['ownerUid','mockPaid','activeDevice','transferCount','revision'])
+        && d.keys().hasOnly(['ownerUid','mockPaid','activeDevice','transferCount','revision'])
+        && d.ownerUid == uid && d.mockPaid is bool
+        && (d.activeDevice == null || (d.activeDevice is string && d.activeDevice.size() <= 80))
+        && d.transferCount is int && d.transferCount >= 0
+        && d.revision is int && d.revision >= 0;
+    }
+    match /labSeats/{uid} {
+      allow get: if owned(uid);
+      allow list: if false;
+      allow create: if owned(uid) && valid(request.resource.data, uid)
+        && request.resource.data.mockPaid == false
+        && request.resource.data.activeDevice == null
+        && request.resource.data.transferCount == 0
+        && request.resource.data.revision == 0;
+      allow update: if owned(uid) && valid(request.resource.data, uid)
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.revision == resource.data.revision + 1
+        && (
+          (resource.data.mockPaid == false && request.resource.data.mockPaid == true
+            && request.resource.data.activeDevice == resource.data.activeDevice
+            && request.resource.data.transferCount == resource.data.transferCount)
+          ||
+          (resource.data.mockPaid == true && request.resource.data.mockPaid == true
+            && resource.data.activeDevice == null
+            && request.resource.data.activeDevice is string
+            && request.resource.data.transferCount == resource.data.transferCount)
+          ||
+          (resource.data.mockPaid == true && request.resource.data.mockPaid == true
+            && resource.data.activeDevice is string
+            && request.resource.data.activeDevice is string
+            && request.resource.data.activeDevice != resource.data.activeDevice
+            && request.resource.data.transferCount == resource.data.transferCount + 1)
+        );
+      allow delete: if false;
+    }
+    // Real paid entitlements must be issued by a trusted server, not by a client.
+    match /licenses/{uid} {
+      allow get: if owned(uid);
+      allow list, create, update, delete: if false;
+    }
+    match /{path=**} { allow read, write: if false; }
+  }
+}
