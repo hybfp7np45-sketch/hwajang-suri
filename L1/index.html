@@ -194,7 +194,14 @@ header{order:0;flex-shrink:0}
 #blendPalette{padding:2px;gap:10px 7px}
 #blendChosen .swatch{gap:2px}
 #blendChosen small{line-height:1.2}
-</style></head><body>
+</style><style id="camera-controls-transfer">
+#camview .camctl{pointer-events:none}
+#camview .camctl button{pointer-events:auto}
+#camview .flipcam{z-index:3;pointer-events:auto;touch-action:manipulation}
+#camview{z-index:2147483647!important;isolation:isolate}
+#camview .camclose,#camview .gridbtn,#camview .camctl{z-index:3}
+</style>
+</head><body>
 <main class="app"><header><button class="tool" id="home" type="button" aria-label="홈으로 돌아가기" title="홈으로 돌아가기" onclick="location.href='../H3/index.html'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9"/></svg></button><button class="tool" id="camera" aria-label="촬영"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 7.3 8.7 5h6.6l1.5 2.3H19a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.3a2 2 0 0 1 2-2h2.2Z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button><button class="tool" id="upload" aria-label="사진 불러오기"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.2"/><path d="M5.7 19c.5-4 2.8-6 6.3-6s5.8 2 6.3 6"/></svg></button><button class="tool save" id="save" aria-label="저장"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m8.5 11.5 3.5 3.5 3.5-3.5"/><path d="M5 19h14"/></svg></button></header>
 <section class="stage" aria-label="사진 미리보기"><div class="empty" id="empty"><svg viewBox="0 0 64 64"><rect x="9" y="7" width="46" height="50" rx="9"/><circle cx="24" cy="23" r="5"/><path d="m10 48 15-15 10 10 9-9 11 12"/></svg>사진을 촬영하거나<br>사진을 불러오세요</div><img id="photo" alt="불러온 고객 사진"><div id="photoGrid" class="grid"></div><canvas id="lipOverlay" aria-hidden="true"></canvas><svg id="lipBoundary" aria-label="입술 경계 조정" xmlns="http://www.w3.org/2000/svg"></svg><button class="lip-retry" id="lipRetry" hidden>다시 인식</button><button id="lipGlobalUndo" class="lip-global-undo" hidden>되돌리기</button><button class="lip-compare" id="lipCompare" hidden aria-pressed="false">원본 비교</button><span class="photo-label" id="photoLabel" hidden>원본 사진</span></section>
 <section class="panel"><div class="tabs" role="tablist" aria-label="입술 컬러 영역"><button class="tab" id="tab-tone" role="tab" aria-selected="false" aria-controls="color-panel" data-group="톤업">톤업</button><button class="tab" id="tab-base" role="tab" aria-selected="false" aria-controls="color-panel" data-group="베이스">베이스</button><button class="tab" id="tab-point" role="tab" aria-selected="false" aria-controls="color-panel" data-group="포인트">포인트</button></div><div id="color-panel" hidden role="tabpanel" aria-labelledby="tab-tone"><div class="colors" id="colors"></div><label class="lip-strength">진하기 <input id="lipStrength" type="range" min="0" max="100" value="65" aria-label="입술 컬러 진하기"><output id="lipStrengthValue">65%</output></label></div></section><div class="lip-detection" id="lipDetection" role="status" aria-live="polite" hidden></div><div class="boundary-tools" id="boundaryTools" hidden><button id="boundaryToggle">입술 영역 조정</button><button id="lipEraseToggle">입술 영역 지우기</button><button id="manualLip" hidden>직접 영역 지정</button><button id="boundaryUndo" hidden>되돌리기</button><button id="boundaryReset" hidden>자동 경계</button></div><div class="boundary-footer" id="boundaryFooter" hidden><p><span style="color:#dc658f">● 윗입술</span> · <span style="color:#249fbb">● 아랫입술</span> — 점을 움직여 경계를 맞춰 주세요</p><div><button id="boundaryCancel" aria-label="경계 조정 취소">×</button><strong>입술 경계 조정</strong><button id="boundaryDone" aria-label="경계 조정 완료">✓</button></div></div><section id="lipErasePanel" hidden aria-label="입술 영역 지우기">
@@ -374,34 +381,136 @@ function resetLoadedPhoto(){resetView();P.style.display='block';$('empty').hidde
 function showPhoto(blob){return showBlob(blob)}
 $('picker').onclick=e=>{if(e.target===$('picker'))$('picker').hidden=true};
 
-let stream=null,facing='environment',camZoom=1,camPinch=null,currentDeviceId=null;const cv=$('camview'),video=$('camvideo'),grid=$('grid');
-function applyCamZoom(){video.style.transform='scale('+camZoom+')'}
-async function stopCamStream(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;await new Promise(r=>setTimeout(r,120))}
+let stream=null,facing='environment',camZoom=1,camPinch=null,currentDeviceId=null;
+const cv=$('camview'),video=$('camvideo'),grid=$('grid');
+let cameraSession=0,cameraBusy=false;
+const knownCameras={user:null,environment:null};
+function applyCamZoom(){video.style.transform='scale('+camZoom+') scaleX('+(facing==='user'?-1:1)+')'}
+// Match the centered object-fit:cover preview, including pinch zoom.
+function cameraCaptureRect(vw,vh,bw,bh,z){
+ const scale=Math.max(bw/vw,bh/vh)*z;
+ const sw=bw/scale,sh=bh/scale;
+ return {sx:(vw-sw)/2,sy:(vh-sh)/2,sw,sh};
+}
+function disposeCamera(s){s?.getTracks().forEach(t=>t.stop())}
+async function stopCamStream(){const old=stream;stream=null;video.pause();video.srcObject=null;disposeCamera(old);await new Promise(r=>setTimeout(r,180))}
+function cameraControls(busy){cameraBusy=busy;$('flipcam').disabled=busy;$('shot').disabled=busy;$('flipcam').setAttribute('aria-busy',String(busy))}
+function cameraSettings(s){return s?.getVideoTracks()[0]?.getSettings?.()||{}}
+function cameraDirection(s){const t=s?.getVideoTracks()[0],settings=cameraSettings(s);if(['user','environment'].includes(settings.facingMode))return settings.facingMode;const label=t?.label||'';if(/front|user|前面|전면/i.test(label))return 'user';if(/back|rear|environment|後面|후면/i.test(label))return 'environment';return null}
 async function cameraDevices(){try{return (await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput')}catch(_){return[]}}
-async function requestFacing(target){
- await stopCamStream();
- let s=null;
- try{s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:target},width:{ideal:1280},height:{ideal:1600}},audio:false})}catch(_){}
- if(!s){try{s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:target},width:{ideal:1280},height:{ideal:1600}},audio:false})}catch(_){}}
- return s
+function cameraCancelled(){return new DOMException('Camera closed','AbortError')}
+async function acquireCamera(constraints,session){
+ const s=await navigator.mediaDevices.getUserMedia({video:constraints,audio:false});
+ if(session!==cameraSession){disposeCamera(s);throw cameraCancelled()}
+ return s;
+}
+async function requestFacing(target,session,oldId=null,preferredId=null){
+ // Ideal constraints alone can silently return a low-resolution stream.
+ // Try real supported modes in both sensor orientations before allowing fallback.
+ const size={width:{ideal:3840},height:{ideal:2160}};
+ const acceptable=s=>{const mode=cameraDirection(s),id=cameraSettings(s).deviceId;return mode?mode===target:!(oldId&&id===oldId)};
+ async function attempt(constraints){
+  if(session!==cameraSession)throw cameraCancelled();
+  try{const s=await acquireCamera(constraints,session);if(acceptable(s))return s;disposeCamera(s)}catch(e){if(session!==cameraSession||['NotAllowedError','SecurityError'].includes(e.name))throw e;}
+  return null;
+ }
+ let next;
+ const saved=preferredId||knownCameras[target];
+ const selector=saved?{deviceId:{exact:saved}}:{facingMode:{exact:target}};
+ const supported=navigator.mediaDevices.getSupportedConstraints?.()||{};
+ for(const [width,height] of [[3840,2160],[2160,3840],[1920,1080],[1080,1920]]){
+  next=await attempt({...selector,width:{exact:width},height:{exact:height},...(supported.resizeMode?{resizeMode:'none'}:{})});
+  if(next)return next;
+ }
+ if(saved){next=await attempt({deviceId:{exact:saved},...size});if(next)return next;}
+ // Release the previous track before calling this function. Require the facing
+ // direction first; an ideal direction may silently reopen the same camera.
+ for(const constraints of [{facingMode:{exact:target},...size},{facingMode:{exact:target}}]){next=await attempt(constraints);if(next)return next;}
+ const devices=await cameraDevices();
+ const wanted=target==='user'?/front|user|前面|전면/i:/back|rear|environment|後面|후면/i;
+ const opposite=target==='user'?/back|rear|environment|後面|후면/i:/front|user|前面|전면/i;
+ const candidates=devices.filter(d=>d.deviceId&&d.deviceId!==oldId&&!opposite.test(d.label)).sort((a,b)=>Number(wanted.test(b.label))-Number(wanted.test(a.label)));
+ for(const d of candidates){next=await attempt({deviceId:{exact:d.deviceId},...size});if(next)return next;}
+ next=await attempt({facingMode:{ideal:target},...size});
+ if(!next)throw new Error('No camera for '+target);
+ return next;
+}
+async function attachCamera(next,target,session){
+ if(session!==cameraSession){disposeCamera(next);throw cameraCancelled()}
+ stream=next;video.setAttribute('playsinline','');video.muted=true;video.srcObject=next;
+ try{await video.play()}catch(e){if(stream===next){stream=null;video.srcObject=null;}disposeCamera(next);throw e}
+ if(session!==cameraSession){disposeCamera(next);throw cameraCancelled()}
+ facing=cameraDirection(next)||target;currentDeviceId=cameraSettings(next).deviceId||null;
+ if(currentDeviceId)knownCameras[facing]=currentDeviceId;
+ camZoom=1;camPinch=null;applyCamZoom();
+ $('flipcam').setAttribute('aria-label',facing==='user'?'후면 카메라로 전환':'전면 카메라로 전환');
 }
 async function openCam(){
+ if(cameraBusy)return;
+ const session=++cameraSession;cameraControls(true);
  cv.style.display='block';cv.classList.add('show');$('gridbtn').textContent=grid.classList.contains('on')?'Guide OFF':'Guide ON';
- try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('mediaDevices unavailable');stream=await requestFacing(facing);if(!stream)throw new Error('camera unavailable');video.srcObject=stream;video.setAttribute('playsinline','');video.muted=true;await video.play();currentDeviceId=stream.getVideoTracks()[0]?.getSettings?.().deviceId||null;camZoom=1;applyCamZoom()}catch(err){alert('카메라를 열 수 없어요. 카메라 권한을 확인해 주세요.');closeCam()}
+ try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('mediaDevices unavailable');await stopCamStream();const next=await requestFacing(facing,session);await attachCamera(next,facing,session)}catch(e){if(session===cameraSession){alert('카메라를 열 수 없어요. 카메라 권한을 확인해 주세요.');closeCam()}}finally{if(session===cameraSession)cameraControls(false)}
 }
 $('camera').onclick=openCam;
-$('flipcam').onclick=async e=>{e.preventDefault();e.stopPropagation();const target=facing==='environment'?'user':'environment';try{
- const oldId=currentDeviceId;let next=await requestFacing(target);
- if(next){let id=next.getVideoTracks()[0]?.getSettings?.().deviceId||null;if(id&&oldId&&id===oldId){next.getTracks().forEach(t=>t.stop());next=null}}
- if(!next){const devs=await cameraDevices();const candidates=devs.filter(d=>d.deviceId&&d.deviceId!==oldId);if(candidates.length){const wanted=candidates.find(d=>target==='user'?/front|user|전면/i.test(d.label):/back|rear|environment|후면/i.test(d.label))||candidates[0];next=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:wanted.deviceId},width:{ideal:1280},height:{ideal:1600}},audio:false})}}
- if(!next)throw new Error('no alternate camera');stream=next;facing=target;video.srcObject=stream;await video.play();currentDeviceId=stream.getVideoTracks()[0]?.getSettings?.().deviceId||null;camZoom=1;applyCamZoom()
- }catch(err){alert('이 기기에서 전·후면 카메라 전환을 완료하지 못했어요. 카메라 권한을 확인해 주세요.')}}
+$('flipcam').onclick=async e=>{
+ e.preventDefault();e.stopPropagation();if(cameraBusy||!stream)return;
+ const session=cameraSession,previous=cameraDirection(stream)||facing,oldId=currentDeviceId,target=previous==='environment'?'user':'environment';
+ cameraControls(true);
+ try{await stopCamStream();const next=await requestFacing(target,session,oldId);await attachCamera(next,target,session)}catch(e){
+  if(session!==cameraSession)return;
+  try{await stopCamStream();const restored=await requestFacing(previous,session,null,oldId);await attachCamera(restored,previous,session)}catch(_){if(session!==cameraSession)return;closeCam()}
+  if(session===cameraSession)alert('다른 방향의 카메라를 열지 못해 이전 카메라로 돌아왔어요.');
+ }finally{if(session===cameraSession)cameraControls(false)}
+};
 $('gridbtn').onclick=()=>{grid.classList.toggle('on');$('gridbtn').textContent=grid.classList.contains('on')?'Guide OFF':'Guide ON'};
-function closeCam(){cv.classList.remove('show');cv.style.display='none';video.style.transform='scale(1)';stopCamStream()}$('camclose').onclick=closeCam;
+function closeCam(){++cameraSession;cameraControls(false);cv.classList.remove('show');cv.style.display='none';video.style.transform='scale(1)';camPinch=null;currentDeviceId=null;stopCamStream()}$('camclose').onclick=closeCam;
 video.addEventListener('touchstart',e=>{if(e.touches.length===2){const a=e.touches[0],b=e.touches[1];camPinch={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),z:camZoom};e.preventDefault()}},{passive:false});
 video.addEventListener('touchmove',e=>{if(e.touches.length===2&&camPinch){const a=e.touches[0],b=e.touches[1],d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);camZoom=Math.max(1,Math.min(4,camPinch.z*d/camPinch.d));applyCamZoom();e.preventDefault()}},{passive:false});
 video.addEventListener('touchend',e=>{if(e.touches.length<2)camPinch=null},{passive:false});
-$('shot').onclick=()=>{const c=$('camcanvas'),ctx=c.getContext('2d'),vw=video.videoWidth,vh=video.videoHeight;c.width=vw;c.height=vh;const sw=vw/camZoom,sh=vh/camZoom,sx=(vw-sw)/2,sy=(vh-sh)/2;ctx.drawImage(video,sx,sy,sw,sh,0,0,vw,vh);c.toBlob(blob=>{showPhoto(blob);closeCam()},'image/jpeg',.94)};
+async function cameraPhotoSource(track,vw,vh){
+ // Still exposure can contain more detail than the live video track.
+ if(!window.ImageCapture)return null;
+ let url;
+ try{
+  const capture=new ImageCapture(track),settings={};
+  try{const caps=await capture.getPhotoCapabilities();if(caps.imageWidth?.max)settings.imageWidth=caps.imageWidth.max}catch(_){}
+  const blob=await capture.takePhoto(settings);
+  const image=new Image();url=URL.createObjectURL(blob);image.src=url;await image.decode();
+  const iw=image.naturalWidth,ih=image.naturalHeight;
+  // Reject differently oriented output rather than rotate or stretch the preview.
+  if((iw>ih)!==(vw>vh)||iw*ih<vw*vh){URL.revokeObjectURL(url);return null}
+  return {image,release:()=>URL.revokeObjectURL(url)};
+ }catch(_){if(url)URL.revokeObjectURL(url);return null}
+}
+$('shot').onclick=async()=>{
+ if(cameraBusy||!stream||!video.videoWidth||!video.videoHeight)return;
+ const c=$('camcanvas'),ctx=c.getContext('2d'),vw=video.videoWidth,vh=video.videoHeight;
+ const bw=video.clientWidth,bh=video.clientHeight;
+ if(!ctx||!bw||!bh)return;
+ const crop=cameraCaptureRect(vw,vh,bw,bh,camZoom),session=cameraSession,mirror=facing==='user';
+ cameraControls(true);
+ const still=await cameraPhotoSource(stream.getVideoTracks()[0],vw,vh);
+ if(session!==cameraSession){still?.release();return}
+ // Center-crop the still to the video field ratio first, then apply the exact
+ // same viewport crop and mirror. Never enlarge a smaller capture artificially.
+ const source=still?.image||video,iw=source.naturalWidth||vw,ih=source.naturalHeight||vh;
+ const base=cameraCaptureRect(iw,ih,vw,vh,1);
+ const sx=base.sx+crop.sx/vw*base.sw,sy=base.sy+crop.sy/vh*base.sh;
+ const sw=crop.sw/vw*base.sw,sh=crop.sh/vh*base.sh;
+ c.width=Math.max(1,Math.round(sw));c.height=Math.max(1,Math.round(sh));
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ ctx.save();
+ if(mirror){ctx.translate(c.width,0);ctx.scale(-1,1)}
+ ctx.drawImage(source,sx,sy,sw,sh,0,0,c.width,c.height);
+ ctx.restore();
+ still?.release();
+ c.toBlob(blob=>{
+  if(session!==cameraSession)return;
+  if(!blob){cameraControls(false);alert('촬영한 사진을 불러오지 못했어요. 다시 촬영해 주세요.');return}
+  showBlob(blob);closeCam();
+ },'image/png');
+};
+
 
 $('save').onclick=async()=>{
  if(!photoURL){alert('사진을 먼저 불러오거나 촬영해 주세요.');return}
@@ -1091,3 +1200,4 @@ schedule();
 })();
 </script>
 </body></html>
+
