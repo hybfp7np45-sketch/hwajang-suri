@@ -20,6 +20,15 @@ function validDate(y,m,d){const s=`${y}-${pad(m)}-${pad(d)}`,v=new Date(s+'T12:0
 function weekStart(date){const n=new Date(date+'T12:00:00Z').getUTCDay();return dayAdd(date,-((n+6)%7));}
 function monthShift(date,n){const d=new Date(date+'T12:00:00Z'),day=d.getUTCDate();d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+n);const last=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();d.setUTCDate(Math.min(day,last));return d.toISOString().slice(0,10);}
 function overlap(a,b){return a.id!==b.id&&a.date===b.date&&a.staff===b.staff&&!['cancelled','noshow'].includes(a.status)&&!['cancelled','noshow'].includes(b.status)&&minutes(a.time)<minutes(b.time)+b.duration&&minutes(b.time)<minutes(a.time)+a.duration;}
+function completeDue(rows,now=Date.now()){
+ let changed=false;
+ const reservations=rows.map(r=>{if(r.status!=='confirmed'||!Number.isFinite(minutes(r.time))||!/^\d{4}-\d{2}-\d{2}$/.test(r.date||''))return r;
+ const [y,m,d]=r.date.split('-').map(Number);if(!validDate(y,m,d))return r;
+ const duration=Number(r.duration);if(!Number.isFinite(duration)||duration<=0)return r;
+ const end=Date.parse(r.date+'T'+r.time+':00+09:00')+duration*60000;
+ if(!Number.isFinite(end)||end>now)return r;changed=true;return {...r,status:'completed',autoCompleted:true,completedAt:new Date(end).toISOString()};});
+ return {reservations,changed};
+}
 function serviceDuration(service,items=[]){const key=x=>String(x||'').normalize('NFKC').replace(/\s/g,'').toLowerCase();const found=items.filter(x=>key(x.name)===key(service)&&key(service));return found.length===1&&Number(found[0].duration)>=10&&Number(found[0].duration)<=480&&Number(found[0].duration)%10===0?Number(found[0].duration):null;}
 function parse(text,today,staff=[],hours={start:9,end:21}){
  const s=String(text||'').normalize('NFKC').replace(/\r/g,''),warnings=[],result={name:'',phone:'',date:'',time:'',service:'',staff:'',duration:60,warnings};
@@ -62,7 +71,7 @@ function parse(text,today,staff=[],hours={start:9,end:21}){
  match=s.match(/(?:소요\s*시간|시술\s*시간)\s*[:：=]\s*(?:(\d+)\s*시간)?\s*(?:(\d+)\s*분)?/);if(match&&(match[1]||match[2])){const n=Number(match[1]||0)*60+Number(match[2]||0);if(n>=10&&n<=480&&n%10===0)result.duration=n;else warnings.push('소요 시간을 확인해 주세요.');}else {const saved=serviceDuration(result.service,hours.services||[]);if(saved){result.duration=saved;warnings.push(`등록된 시술 소요시간 ${saved}분을 적용했어요.`);}else warnings.push('등록된 시술 소요시간이 없어 기본 1시간으로 채웠어요. 확인해 주세요.');}
  result.warnings=[...new Set(warnings)];return result;
 }
-return {digits,pad,time,minutes,dayAdd,weekStart,monthShift,validDate,overlap,serviceDuration,parse};
+return {digits,pad,time,minutes,dayAdd,weekStart,monthShift,validDate,overlap,completeDue,serviceDuration,parse};
 });
 </script><script>/* H5 booking preview. Local device storage; no customer data is sent to a server. */
 (()=>{
@@ -176,6 +185,12 @@ function persist(value,key=KEY){
  for(const r of nextR){let c=nextC.find(c=>c.id===r.customerId);if(!c&&C.digits(r.phone))c=nextC.find(c=>C.digits(c.phone)===C.digits(r.phone));if(!c){c={id:uid(),name:r.name,phone:r.phone||''};nextC.push(c);}r.customerId=c.id;}
  try{localStorage.setItem(DATAKEY,JSON.stringify({version:2,reservations:nextR,customers:nextC,settings:nextS}));customers=nextC;return true;}catch(e){toast('저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');return false;}
 }
+// Completion uses the scheduled end in Korean time and leaves payment untouched.
+function completeExpired(){const due=C.completeDue(reservations);if(!due.changed)return false;if(!persist(due.reservations))return false;reservations=due.reservations;return true;}
+function refreshCompleted(){const changed=completeExpired();if(changed&&!shell.hidden&&!dialog.open){if(active==='schedule')renderSchedule();else if(active!=='settings'&&active!=='message')renderPanel();}}
+setInterval(refreshCompleted,30000);
+window.addEventListener('focus',refreshCompleted);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCompleted();});
 // More compact controls on the first schedule screen.
 $('bkAdd').insertAdjacentHTML('beforebegin','<button class="bk-secondary" id="bkPaste" type="button">확정문 붙여넣기</button>');
 const actions=document.createElement('div');actions.className='bk-toolbar-actions';$('bkAdd').before(actions);actions.append($('bkPaste'),$('bkAdd'));
@@ -183,6 +198,7 @@ $('bkToday').textContent='오늘예약';$('bkToday').setAttribute('aria-label','
 $('bkStaffFilter').insertAdjacentHTML('beforebegin','<select id="bkView" aria-label="일간 주간 월간 보기"><option value="day">일간</option><option value="week">주간</option><option value="month">월간</option></select>');
 $('bkGrid').removeAttribute('tabindex');$('bkGrid').insertAdjacentHTML('beforebegin','<div class="bk-period-label" id="bkRange"></div>');
 $('bkGrid').setAttribute('aria-label','예약 달력');
+$('bkGridHelp').insertAdjacentHTML('afterend','<p class="bk-storage">종료 시간이 지난 예약은 자동으로 시술완료가 돼요. 취소·노쇼는 제외하며, 결제 기록은 바뀌지 않아요.</p>');
 $('bkGrid').insertAdjacentHTML('beforebegin','<details class="bk-size-controls" id="bkSizeControls"><summary>시간표 크기 조절</summary><div class="bk-size-options"><label>칸 가로<select id="bkColumnZoom" aria-label="시간표 칸 가로 크기"><option value="75">작게 · 75%</option><option value="100">기본 · 100%</option><option value="125">크게 · 125%</option><option value="150">더 크게 · 150%</option><option value="200">최대 · 200%</option></select></label><label>칸 세로<select id="bkRowHeight" aria-label="시간표 한 시간 칸 높이"><option value="48">작게</option><option value="60">조금 작게</option><option value="72">기본</option><option value="96">크게</option><option value="120">더 크게</option></select></label><button type="button" class="bk-secondary" id="bkResetSize">기본 크기</button></div></details>');
 function saveGridSize(columnZoom,rowHeight){const next={...settings,columnZoom,rowHeight};if(persist(next,SETTINGS)){settings=next;renderSchedule();}}
 $('bkColumnZoom').onchange=e=>saveGridSize(Number(e.target.value),Number(settings.rowHeight)||72);
@@ -204,6 +220,7 @@ function chooseCustomer(c){selectedCustomerId=c.id;$('bkCustomerId').value=c.id;
 function setCustomerMode(mode,clear=true){customerMode=mode;$('bkExistingMode').setAttribute('aria-pressed',String(mode==='existing'));$('bkNewMode').setAttribute('aria-pressed',String(mode==='new'));$('bkExistingBox').hidden=mode!=='existing';identity.hidden=mode==='existing';$('bkName').required=mode==='new';if(clear){selectedCustomerId='';$('bkCustomerId').value='';$('bkName').value='';$('bkPhone').value='';$('bkSelectedCustomer').hidden=true;$('bkExistingSearch').value='';}if(mode==='existing')customerResults();}
 $('bkExistingMode').onclick=()=>setCustomerMode('existing');$('bkNewMode').onclick=()=>setCustomerMode('new');$('bkExistingSearch').oninput=()=>{selectedCustomerId='';$('bkCustomerId').value='';$('bkSelectedCustomer').hidden=true;customerResults();};$('bkExistingResults').onclick=e=>{const b=e.target.closest('[data-pick-customer]');if(b){chooseCustomer(customers.find(c=>c.id===b.dataset.pickCustomer));$('bkFormNotice').textContent='';}};
 function openForm(record=null,hour=null,person=null,seed=null){
+ completeExpired();if(record)record=reservations.find(r=>r.id===record.id)||record;
  $('bkForm').reset();$('bkFormNotice').textContent='';$('bkOverlapLabel').hidden=true;$('bkAmountLabel').hidden=true;$('bkPasteWarning').hidden=true;
  $('bkDialogTitle').textContent=record?'예약 수정':seed?'확정문 예약 확인':'예약등록';$('bkId').value=record?.id||'';$('bkDelete').hidden=!record;
  $('bkStaff').innerHTML=staffList().map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
@@ -239,6 +256,7 @@ function renderMonth(rows){
  html+='</div>';const selected=rows.filter(r=>r.date===date).sort((a,b)=>a.time.localeCompare(b.time));html+=`<div class="bk-month-details"><div class="bk-row-actions"><h2>${esc(date)} · ${selected.length}건</h2><button type="button" class="bk-secondary" data-day-view="${date}">일간 보기</button></div>${selected.map(r=>`<button type="button" class="bk-customer" data-reservation="${esc(r.id)}"><strong>${esc(r.time)} ${esc(r.name)}</strong><small>${esc(r.service)} · ${esc(r.staff)} · ${esc(labels[r.status])}</small></button>`).join('')}${!selected.length?'<p class="bk-empty-inline">선택한 날짜에 예약이 없어요.</p>':''}</div>`;$('bkGrid').innerHTML=html;
 }
 function renderSchedule(){
+ completeExpired();
  $('bkDate').value=date;$('bkView').value=view;$('bkSizeControls').hidden=view==='month';$('bkColumnZoom').value=String(settings.columnZoom||100);$('bkRowHeight').value=String(settings.rowHeight||72);let start=date,end=date;
  if(view==='week'){start=C.weekStart(date);end=C.dayAdd(start,6);}if(view==='month'){start=date.slice(0,7)+'-01';end=C.dayAdd(C.monthShift(start,1),-1);}
  const rows=rowsForRange(start,end),valid=rows.filter(r=>!['cancelled','noshow'].includes(r.status));
@@ -272,7 +290,7 @@ function renderSettings(){
  const oldReservations=reservations;reservations=reservations.map(r=>{const d=draft.find(x=>x.old===r.staff);return d?{...r,staff:d.name.trim()}:r;});const next={...settings,start,end,staff:names,services};if(persist(next,SETTINGS)){settings=next;draft.forEach(d=>{d.old=d.name.trim();});toast('시술자·시간표·시술 소요시간을 저장했어요.');}else reservations=oldReservations;};
  $('bkBackup').onclick=()=>{const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify({version:2,reservations,customers,settings,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}));a.href=url;a.download='화장수리-예약고객백업-'+seoulDate()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 }
-function renderPanel(){if(active==='schedule'){updateStaffFilter();renderSchedule();}else if(active==='settings')renderSettings();else renderLegacyPanel();}
+function renderPanel(){completeExpired();if(active==='schedule'){updateStaffFilter();renderSchedule();}else if(active==='settings')renderSettings();else renderLegacyPanel();}
 function open(){scrollY=window.scrollY;const home=document.querySelector('main.app');home.hidden=true;home.inert=true;document.body.style.overflow='';shell.hidden=false;date=seoulDate();view='day';selectTab('schedule');window.scrollTo(0,0);if(storageNotice)toast(storageNotice);}
 function close(){shell.hidden=true;const home=document.querySelector('main.app');home.hidden=false;home.inert=false;document.body.style.overflow='';window.scrollTo(0,scrollY);launch.focus();}
 $('bkView').onchange=e=>{view=e.target.value;renderSchedule();};$('bkToday').onclick=()=>{date=seoulDate();renderSchedule();};
