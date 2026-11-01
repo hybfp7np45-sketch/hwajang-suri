@@ -33,11 +33,21 @@ function parse(text,today,staff=[]){
  dates=[...new Set(dates)];if(dates.length===1)result.date=dates[0];else if(dates.length>1)warnings.push('날짜가 여러 개예요. 예약 날짜를 선택해 주세요.');
  if(!dates.length){if(/모레/.test(s))result.date=dayAdd(today,2);else if(/내일/.test(s))result.date=dayAdd(today,1);else if(/오늘/.test(s))result.date=today;}
  if(!result.date)warnings.push('예약 날짜를 확인해 주세요.');else if(result.date<today)warnings.push('지난 날짜로 읽혔어요. 연도와 예약 날짜를 확인해 주세요.');
- const candidates=[];const timePattern=/(?:(오전|오후|아침|저녁|낮|밤|AM|PM)\s*)?(\d{1,2})\s*(?::\s*(\d{2})(?!\d)|시(?!간|술)(?:\s*(반|\d{1,2}\s*분))?)/gi;
- for(const m of s.matchAll(timePattern)){let h=Number(m[2]),mi=m[3]?Number(m[3]):m[4]==='반'?30:m[4]?parseInt(m[4],10):0,mark=(m[1]||'').toLowerCase();if(h>23||mi>59)continue;if(mark){if(h>12)continue;if(/오후|저녁|낮|밤|pm/.test(mark)){if(h<12)h+=12;}else if(h===12)h=0;}const ambiguous=!mark&&h>=1&&h<=12;candidates.push({value:time(h*60+mi),ambiguous,mi,index:m.index});}
- // A time range normally states the start first; conflicting separate times require review.
+ const candidates=[];
+ // Prefer explicitly labelled appointment times over reminder/sending times.
+ const labelled=lines.filter(l=>/(?:예약\s*(?:일시|시간)|방문\s*(?:일시|시간)|시작\s*시간|^\s*시간)\s*[:：=]?/.test(l)&&!/(?:소요|시술\s*시간|발송|알림|안내\s*문자)/.test(l));
+ const source=labelled.length?labelled.join('\n'):s;
+ const timePattern=/(?<![\d:])(?:(오전|오후|아침|저녁|낮|밤|AM|PM)\s*)?(\d{1,2})\s*(?:(:\s*(\d{1,2})(?!\d))|시(?!간|술)(?:\s*(반|\d{1,2}\s*분))?)\s*(오전|오후|AM|PM)?/gi;
+ for(const m of source.matchAll(timePattern)){
+  let h=Number(m[2]),mi=m[4]!==undefined?Number(m[4]):m[5]==='반'?30:m[5]?parseInt(m[5],10):0,mark=(m[1]||m[6]||'').toLowerCase();
+  if(h>23||mi>59)continue;
+  if(mark){if(h<1||h>12)continue;if(/오후|저녁|낮|밤|pm/.test(mark)){if(h<12)h+=12;}else if(h===12)h=0;}
+  // Colon notation is a 24-hour clock (09:30, 14:10); Korean '2시' still needs AM/PM.
+  const ambiguous=!mark&&!m[3]&&h>=1&&h<=12;
+  candidates.push({value:time(h*60+mi),ambiguous,mi,index:m.index,end:m.index+m[0].length});
+ }
  if(candidates.length){const first=candidates[0];if(first.ambiguous)warnings.push('오전·오후가 빠져 있어요. 시작 시간을 선택해 주세요.');else if(first.mi%10)warnings.push('시작 시간이 10분 단위가 아니에요. 시간을 확인해 주세요.');else result.time=first.value;
- if(candidates.length>1){const between=s.slice(first.index,candidates[1].index);if(!/[~～–—-]|부터/.test(between))warnings.push('시간이 여러 개예요. 예약 시작 시간을 확인해 주세요.');}}
+ if(candidates.length>1){const between=source.slice(first.end,candidates[1].index);if(!/[~～–—-]|부터/.test(between)){result.time='';warnings.push('시간이 여러 개예요. 예약 시작 시간을 선택해 주세요.');}}}
  else warnings.push('시작 시간을 확인해 주세요.');
  const serviceLine=lines.map(l=>l.match(/^(?:시술(?:명)?|예약\s*시술|메뉴|서비스)\s*[:：=]\s*(.+)$/)).find(Boolean);
  if(serviceLine)result.service=serviceLine[1].trim().slice(0,100);
