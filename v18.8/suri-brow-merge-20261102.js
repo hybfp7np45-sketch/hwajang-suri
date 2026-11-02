@@ -166,12 +166,12 @@ function dabAt(e){
   const v=Math.min(1,str*Math.pow(1-t, .45)),k=(yy*rw+xx)*4,src=p*4;
   hd.data[k+3]=Math.round(hd.data[k+3]*(1-v));
   for(let c=0;c<3;c++)sd.data[k+c]=cleanPixels[src+c];
-  sd.data[k+3]=Math.max(sd.data[k+3],Math.round(255*v));
+  sd.data[k+3]=Math.min(255,Math.round(sd.data[k+3]+(255-sd.data[k+3])*v));
  }
  pair.hair.putImageData(hd,x0,y0);pair.skin.putImageData(sd,x0,y0);
 }
 function finishEdit(){editing=false;pointers.clear();activePointer=null;panel.classList.remove('show');document.body.classList.remove('suri-hair-edit');say('');}
-eraseButton.onclick=()=>{if(!active){say('먼저 기존 눈썹 분리를 실행해 주세요.');return;}editing=!editing;panel.classList.toggle('show',editing);document.body.classList.toggle('suri-hair-edit',editing);if(editing)say('기존 눈썹 영역만 지우는 중');else say('');};
+eraseButton.onclick=()=>{if(!active){say('먼저 기존 눈썹 분리를 실행해 주세요.');return;}if(document.body.classList.contains('suri-photo-erase-active'))document.getElementById('magicEraseToggle')?.click();editing=!editing;panel.classList.toggle('show',editing);document.body.classList.toggle('suri-hair-edit',editing);if(editing)say('기존 눈썹 영역만 지우는 중');else say('');};
 panel.querySelector('#suriHairDone').onclick=finishEdit;
 panel.querySelector('#suriHairUndo').onclick=undoErase;
 stage.addEventListener('pointerdown',e=>{if(!editing||panel.contains(e.target)||e.target.closest('button'))return;if(e.pointerType==='mouse'&&e.button!==0)return;
