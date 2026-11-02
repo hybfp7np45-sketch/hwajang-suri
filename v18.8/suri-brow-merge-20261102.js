@@ -11,8 +11,7 @@ const css=document.createElement('style');css.id='suri-brow-merge-css';css.textC
 '.edit-guidebar{height:38px!important;flex-wrap:nowrap!important;gap:6px!important;padding:0 4px!important;justify-content:center!important}',
 '#suriBrowTopToolbar{position:absolute;top:8px;left:7px;right:7px;z-index:2147482000;display:flex;gap:4px;justify-content:center;align-items:center;pointer-events:none}',
 '#suriBrowTopToolbar button{pointer-events:auto;touch-action:manipulation;border:1px solid #cde9f8;color:#348eb1;background:rgba(250,254,255,.94);font-size:10px!important;font-weight:700;white-space:nowrap;border-radius:12px;height:27px;padding:0 6px;flex:1 1 auto;min-width:0;box-shadow:0 1px 4px #0002}',
-'#suriBrowTopToolbar #globalUndoV185{min-width:55px!important;padding:0 5px!important}',
-'#suriBrowTopToolbar #editGuideToggle.on{background:#dff5fd!important}',
+
 '#suriCompare{position:absolute!important;left:50%!important;bottom:12px!important;transform:translateX(-50%);z-index:2147482500!important;border:1px solid #b3d9eb!important;border-radius:16px!important;background:rgba(255,255,255,.90)!important;box-shadow:0 2px 8px #0002!important;color:#2c83a7!important;min-width:90px!important;height:29px!important;touch-action:none!important;font-size:11px!important;font-weight:700!important}',
 '#suriManualDone{position:absolute;right:8px;top:44px;z-index:2147482800;background:#e7f8fe;border:1px solid #83d4ec;border-radius:11px;height:32px;padding:0 12px;color:#217fa4;font-size:11px;font-weight:700}',
 '#suriSeparate,#suriHairErase,#suriCompare{font-size:10px!important;min-width:0!important;padding:0 6px!important;white-space:nowrap!important;border:1px solid #c9eaf8!important;background:#f4fbff!important;color:#348db3!important;border-radius:12px!important;height:26px!important;font-weight:700!important}',
@@ -37,8 +36,7 @@ const css=document.createElement('style');css.id='suri-brow-merge-css';css.textC
 function button(id,text,parent){const b=document.createElement('button');b.id=id;b.type='button';b.textContent=text;(parent||stage).appendChild(b);return b;}
 // Keep the original 18.8 bottom area exactly as it was. Put editing actions on the photo top.
 const topbar=document.createElement('div');topbar.id='suriBrowTopToolbar';stage.appendChild(topbar);
-const undo=document.getElementById('globalUndoV185'),guide=document.getElementById('editGuideToggle');
-if(guide)topbar.appendChild(guide);if(undo)topbar.appendChild(undo);
+// Do not relocate the original Guide, Undo or other v18.8 controls.
 const separate=button('suriSeparate','기존 눈썹 분리',topbar);
 const eraseButton=button('suriHairErase','기존 눈썹 지우기',topbar);
 const compare=button('suriCompare','원본 보기',stage);
