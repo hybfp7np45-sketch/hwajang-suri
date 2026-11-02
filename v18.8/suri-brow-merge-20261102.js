@@ -5,7 +5,11 @@ const photo=document.getElementById('photo'),world=document.getElementById('worl
 const toolbar=document.querySelector('.edit-guidebar');
 if(!photo||!world||!stage||!toolbar)return;
 const css=document.createElement('style');css.id='suri-brow-merge-css';css.textContent=[
-'.edit-guidebar{gap:3px!important}',
+'.edit-guidebar{gap:4px!important;row-gap:3px!important;height:68px!important;flex-wrap:wrap!important;justify-content:flex-start!important;align-content:center!important;box-sizing:border-box!important;padding:3px 7px!important}',
+'#app{grid-template-rows:58px minmax(0,1fr) 108px!important}',
+'#bottomControls{height:108px!important}',
+'#eraserPanelSlot{bottom:108px!important}',
+'.edit-guidebar #globalUndoV185{min-width:65px!important;padding:0 6px!important}',
 '#suriSeparate,#suriHairErase,#suriCompare{font-size:10px!important;min-width:0!important;padding:0 6px!important;white-space:nowrap!important;border:1px solid #c9eaf8!important;background:#f4fbff!important;color:#348db3!important;border-radius:12px!important;height:26px!important;font-weight:700!important}',
 '#suriSeparate.busy{animation:suriBrowPulse .8s infinite alternate}',
 '@keyframes suriBrowPulse{from{opacity:1}to{opacity:.34}}',
@@ -43,7 +47,7 @@ world.append(skin,hair,selection);
 window.suriExistingHairLayerCanvas=hair;
 window.suriExistingSkinLayerCanvas=skin;
 let original=null,sourcePixels=null,cleanPixels=null,regionMask=null,active=false,editing=false,manual=false,working=false,seq=0;
-let history=[],pointers=new Map(),activePointer=null,last=null,zoomStart=null,manualStart=null,manualAreas=[];
+let history=[],pointers=new Map(),activePointer=null,last=null,zoomStart=null,manualStart=null,manualIndex=null,manualAreas=[];
 const sizeInput=document.getElementById('suriHairSize'),strengthInput=document.getElementById('suriHairStrength');
 for(const [inp,label] of [[sizeInput,'suriHairSizeLabel'],[strengthInput,'suriHairStrengthLabel']])inp.oninput=()=>document.getElementById(label).textContent=inp.value;
 function say(s){status.textContent=s||'';}
@@ -69,9 +73,9 @@ function manualMode(){
  manual=true;working=false;separate.classList.remove('busy');manualAreas=[];tip.classList.add('show');manualDone.style.display='inline-block';
  selection.style.display='block';selection.style.pointerEvents='auto';drawManual();say('두 눈썹을 각각 드래그해 지정해 주세요.');
 }
-selection.addEventListener('pointerdown',e=>{if(!manual||e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();e.stopPropagation();selection.setPointerCapture(e.pointerId);manualStart=coords(e);});
-selection.addEventListener('pointermove',e=>{if(!manualStart)return;e.preventDefault();e.stopPropagation();const p=coords(e);const r={x:(p.x+manualStart.x)/2,y:(p.y+manualStart.y)/2,rx:Math.abs(p.x-manualStart.x)/2,ry:Math.abs(p.y-manualStart.y)/2};manualAreas[manualAreas.length===2?1:manualAreas.length]=r;drawManual();});
-selection.addEventListener('pointerup',e=>{if(!manualStart)return;e.preventDefault();e.stopPropagation();const p=coords(e);const r={x:(p.x+manualStart.x)/2,y:(p.y+manualStart.y)/2,rx:Math.max(10,Math.abs(p.x-manualStart.x)/2),ry:Math.max(6,Math.abs(p.y-manualStart.y)/2)};if(manualAreas.length<2)manualAreas.push(r);else manualAreas[1]=r;manualStart=null;drawManual();});
+selection.addEventListener('pointerdown',e=>{if(!manual||e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();e.stopPropagation();selection.setPointerCapture(e.pointerId);manualStart=coords(e);manualIndex=Math.min(1,manualAreas.length);});
+selection.addEventListener('pointermove',e=>{if(!manualStart)return;e.preventDefault();e.stopPropagation();const p=coords(e);const r={x:(p.x+manualStart.x)/2,y:(p.y+manualStart.y)/2,rx:Math.abs(p.x-manualStart.x)/2,ry:Math.abs(p.y-manualStart.y)/2};manualAreas[manualIndex]=r;drawManual();});
+selection.addEventListener('pointerup',e=>{if(!manualStart)return;e.preventDefault();e.stopPropagation();const p=coords(e);const r={x:(p.x+manualStart.x)/2,y:(p.y+manualStart.y)/2,rx:Math.max(10,Math.abs(p.x-manualStart.x)/2),ry:Math.max(6,Math.abs(p.y-manualStart.y)/2)};manualAreas[manualIndex]=r;manualStart=null;manualIndex=null;drawManual();});
 async function faceRegions(){
  if(!window.FaceMesh)throw Error('얼굴 인식 도구를 불러오지 못했습니다');
  const face=new window.FaceMesh({locateFile:f=>'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/'+f});
