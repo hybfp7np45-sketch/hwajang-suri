@@ -435,9 +435,6 @@ async function saveComposite(){
   ctx.save();ctx.beginPath();ctx.rect(0,0,sw,sh);ctx.clip();
   const ww=sw*zoom,wh=sh*zoom,wx=(sw-ww)/2+panX,wy=(sh-wh)/2+panY;
   drawPhotoCover(ctx,P,wx,wy,ww,wh);if(window.browEraseCanvas)ctx.drawImage(window.browEraseCanvas,wx,wy,ww,wh);
-  // Non-destructive existing-brow-only skin repair, below every newly applied brow.
-  const suriSkin=window.suriExistingSkinLayerCanvas;
-  if(suriSkin&&suriSkin.width&&suriSkin.height&&suriSkin.style.display!=='none')ctx.drawImage(suriSkin,wx+(P.offsetLeft||0)*zoom,wy+(P.offsetTop||0)*zoom,P.offsetWidth*zoom,P.offsetHeight*zoom);
   const ordered=[...brows].sort((x,y)=>(parseInt(x.style.zIndex)||0)-(parseInt(y.style.zIndex)||0));
   for(const el of ordered){
    const im=el.querySelector('img');if(!im||!im.complete)continue;
@@ -445,9 +442,6 @@ async function saveComposite(){
    const cx=wx+(x+w/2)*zoom,cy=wy+(y+h/2)*zoom,dw=w*zoom,dh=h*zoom,rot=(+el.dataset.rot||0)*Math.PI/180,flip=el.dataset.flip==='1'?-1:1,alpha=Math.max(.1,Math.min(1,(+el.dataset.intensity||100)/100));
    ctx.save();ctx.globalAlpha=alpha;ctx.translate(cx,cy);ctx.rotate(rot);ctx.scale(flip,1);ctx.drawImage(im,-dw/2,-dh/2,dw,dh);ctx.restore()
   }
-  // The separated original hairs stay above every new eyebrow design in exported images.
-  const suriHair=window.suriExistingHairLayerCanvas;
-  if(suriHair&&suriHair.width&&suriHair.height&&suriHair.style.display!=='none')ctx.drawImage(suriHair,wx+(P.offsetLeft||0)*zoom,wy+(P.offsetTop||0)*zoom,P.offsetWidth*zoom,P.offsetHeight*zoom);
   ctx.restore();
   const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.95));if(!blob)throw new Error('blob');
   const file=new File([blob],'화장수리-'+new Date().toISOString().slice(0,10)+'.jpg',{type:'image/jpeg'});
@@ -1389,9 +1383,7 @@ window.suriBrowPlacement=async function(src){
 #camview .flipcam{z-index:2;pointer-events:auto}
 </style>
 
-<style id="camera-overlay-priority">#camview{z-index:2147483647!important;isolation:isolate}#camview .camclose,#camview .gridbtn,#camview .flipcam,#camview .camctl{z-index:3}#camview .flipcam{touch-action:manipulation}</style>
-<script src="./suri-brow-merge-20261102.js?v=merge4" defer></script>
-</body></html>
+<style id="camera-overlay-priority">#camview{z-index:2147483647!important;isolation:isolate}#camview .camclose,#camview .gridbtn,#camview .flipcam,#camview .camctl{z-index:3}#camview .flipcam{touch-action:manipulation}</style></body></html>
 <style id="v134-eraser-followup">
 /* V13.4: brush guide is shown only inside magnifier */
 #beCursorV133{display:none!important}
