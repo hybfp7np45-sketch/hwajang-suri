@@ -5,11 +5,16 @@ const photo=document.getElementById('photo'),world=document.getElementById('worl
 const toolbar=document.querySelector('.edit-guidebar');
 if(!photo||!world||!stage||!toolbar)return;
 const css=document.createElement('style');css.id='suri-brow-merge-css';css.textContent=[
-'.edit-guidebar{gap:4px!important;row-gap:3px!important;height:68px!important;flex-wrap:wrap!important;justify-content:flex-start!important;align-content:center!important;box-sizing:border-box!important;padding:3px 7px!important}',
-'#app{grid-template-rows:58px minmax(0,1fr) 108px!important}',
-'#bottomControls{height:108px!important}',
-'#eraserPanelSlot{bottom:108px!important}',
-'.edit-guidebar #globalUndoV185{min-width:65px!important;padding:0 6px!important}',
+'#app{grid-template-rows:58px minmax(0,1fr) 76px!important}',
+'#bottomControls{height:76px!important}',
+'#eraserPanelSlot{bottom:76px!important}',
+'.edit-guidebar{height:38px!important;flex-wrap:nowrap!important;gap:6px!important;padding:0 4px!important;justify-content:center!important}',
+'#suriBrowTopToolbar{position:absolute;top:8px;left:7px;right:7px;z-index:2147482000;display:flex;gap:4px;justify-content:center;align-items:center;pointer-events:none}',
+'#suriBrowTopToolbar button{pointer-events:auto;touch-action:manipulation;border:1px solid #cde9f8;color:#348eb1;background:rgba(250,254,255,.94);font-size:10px!important;font-weight:700;white-space:nowrap;border-radius:12px;height:27px;padding:0 6px;flex:1 1 auto;min-width:0;box-shadow:0 1px 4px #0002}',
+'#suriBrowTopToolbar #globalUndoV185{min-width:55px!important;padding:0 5px!important}',
+'#suriBrowTopToolbar #editGuideToggle.on{background:#dff5fd!important}',
+'#suriCompare{position:absolute!important;left:50%!important;bottom:12px!important;transform:translateX(-50%);z-index:2147482500!important;border:1px solid #b3d9eb!important;border-radius:16px!important;background:rgba(255,255,255,.90)!important;box-shadow:0 2px 8px #0002!important;color:#2c83a7!important;min-width:90px!important;height:29px!important;touch-action:none!important;font-size:11px!important;font-weight:700!important}',
+'#suriManualDone{position:absolute;right:8px;top:44px;z-index:2147482800;background:#e7f8fe;border:1px solid #83d4ec;border-radius:11px;height:32px;padding:0 12px;color:#217fa4;font-size:11px;font-weight:700}',
 '#suriSeparate,#suriHairErase,#suriCompare{font-size:10px!important;min-width:0!important;padding:0 6px!important;white-space:nowrap!important;border:1px solid #c9eaf8!important;background:#f4fbff!important;color:#348db3!important;border-radius:12px!important;height:26px!important;font-weight:700!important}',
 '#suriSeparate.busy{animation:suriBrowPulse .8s infinite alternate}',
 '@keyframes suriBrowPulse{from{opacity:1}to{opacity:.34}}',
@@ -24,22 +29,26 @@ const css=document.createElement('style');css.id='suri-brow-merge-css';css.textC
 '#suriHairPanel button{min-height:30px;border-radius:8px;background:#e9f8fe;border:1px solid #b6e4f5;color:#348eb1;padding:4px 8px;font-weight:700}',
 '#suriHairPanel label{display:flex;align-items:center;gap:8px}',
 '#suriHairPanel input{flex:1}',
-'#suriHairStatus{position:absolute;z-index:2147482600;left:8px;right:8px;top:6px;text-align:center;font:600 11px sans-serif;color:#2385a9;pointer-events:none;text-shadow:0 1px 3px white}',
-'#suriManualTip{display:none;position:fixed;z-index:2147483600;top:50px;left:8px;right:8px;background:#fffffff0;padding:8px;border-radius:10px;text-align:center;font:12px sans-serif;color:#157d9e}',
+'#suriHairStatus{position:absolute;z-index:2147482600;left:8px;right:8px;top:40px;text-align:center;font:600 11px sans-serif;color:#2385a9;pointer-events:none;text-shadow:0 1px 3px white}',
+'#suriManualTip{display:none;position:absolute;z-index:2147483600;top:82px;left:8px;right:8px;background:#fffffff0;padding:8px;border-radius:10px;text-align:center;font:12px sans-serif;color:#157d9e}',
 '#suriManualTip.show{display:block}',
 'body.suri-hair-edit #browErasePanel,body.suri-hair-edit #browErasePanelV133{display:none!important}'
 ].join('');document.head.appendChild(css);
-function button(id,text,after){const b=document.createElement('button');b.id=id;b.type='button';b.textContent=text;if(after&&after.parentElement)after.insertAdjacentElement('afterend',b);else toolbar.appendChild(b);return b;}
-const undo=document.getElementById('globalUndoV185');
-const separate=button('suriSeparate','기존 눈썹 분리',undo);
-const eraseButton=button('suriHairErase','기존 눈썹 지우기',separate);
-const compare=button('suriCompare','원본 보기',eraseButton);compare.setAttribute('aria-label','누르고 있는 동안 원본 사진 보기');
+function button(id,text,parent){const b=document.createElement('button');b.id=id;b.type='button';b.textContent=text;(parent||stage).appendChild(b);return b;}
+// Keep the original 18.8 bottom area exactly as it was. Put editing actions on the photo top.
+const topbar=document.createElement('div');topbar.id='suriBrowTopToolbar';stage.appendChild(topbar);
+const undo=document.getElementById('globalUndoV185'),guide=document.getElementById('editGuideToggle');
+if(guide)topbar.appendChild(guide);if(undo)topbar.appendChild(undo);
+const separate=button('suriSeparate','기존 눈썹 분리',topbar);
+const eraseButton=button('suriHairErase','기존 눈썹 지우기',topbar);
+const compare=button('suriCompare','원본 보기',stage);
+compare.setAttribute('aria-label','누르고 있는 동안 사진 원본 보기');
 const rotation=document.createElement('div');rotation.id='suriRotationReadout';rotation.textContent='0°';document.body.appendChild(rotation);
 const status=document.createElement('div');status.id='suriHairStatus';stage.appendChild(status);
 const panel=document.createElement('div');panel.id='suriHairPanel';panel.innerHTML='<div class="toolbar"><strong>기존 눈썹만 지우기</strong><button id="suriHairUndo" type="button">되돌리기</button><button id="suriHairDone" type="button">완료</button></div><label>브러시 <input id="suriHairSize" type="range" min="1" max="50" value="24"><output id="suriHairSizeLabel">24</output> px</label><label>지우기 강도 <input id="suriHairStrength" type="range" min="10" max="100" value="70"><output id="suriHairStrengthLabel">70</output>%</label><small>새로 불러온 눈썹 디자인에는 적용되지 않습니다. 두 손가락 확대 가능.</small>';
 document.getElementById('bottomControls').appendChild(panel);
-const tip=document.createElement('div');tip.id='suriManualTip';tip.textContent='얼굴 자동 인식에 실패했습니다. 사진에서 눈썹 두 곳을 각각 드래그해 지정하세요.';document.body.appendChild(tip);
-const manualDone=button('suriManualDone','영역 지정 완료',null);manualDone.style.display='none';
+const tip=document.createElement('div');tip.id='suriManualTip';tip.textContent='얼굴 자동 인식에 실패했습니다. 사진에서 눈썹 두 곳을 각각 드래그해 지정하세요.';stage.appendChild(tip);
+const manualDone=button('suriManualDone','영역 지정 완료',stage);manualDone.style.display='none';
 const hair=document.createElement('canvas');hair.id='suriExistingHairTop';hair.style.cssText='position:absolute;z-index:100000;pointer-events:none;display:none;image-rendering:auto';
 const skin=document.createElement('canvas');skin.id='suriExistingSkinRepair';skin.style.cssText='position:absolute;z-index:7;pointer-events:none;display:none';
 const selection=document.createElement('canvas');selection.id='suriExistingManualSelection';selection.style.cssText='position:absolute;z-index:100002;display:none;touch-action:none';
@@ -58,34 +67,44 @@ function place(){
 function clear(){
  seq++;active=false;working=false;manual=false;editing=false;history=[];manualAreas=[];regionMask=null;original=sourcePixels=cleanPixels=null;
  hair.style.display=skin.style.display=selection.style.display='none';hair.width=hair.height=skin.width=skin.height=selection.width=selection.height=0;
- manualDone.style.display='none';tip.classList.remove('show');separate.classList.remove('busy');panel.classList.remove('show');document.body.classList.remove('suri-hair-edit');say('');
+ manualDone.style.display='none';tip.classList.remove('show');separate.classList.remove('busy');separate.textContent='기존 눈썹 분리';panel.classList.remove('show');document.body.classList.remove('suri-hair-edit');say('');
 }
 photo.addEventListener('load',()=>{clear();place();});
 new ResizeObserver(place).observe(stage);
-function showHair(){active=true;hair.style.display='block';skin.style.display='block';selection.style.display='none';manual=false;manualDone.style.display='none';tip.classList.remove('show');say('기존 눈썹 분리 완료 · 기존 눈썹 고정 (맨 위)');setTimeout(()=>{if(active&&!editing)say('')},3500);}
+function showHair(){active=true;hair.style.display='block';skin.style.display='block';selection.style.display='none';manual=false;manualDone.style.display='none';tip.classList.remove('show');separate.textContent='분리 완료 ✓';say('기존 눈썹 분리 완료 · 기존 눈썹 고정 (맨 위)');setTimeout(()=>{if(active&&!editing)say('')},3500);}
 function drawManual(){
  const c=selection.getContext('2d');c.clearRect(0,0,selection.width,selection.height);c.save();c.strokeStyle='#23aadd';c.lineWidth=Math.max(2,selection.width/450);c.fillStyle='#38b1e84a';
  for(const r of manualAreas){c.beginPath();c.ellipse(r.x,r.y,Math.max(3,r.rx),Math.max(3,r.ry),0,0,2*Math.PI);c.fill();c.stroke();}
  c.restore();
 }
 function coords(e){const r=selection.getBoundingClientRect();return {x:(e.clientX-r.left)*selection.width/Math.max(1,r.width),y:(e.clientY-r.top)*selection.height/Math.max(1,r.height)};}
-function manualMode(){
- manual=true;working=false;separate.classList.remove('busy');manualAreas=[];tip.classList.add('show');manualDone.style.display='inline-block';
- selection.style.display='block';selection.style.pointerEvents='auto';drawManual();say('두 눈썹을 각각 드래그해 지정해 주세요.');
+function manualMode(reason){
+ manual=true;working=false;separate.classList.remove('busy');separate.textContent='수동 분리 중';manualAreas=[];tip.classList.add('show');manualDone.style.display='inline-block';if(reason)console.warn('Automatic brow selection unavailable:',reason);
+ selection.style.display='block';selection.style.pointerEvents='auto';drawManual();say('자동 인식 불가 · 눈썹 영역을 손가락으로 지정 후 [영역 지정 완료]');
 }
 selection.addEventListener('pointerdown',e=>{if(!manual||e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();e.stopPropagation();selection.setPointerCapture(e.pointerId);manualStart=coords(e);manualIndex=Math.min(1,manualAreas.length);});
 selection.addEventListener('pointermove',e=>{if(!manualStart)return;e.preventDefault();e.stopPropagation();const p=coords(e);const r={x:(p.x+manualStart.x)/2,y:(p.y+manualStart.y)/2,rx:Math.abs(p.x-manualStart.x)/2,ry:Math.abs(p.y-manualStart.y)/2};manualAreas[manualIndex]=r;drawManual();});
 selection.addEventListener('pointerup',e=>{if(!manualStart)return;e.preventDefault();e.stopPropagation();const p=coords(e);const r={x:(p.x+manualStart.x)/2,y:(p.y+manualStart.y)/2,rx:Math.max(10,Math.abs(p.x-manualStart.x)/2),ry:Math.max(6,Math.abs(p.y-manualStart.y)/2)};manualAreas[manualIndex]=r;manualStart=null;manualIndex=null;drawManual();});
 async function faceRegions(){
- if(!window.FaceMesh)throw Error('얼굴 인식 도구를 불러오지 못했습니다');
- const face=new window.FaceMesh({locateFile:f=>'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/'+f});
- face.setOptions({maxNumFaces:1,minDetectionConfidence:.45,refineLandmarks:false});
+ // Detect at reduced size so full-resolution iPhone photos do not stall FaceMesh.
+ if(!window.FaceMesh)throw Error('자동 얼굴 인식 모듈 없음');
+ const detector=new window.FaceMesh({locateFile:f=>'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/'+f});
+ detector.setOptions({maxNumFaces:1,staticImageMode:true,minDetectionConfidence:.45,refineLandmarks:false});
+ const preview=document.createElement('canvas');
+ const scale=Math.min(1,720/Math.max(photo.naturalWidth,photo.naturalHeight));
+ preview.width=Math.max(1,Math.round(photo.naturalWidth*scale));
+ preview.height=Math.max(1,Math.round(photo.naturalHeight*scale));
+ preview.getContext('2d').drawImage(photo,0,0,preview.width,preview.height);
+ let timeout;
  try{
-  const points=await Promise.race([new Promise((resolve,reject)=>{face.onResults(r=>resolve(r.multiFaceLandmarks&&r.multiFaceLandmarks[0]||null));face.send({image:photo}).catch(reject)}),new Promise((_,reject)=>setTimeout(()=>reject(Error('얼굴 인식 시간 초과')),12000))]);
-  if(!points)throw Error('얼굴 인식에 실패했습니다');
+  const points=await Promise.race([
+   new Promise((resolve,reject)=>{detector.onResults(r=>resolve(r.multiFaceLandmarks?.[0]||null));Promise.resolve(detector.send({image:preview})).catch(reject);}),
+   new Promise((_,reject)=>{timeout=setTimeout(()=>reject(Error('자동 얼굴 인식 시간 초과')),9000);})
+  ]);
+  if(!points)throw Error('얼굴 인식 실패');
   const sets=[[70,63,105,66,107,55,65,52,53,46],[300,293,334,296,336,285,295,282,283,276]];
-  return sets.map(ids=>{const a=ids.map(k=>points[k]);const xmin=Math.min(...a.map(p=>p.x)),xmax=Math.max(...a.map(p=>p.x)),ymin=Math.min(...a.map(p=>p.y)),ymax=Math.max(...a.map(p=>p.y)),bw=(xmax-xmin)*original.width,bh=(ymax-ymin)*original.height;return {x:(xmin+xmax)*original.width/2,y:(ymin+ymax)*original.height/2,rx:bw*.59,ry:Math.max(bh*.8,bw*.13)};});
- }finally{try{face.close()}catch(e){}}
+  return sets.map(ids=>{const a=ids.map(k=>points[k]);const xmin=Math.min(...a.map(p=>p.x)),xmax=Math.max(...a.map(p=>p.x)),ymin=Math.min(...a.map(p=>p.y)),ymax=Math.max(...a.map(p=>p.y)),bw=(xmax-xmin)*original.width,bh=(ymax-ymin)*original.height;return {x:(xmin+xmax)*original.width/2,y:(ymin+ymax)*original.height/2,rx:Math.max(9,bw*.65),ry:Math.max(bh*.95,bw*.16)};});
+ }finally{clearTimeout(timeout);try{detector.close()}catch(e){}}
 }
 async function setup(){
  if(!photo.complete||!photo.naturalWidth)throw Error('먼저 사진을 불러와 주세요');
@@ -140,7 +159,7 @@ async function separateNow(regions){
  const job=seq;
  try{if(!original)await setup();say('기존 눈썹을 추출하고 있습니다…');await new Promise(r=>requestAnimationFrame(r));await compute(regions,job);}
  catch(e){if(job===seq){console.warn('Suri existing eyebrow separation',e);say('분리 실패: '+e.message);manualMode();}}
- finally{working=false;separate.classList.remove('busy');separate.textContent='기존 눈썹 분리';}
+ finally{working=false;separate.classList.remove('busy');separate.textContent=active?'분리 완료 ✓':'기존 눈썹 분리';}
 }
 separate.onclick=async ()=>{
  if(working)return;
@@ -149,9 +168,9 @@ separate.onclick=async ()=>{
  clear();
  try{await setup();working=true;separate.classList.add('busy');say('얼굴 눈썹 위치 인식 중…');
   const regions=await faceRegions();working=false;separate.classList.remove('busy');await separateNow(regions);
- }catch(e){console.warn('Suri brow face detection:',e);manualMode();}
+ }catch(e){console.warn('Suri brow face detection:',e);manualMode(e.message);}
 };
-manualDone.onclick=async ()=>{if(manualAreas.length<1){say('눈썹 영역을 드래그해 주세요.');return;}const regions=manualAreas.slice();manual=false;selection.style.display='none';tip.classList.remove('show');manualDone.style.display='none';await separateNow(regions);};
+manualDone.onclick=async ()=>{if(manualAreas.length<1){say('눈썹 영역을 드래그해 주세요.');return;}const regions=manualAreas.filter(r=>r&&r.rx>2&&r.ry>2).slice();manual=false;selection.style.display='none';tip.classList.remove('show');manualDone.style.display='none';await separateNow(regions);};
 const getPair=()=>({hair:hair.getContext('2d',{willReadFrequently:true}),skin:skin.getContext('2d',{willReadFrequently:true})});
 function snap(){const {hair:hc,skin:sc}=getPair();history.push([hc.getImageData(0,0,hair.width,hair.height),sc.getImageData(0,0,skin.width,skin.height)]);if(history.length>5)history.shift();}
 function undoErase(){if(!history.length)return;const [h,s]=history.pop(),pair=getPair();pair.hair.putImageData(h,0,0);pair.skin.putImageData(s,0,0);}
