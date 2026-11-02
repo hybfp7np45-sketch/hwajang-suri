@@ -8,13 +8,18 @@ const css=document.createElement('style');css.id='suri-brow-merge-css';css.textC
 '#app{grid-template-rows:58px minmax(0,1fr) 76px!important}',
 '#bottomControls{height:76px!important}',
 '#eraserPanelSlot{bottom:76px!important}',
-'.edit-guidebar{height:38px!important;flex-wrap:nowrap!important;gap:6px!important;padding:0 4px!important;justify-content:center!important}',
-'#suriBrowTopToolbar{position:absolute;top:8px;left:7px;right:7px;z-index:2147482000;display:flex;gap:4px;justify-content:center;align-items:center;pointer-events:none}',
-'#suriBrowTopToolbar button{pointer-events:auto;touch-action:manipulation;border:1px solid #cde9f8;color:#348eb1;background:rgba(250,254,255,.94);font-size:10px!important;font-weight:700;white-space:nowrap;border-radius:12px;height:27px;padding:0 6px;flex:1 1 auto;min-width:0;box-shadow:0 1px 4px #0002}',
+'.edit-guidebar{height:38px!important;flex-wrap:nowrap!important;gap:3px!important;padding:0 3px!important;justify-content:center!important}',
+'.edit-guidebar #browPlacementSide{width:81px!important;max-width:81px!important;padding-left:6px!important;padding-right:17px!important;font-size:10px!important}',
+'.edit-guidebar #browPlacementControl::after{right:8px!important}',
+'.edit-guidebar #magicEraseToggle,.edit-guidebar #editGuideToggle{flex:0 1 auto!important;padding:0 5px!important;font-size:10px!important;white-space:nowrap!important;min-width:0!important}',
+'.edit-guidebar #globalUndoV185{flex:0 1 auto!important;min-width:57px!important;padding:0 4px!important;font-size:10px!important}',
+'@media(max-width:365px){.edit-guidebar{gap:2px!important;padding:0 2px!important}.edit-guidebar #browPlacementSide{width:72px!important;max-width:72px!important;font-size:9px!important}.edit-guidebar #globalUndoV185{min-width:51px!important}}',
+'#suriBrowTopToolbar{position:absolute;top:8px;left:7px;right:7px;z-index:2147482000;text-align:center;pointer-events:none;font-size:10px;line-height:1.45;color:#478ca8;background:rgba(255,255,255,.72);padding:4px 5px;border-radius:9px}',
+'#suriSeparate{flex:0 1 auto!important;min-width:0!important;padding:0 5px!important;font-size:10px!important;white-space:nowrap!important;touch-action:manipulation!important}',
 
 '#suriCompare{position:absolute!important;left:50%!important;bottom:12px!important;transform:translateX(-50%);z-index:2147482500!important;border:1px solid #b3d9eb!important;border-radius:16px!important;background:rgba(255,255,255,.90)!important;box-shadow:0 2px 8px #0002!important;color:#2c83a7!important;min-width:90px!important;height:29px!important;touch-action:none!important;font-size:11px!important;font-weight:700!important}',
 '#suriManualDone{position:absolute;right:8px;top:44px;z-index:2147482800;background:#e7f8fe;border:1px solid #83d4ec;border-radius:11px;height:32px;padding:0 12px;color:#217fa4;font-size:11px;font-weight:700}',
-'#suriSeparate,#suriHairErase,#suriCompare{font-size:10px!important;min-width:0!important;padding:0 6px!important;white-space:nowrap!important;border:1px solid #c9eaf8!important;background:#f4fbff!important;color:#348db3!important;border-radius:12px!important;height:26px!important;font-weight:700!important}',
+'#suriSeparate,#suriCompare{font-size:10px!important;min-width:0!important;padding:0 5px!important;white-space:nowrap!important;border:1px solid #c9eaf8!important;background:#f4fbff!important;color:#348db3!important;border-radius:12px!important;height:26px!important;font-weight:700!important}',
 '#suriSeparate.busy{animation:suriBrowPulse .8s infinite alternate}',
 '@keyframes suriBrowPulse{from{opacity:1}to{opacity:.34}}',
 '.brow .rh.rot{top:auto!important;bottom:-28px!important;left:calc(50% - 7px)!important;width:14px!important;height:14px!important}',
@@ -36,10 +41,12 @@ const css=document.createElement('style');css.id='suri-brow-merge-css';css.textC
 ].join('');document.head.appendChild(css);
 function button(id,text,parent){const b=document.createElement('button');b.id=id;b.type='button';b.textContent=text;(parent||stage).appendChild(b);return b;}
 // Keep the original 18.8 bottom area exactly as it was. Put editing actions on the photo top.
-const topbar=document.createElement('div');topbar.id='suriBrowTopToolbar';stage.appendChild(topbar);
-// Do not relocate the original Guide, Undo or other v18.8 controls.
-const separate=button('suriSeparate','기존 눈썹 분리',topbar);
-const eraseButton=button('suriHairErase','기존 눈썹 지우기',topbar);
+const topbar=document.createElement('div');topbar.id='suriBrowTopToolbar';topbar.textContent='기존 눈썹을 분리하여 새 눈썹 디자인 위에 보이게 할 수 있습니다.';stage.appendChild(topbar);
+// Existing eraser ON is the only eraser control; do not add a duplicate.
+const separate=button('suriSeparate','기존 눈썹 분리',toolbar);
+const placementControl=document.getElementById('browPlacementControl');
+if(placementControl)placementControl.insertAdjacentElement('afterend',separate);
+const eraseButton=document.getElementById('magicEraseToggle');
 const compare=button('suriCompare','원본 보기',stage);
 compare.setAttribute('aria-label','누르고 있는 동안 사진 원본 보기');
 const rotation=document.createElement('div');rotation.id='suriRotationReadout';rotation.textContent='0°';document.body.appendChild(rotation);
@@ -66,7 +73,7 @@ function place(){
 function clear(){
  seq++;active=false;working=false;manual=false;editing=false;history=[];manualAreas=[];regionMask=null;original=sourcePixels=cleanPixels=null;
  hair.style.display=skin.style.display=selection.style.display='none';hair.width=hair.height=skin.width=skin.height=selection.width=selection.height=0;
- manualDone.style.display='none';tip.classList.remove('show');separate.classList.remove('busy');separate.textContent='기존 눈썹 분리';panel.classList.remove('show');document.body.classList.remove('suri-hair-edit');say('');
+ manualDone.style.display='none';tip.classList.remove('show');separate.classList.remove('busy');separate.textContent='기존 눈썹 분리';panel.classList.remove('show');if(eraseButton&&!document.body.classList.contains('suri-photo-erase-active'))eraseButton.textContent='지우기 ON';document.body.classList.remove('suri-hair-edit');say('');
 }
 photo.addEventListener('load',()=>{clear();place();});
 new ResizeObserver(place).observe(stage);
@@ -164,6 +171,7 @@ separate.onclick=async ()=>{
  if(working)return;
  if(!photo.complete||!photo.naturalWidth){alert('먼저 고객 사진을 불러와 주세요.');return;}
  if(active){if(!confirm('기존 눈썹 분리를 다시 실행할까요?'))return;}
+ if(document.body.classList.contains('suri-photo-erase-active'))eraseButton.click();
  clear();
  try{await setup();working=true;separate.classList.add('busy');say('얼굴 눈썹 위치 인식 중…');
   const regions=await faceRegions();working=false;separate.classList.remove('busy');await separateNow(regions);
@@ -188,8 +196,14 @@ function dabAt(e){
  }
  pair.hair.putImageData(hd,x0,y0);pair.skin.putImageData(sd,x0,y0);
 }
-function finishEdit(){editing=false;pointers.clear();activePointer=null;panel.classList.remove('show');document.body.classList.remove('suri-hair-edit');say('');}
-eraseButton.onclick=()=>{if(!active){say('먼저 기존 눈썹 분리를 실행해 주세요.');return;}if(document.body.classList.contains('suri-photo-erase-active'))document.getElementById('magicEraseToggle')?.click();editing=!editing;panel.classList.toggle('show',editing);document.body.classList.toggle('suri-hair-edit',editing);if(editing)say('기존 눈썹 영역만 지우는 중');else say('');};
+function finishEdit(){editing=false;pointers.clear();activePointer=null;panel.classList.remove('show');document.body.classList.remove('suri-hair-edit');eraseButton.textContent='지우기 ON';say('');}
+const priorEraseHandler=eraseButton.onclick;
+eraseButton.onclick=function(e){
+ if(!active){if(typeof priorEraseHandler==='function')priorEraseHandler.call(eraseButton,e);return;}
+ e.preventDefault();e.stopPropagation();
+ editing=!editing;panel.classList.toggle('show',editing);document.body.classList.toggle('suri-hair-edit',editing);
+ eraseButton.textContent=editing?'지우기 OFF':'지우기 ON';if(editing)say('분리된 기존 눈썹만 지우는 중');else say('');
+};
 panel.querySelector('#suriHairDone').onclick=finishEdit;
 panel.querySelector('#suriHairUndo').onclick=undoErase;
 stage.addEventListener('pointerdown',e=>{if(!editing||panel.contains(e.target)||e.target.closest('button'))return;if(e.pointerType==='mouse'&&e.button!==0)return;
