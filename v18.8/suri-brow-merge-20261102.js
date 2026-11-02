@@ -199,7 +199,10 @@ function dabAt(e){
 function finishEdit(){editing=false;pointers.clear();activePointer=null;panel.classList.remove('show');document.body.classList.remove('suri-hair-edit');eraseButton.textContent='지우기 ON';say('');}
 const priorEraseHandler=eraseButton.onclick;
 eraseButton.onclick=function(e){
- if(!active){if(typeof priorEraseHandler==='function')priorEraseHandler.call(eraseButton,e);return;}
+ if(!active||document.body.classList.contains('suri-photo-erase-active')){
+  if(typeof priorEraseHandler==='function')priorEraseHandler.call(eraseButton,e);
+  return;
+ }
  e.preventDefault();e.stopPropagation();
  editing=!editing;panel.classList.toggle('show',editing);document.body.classList.toggle('suri-hair-edit',editing);
  eraseButton.textContent=editing?'지우기 OFF':'지우기 ON';if(editing)say('분리된 기존 눈썹만 지우는 중');else say('');
