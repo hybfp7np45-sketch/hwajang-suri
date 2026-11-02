@@ -31,6 +31,7 @@ const css=document.createElement('style');css.id='suri-brow-merge-css';css.textC
 '#suriHairStatus{position:absolute;z-index:2147482600;left:8px;right:8px;top:40px;text-align:center;font:600 11px sans-serif;color:#2385a9;pointer-events:none;text-shadow:0 1px 3px white}',
 '#suriManualTip{display:none;position:absolute;z-index:2147483600;top:82px;left:8px;right:8px;background:#fffffff0;padding:8px;border-radius:10px;text-align:center;font:12px sans-serif;color:#157d9e}',
 '#suriManualTip.show{display:block}',
+'body.suri-show-original #stage .brow,body.suri-show-original #suriExistingHairTop,body.suri-show-original #suriExistingSkinRepair,body.suri-show-original #browEraseCanvas,body.suri-show-original #browEraseMask,body.suri-show-original #stage .existing-brow,body.suri-show-original #stage .edit-guide-layer,body.suri-show-original #stage .edit-guide-line{visibility:hidden!important}',
 'body.suri-hair-edit #browErasePanel,body.suri-hair-edit #browErasePanelV133{display:none!important}'
 ].join('');document.head.appendChild(css);
 function button(id,text,parent){const b=document.createElement('button');b.id=id;b.type='button';b.textContent=text;(parent||stage).appendChild(b);return b;}
@@ -205,9 +206,11 @@ stage.addEventListener('pointermove',e=>{if(!editing||!pointers.has(e.pointerId)
 },true);
 function up(e){if(!editing||!pointers.has(e.pointerId))return;e.preventDefault();e.stopImmediatePropagation();pointers.delete(e.pointerId);if(activePointer===e.pointerId){activePointer=null;last=null;}if(pointers.size<2)zoomStart=null;}
 stage.addEventListener('pointerup',up,true);stage.addEventListener('pointercancel',up,true);
-function showOriginal(e){e.preventDefault();if(!photo.naturalWidth)return;document.body.classList.add('suri-show-original');for(const c of [hair,skin])c.style.visibility='hidden';document.querySelectorAll('.brow').forEach(x=>x.style.visibility='hidden');const erased=window.browEraseCanvas;if(erased)erased.style.visibility='hidden';}
-function hideOriginal(e){if(e)e.preventDefault();document.body.classList.remove('suri-show-original');for(const c of [hair,skin])c.style.visibility='';document.querySelectorAll('.brow').forEach(x=>x.style.visibility='');const erased=window.browEraseCanvas;if(erased)erased.style.visibility='';}
+// Original-view is transient CSS only: never write visibility to edited layers.
+function showOriginal(e){e.preventDefault();if(!photo.naturalWidth)return;document.body.classList.add('suri-show-original');}
+function hideOriginal(e){if(e)e.preventDefault();document.body.classList.remove('suri-show-original');}
 compare.addEventListener('pointerdown',showOriginal);['pointerup','pointercancel','pointerleave'].forEach(ev=>compare.addEventListener(ev,hideOriginal));compare.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter')showOriginal(e)});compare.addEventListener('keyup',hideOriginal);
+window.addEventListener('blur',()=>document.body.classList.remove('suri-show-original'));
 let angleActive=false;
 stage.addEventListener('pointerdown',e=>{const el=e.target.closest('[data-h="rot"]');if(!el)return;angleActive=true;rotation.style.display='block';rotation.textContent='0°';},true);
 stage.addEventListener('pointermove',()=>{if(!angleActive)return;const el=document.querySelector('.brow.selected');if(!el)return;const deg=Math.round(Number(el.dataset.rot)||0);rotation.textContent=(deg>0?'+':'')+deg+'°';},false);
