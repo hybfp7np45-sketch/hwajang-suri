@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {createHmac} from 'node:crypto';
+import {authorization,messagePayload,previousDay,createSolapi} from './solapi.mjs';
+assert((await authorization('key','secret','date','salt')).endsWith(createHmac('sha256','secret').update('datesalt').digest('hex')));
+assert.equal(previousDay('2026-01-01',10),'2025-12-31T10:00:00+09:00');
+assert.throws(()=>previousDay('2026-02-30',10));
+const config={sender:'01000000000',testRecipient:'01000000000'};
+assert.throws(()=>messagePayload({to:'01011111111',type:'SMS',text:'test'},config));
+assert.throws(()=>messagePayload({to:config.sender,type:'SMS',text:'가'.repeat(46)},config));
+const msg=messagePayload({to:config.sender,type:'LMS',text:'시험'},config);assert.equal(msg.from,config.sender);
+assert.throws(()=>messagePayload({to:config.sender,type:'ATA'},config));
+assert.equal(messagePayload({to:config.sender,type:'ATA'}, {...config,pfId:'pf',templateId:'tpl'}).kakaoOptions.disableSms,true);
+let calls=[],saved=false;
+const api=createSolapi({apiKey:'key',apiSecret:'secret',fetchImpl:async(url,o)=>{calls.push([url,o]);if(o.method==='POST'&&url.endsWith('/groups'))return Response.json({groupId:'G4Vtest'});if(o.method==='PUT'){assert(saved);return Response.json({count:{registeredSuccess:1,registeredFailed:0}});}if(o.method==='GET')return Response.json({status:'SCHEDULED'});return Response.json({status:'PENDING'});}});
+const id=await api.prepare(msg,async()=>{saved=true});await api.cancel(id);assert(calls.at(-1)[0].endsWith('/G4Vtest/schedule'));assert.equal(calls.at(-1)[1].method,'DELETE');
+await assert.rejects(api.dispatch(id,'2020-01-01T00:00:00+09:00'));
+let blocked=0;const fail=createSolapi({apiKey:'k',apiSecret:'s',fetchImpl:async(url,o)=>{blocked++;return Response.json({errorCode:'Unauthorized',errorMessage:'rejected'},{status:403});}});await assert.rejects(fail.prepare(msg,async()=>{}));assert.equal(blocked,1);
+console.log('PASS: HMAC; Korean previous-day scheduling; owner-only test restriction; SMS length; template requirements; persist before request; cancellation; no automatic retries');
