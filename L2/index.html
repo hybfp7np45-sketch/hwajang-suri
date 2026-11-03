@@ -755,9 +755,9 @@ function paintLips(){
  const makeMask=()=>{const c=document.createElement('canvas');c.width=rw;c.height=rh;return c};
  const outer=makeMask(),m=outer.getContext('2d');m.beginPath();lipPolygon(m,LIP_OUTER,points,w,h,x0,y0);m.fillStyle='#fff';m.fill();
  rawOuter=m.getImageData(0,0,rw,rh).data;
- // Preserve coverage through the outline, with a short, continuous outer fade.
+ // User-selected comparison #9: inside 25%, outside 8% of lip height; boundary coverage 60%.
  // Avoid a second blur that would lower coverage at the selected boundary again.
- const outsideFade=Math.max(1,lipHeight*.015),insideFade=Math.max(1,lipHeight*.02);
+ const outsideFade=Math.max(1,lipHeight*.08),insideFade=Math.max(1,lipHeight*.25);
  softOuter=blendLipOutline(rawOuter,rw,rh,outsideFade,insideFade);
  const inner=makeMask(),ic=inner.getContext('2d');ic.fillStyle='#fff';ic.fillRect(0,0,rw,rh);ic.globalCompositeOperation='destination-out';ic.beginPath();lipPolygon(ic,LIP_INNER,points,w,h,x0,y0);ic.fill();
  softInner=sealLipInnerGap(ic.getImageData(0,0,rw,rh).data,rw,rh,Math.max(.75,lipWidth*.006),Math.max(.75,lipWidth*.002));
