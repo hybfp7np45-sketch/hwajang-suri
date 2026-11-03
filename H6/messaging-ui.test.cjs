@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict');const fs=require('node:fs'),vm=require('node:vm');const html=fs.readFileSync(__dirname+'/index.html','utf8');const source=html.match(/<script>(\/\* Provider-neutral local simulation[\s\S]*?)<\/script>/)[1];const sandbox={module:{exports:{}}};vm.runInNewContext(source,sandbox);const M=sandbox.module.exports;
+const now='2026-12-01T00:00:00Z';const r={id:'r1',name:'고객',phone:'01012345678',date:'2026-12-05',time:'14:00',service:'눈썹',staff:'담당',status:'confirmed'};
+let s=M.init();s.shopName='테스트샵';Object.values(s.rules).forEach(x=>x.enabled=true);
+s=M.reconcile(s,[],[r],now);assert.equal(s.jobs.length,2);assert.equal(s.jobs[1].scheduledAt,'2026-12-04T10:00:00+09:00');
+let again=M.reconcile(s,[r],[r],now);assert.equal(again.jobs.length,2);assert.equal(again.history.length,2);
+const changed={...r,date:'2026-12-06',phone:'01099998888'};s=M.reconcile(s,[r],[changed],now);assert.equal(s.jobs.filter(j=>j.status==='cancelled').length,2);assert.deepEqual(JSON.parse(JSON.stringify(s.jobs.filter(j=>j.status==='scheduled').map(j=>j.kind))),['change','reminder']);assert(s.jobs.filter(j=>j.status==='scheduled').every(j=>j.phone===changed.phone));
+const cancelled={...changed,status:'cancelled'};s=M.reconcile(s,[changed],[cancelled],now);assert.deepEqual(JSON.parse(JSON.stringify(s.jobs.filter(j=>j.status==='scheduled').map(j=>j.kind))),['cancel']);
+s=M.reconcile(s,[cancelled],[],now);assert.equal(s.jobs.filter(j=>j.status==='scheduled').length,0);
+let settings=M.init();settings.shopName='샵';settings.rules.reminder.enabled=true;
+let q=M.reconcile(settings,[r],[r],now);assert.equal(q.jobs.length,1);q.rules.reminder.enabled=false;q=M.reconcile(q,[r],[r],now);assert.equal(q.jobs[0].status,'cancelled');q.rules.reminder.enabled=true;q=M.reconcile(q,[r],[r],now);assert.equal(q.jobs.filter(j=>j.status==='scheduled').length,1);
+q.jobs.find(j=>j.status==='scheduled').userCancelled=true;q.jobs.find(j=>j.status==='scheduled').status='cancelled';q=M.reconcile(q,[r],[r],now);assert.equal(q.jobs.filter(j=>j.status==='scheduled').length,0);
+const late={...r,date:'2026-12-01',time:'18:00'};q=M.reconcile(settings,[late],[late],now);assert.equal(q.jobs[0].status,'needs_review');assert.match(q.jobs[0].note,/지났/);
+q=M.reconcile(settings,[],[{...r,phone:''}],now);assert.equal(q.jobs[0].status,'needs_review');q=M.simulate(q,[q.jobs[0].id]);assert.equal(q.jobs[0].status,'failed_test');
+q=M.reconcile(settings,[r],[r],now);q=M.simulate(q,[q.jobs[0].id]);assert.equal(q.jobs[0].status,'simulated');let n=q.history.length;q=M.simulate(q,[q.jobs[0].id]);assert.equal(q.history.length,n);q=M.reconcile(q,[r],[r],now);assert.equal(q.jobs.length,1);
+assert.equal(M.dayBefore('2027-01-01',8),'2026-12-31T08:00:00+09:00');assert.equal(M.dayBefore('2028-03-01',8),'2028-02-29T08:00:00+09:00');assert.match(M.validate('가'.repeat(46),r.phone,'SMS','샵'),/길이/);assert.match(M.validate('#{없는변수}',r.phone,'LMS','샵'),/지원하지/);
+console.log('PASS: new/edit/cancel/delete, idempotence, rule toggle, manual dismissal, expired reminder, invalid phone, simulation isolation, Korean date boundaries, SMS length.');
