@@ -419,7 +419,7 @@ function renderSettings(){
  const initialServices=settings.services||[];
  const groups=[...new Set([...(settings.serviceCategories||[]),...initialServices.map(d=>d.category||'미분류')])].map(name=>({key:uid(),name,items:initialServices.filter(d=>(d.category||'미분류')===name).map(d=>({...d,key:uid()}))}));
  const box=$('bkServiceRows');
- const row=(d,i)=>`<div class="bk-staff-row"><label style="flex:1;min-width:100px">시술명<input value="${esc(d.name)}" maxlength="100" data-service-name="${d.key}" aria-label="시술 ${i+1} 이름"></label><label style="width:110px">소요시간<select data-service-duration="${d.key}" aria-label="시술 ${i+1} 소요시간">${Array.from({length:48},(_,j)=>(j+1)*10).map(n=>`<option value="${n}" ${n===Number(d.duration)?'selected':''}>${n>=60?Math.floor(n/60)+'시간':''}${n%60?n%60+'분':''}</option>`).join('')}</select></label><button type="button" data-service-remove="${d.key}" aria-label="시술 ${i+1} 삭제">삭제</button></div>`;
+ const row=(d,i)=>`<div class="bk-staff-row"><label style="flex:1;min-width:100px">시술명<input placeholder="시술명 입력" autocomplete="off" value="${esc(d.name)}" maxlength="100" data-service-name="${d.key}" aria-label="시술 ${i+1} 이름"></label><label style="width:110px">소요시간<select data-service-duration="${d.key}" aria-label="시술 ${i+1} 소요시간">${Array.from({length:48},(_,j)=>(j+1)*10).map(n=>`<option value="${n}" ${n===Number(d.duration)?'selected':''}>${n>=60?Math.floor(n/60)+'시간':''}${n%60?n%60+'분':''}</option>`).join('')}</select></label><button type="button" data-service-remove="${d.key}" aria-label="시술 ${i+1} 삭제">삭제</button></div>`;
  function addItem(group,section){
  if(groups.reduce((n,g)=>n+g.items.length,0)>=60){toast('시술은 최대 60개까지 등록할 수 있어요.');return;}
  const item={key:uid(),name:'',duration:60};group.items.push(item);
@@ -430,9 +430,12 @@ function renderSettings(){
  const section=document.createElement('details');section.open=open;section.className='bk-card';
  section.innerHTML='<summary></summary><label>카테고리 이름<input maxlength="40" aria-label="카테고리 이름"></label><div class="service-items"></div><button type="button" class="bk-secondary" data-add>＋ 시술 추가</button> <button type="button" data-delete>카테고리 삭제</button>';
  const summary=section.querySelector('summary'),field=section.querySelector('input');
- field.value=group.name;summary.textContent=group.name||'새 카테고리';
+ field.value=group.name;
+ const updateHeading=()=>{summary.textContent=section.open?'카테고리 접기':group.name||'새 카테고리';};
+ updateHeading();section.ontoggle=updateHeading;
+ field.enterKeyHint='next';field.onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing&&e.keyCode!==229){e.preventDefault();section.querySelector('[data-service-name]')?.focus();}};
  section.querySelector('.service-items').innerHTML=group.items.map(row).join('');
- section.oninput=e=>{if(e.target===field){group.name=field.value;summary.textContent=field.value||'새 카테고리';return;}
+ section.oninput=e=>{if(e.target===field){group.name=field.value;updateHeading();return;}
  const item=group.items.find(d=>d.key===(e.target.dataset.serviceName||e.target.dataset.serviceDuration));if(item){if(e.target.dataset.serviceName)item.name=e.target.value;else item.duration=Number(e.target.value);}};
  section.onclick=e=>{const btn=e.target.closest('button');if(!btn)return;
  if(btn.hasAttribute('data-add'))addItem(group,section);
