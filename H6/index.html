@@ -419,18 +419,18 @@ function renderSettings(){
  const initialServices=settings.services||[];
  const groups=[...new Set([...(settings.serviceCategories||[]),...initialServices.map(d=>d.category||'미분류')])].map(name=>({key:uid(),name,items:initialServices.filter(d=>(d.category||'미분류')===name).map(d=>({...d,key:uid()}))}));
  const box=$('bkServiceRows');
- const row=(d,i)=>`<div class="bk-staff-row"><label style="flex:1;min-width:100px">시술명<input placeholder="시술명 입력" autocomplete="off" value="${esc(d.name)}" maxlength="100" data-service-name="${d.key}" aria-label="시술 ${i+1} 이름"></label><label style="width:110px">소요시간<select data-service-duration="${d.key}" aria-label="시술 ${i+1} 소요시간">${Array.from({length:48},(_,j)=>(j+1)*10).map(n=>`<option value="${n}" ${n===Number(d.duration)?'selected':''}>${n>=60?Math.floor(n/60)+'시간':''}${n%60?n%60+'분':''}</option>`).join('')}</select></label><button type="button" data-service-remove="${d.key}" aria-label="시술 ${i+1} 삭제">삭제</button></div>`;
- function addItem(group,section){
+ const row=(d,i)=>`<div class="bk-staff-row"><label style="flex:1;min-width:100px">시술명<input name="service-${d.key}" autocomplete="off" autocorrect="off" spellcheck="false" value="${esc(d.name)}" maxlength="100" data-service-name="${d.key}" aria-label="시술 ${i+1} 이름"></label><label style="width:110px">소요시간<select data-service-duration="${d.key}" aria-label="시술 ${i+1} 소요시간">${Array.from({length:48},(_,j)=>(j+1)*10).map(n=>`<option value="${n}" ${n===Number(d.duration)?'selected':''}>${n>=60?Math.floor(n/60)+'시간':''}${n%60?n%60+'분':''}</option>`).join('')}</select></label><button type="button" data-service-remove="${d.key}" aria-label="시술 ${i+1} 삭제">삭제</button></div>`;
+ function addItem(group,section,focusNew=true){
  if(groups.reduce((n,g)=>n+g.items.length,0)>=60){toast('시술은 최대 60개까지 등록할 수 있어요.');return;}
  const item={key:uid(),name:'',duration:60};group.items.push(item);
  section.querySelector('.service-items').insertAdjacentHTML('beforeend',row(item,group.items.length-1));
- section.querySelector('[data-service-name="'+item.key+'"]').focus();
+ if(focusNew)section.querySelector('[data-service-name="'+item.key+'"]').focus();
  }
  function mount(group,open=false){
  const section=document.createElement('details');section.open=open;section.className='bk-card';
- section.innerHTML='<summary></summary><label>카테고리 이름<input maxlength="40" aria-label="카테고리 이름"></label><div class="service-items"></div><button type="button" class="bk-secondary" data-add>＋ 시술 추가</button> <button type="button" data-delete>카테고리 삭제</button>';
+ section.innerHTML='<summary></summary><label>카테고리 이름<input autocomplete="off" autocorrect="off" maxlength="40" aria-label="카테고리 이름"></label><div class="service-items"></div><button type="button" class="bk-secondary" data-add>＋ 시술 추가</button> <button type="button" data-delete>카테고리 삭제</button>';
  const summary=section.querySelector('summary'),field=section.querySelector('input');
- field.value=group.name;
+ field.name="category-"+group.key;field.value=group.name;
  const updateHeading=()=>{summary.textContent=section.open?'카테고리 접기':group.name||'새 카테고리';};
  updateHeading();section.ontoggle=updateHeading;
  field.enterKeyHint='next';field.onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing&&e.keyCode!==229){e.preventDefault();section.querySelector('[data-service-name]')?.focus();}};
@@ -444,7 +444,7 @@ function renderSettings(){
  box.append(section);return section;
  }
  groups.forEach(g=>mount(g));
- $('bkCategoryAdd').onclick=()=>{const group={key:uid(),name:'',items:[]};groups.push(group);const section=mount(group,true);if(groups.reduce((n,g)=>n+g.items.length,0)<60)addItem(group,section);section.querySelector('input').focus();};
+ $('bkCategoryAdd').onclick=()=>{const group={key:uid(),name:'',items:[]};groups.push(group);const section=mount(group,true);if(groups.reduce((n,g)=>n+g.items.length,0)<60)addItem(group,section,false);section.querySelector('input').focus();};
  $('bkSettingsForm').onsubmit=e=>{e.preventDefault();const start=Number($('bkStart').value),end=Number($('bkEnd').value),names=draft.map(d=>d.name.trim());if(start>=end){$('bkSettingsNotice').textContent='종료 시간은 시작 시간보다 늦어야 해요.';return;}if(names.some(n=>!n)||new Set(names).size!==names.length){$('bkSettingsNotice').textContent='시술자 이름을 입력하고 중복된 이름을 확인해 주세요.';return;}
  const categories=groups.map(g=>g.name.trim());if(categories.some(n=>!n)||new Set(categories).size!==categories.length){$('bkSettingsNotice').textContent='카테고리 이름을 입력하고 중복된 이름을 확인해 주세요.';return;}const serviceDraft=groups.flatMap(g=>g.items.map(d=>({...d,category:g.name.trim()})));const services=serviceDraft.map(d=>({name:d.name.trim(),duration:Number(d.duration),category:d.category||'미분류'}));const serviceKeys=services.map(d=>d.name.replace(/\s/g,'').toLowerCase());if(services.some(d=>!d.name)||new Set(serviceKeys).size!==services.length){$('bkSettingsNotice').textContent='시술명을 입력하고 중복된 시술명을 확인해 주세요.';return;}
  const oldReservations=reservations;reservations=reservations.map(r=>{const d=draft.find(x=>x.old===r.staff);return d?{...r,staff:d.name.trim()}:r;});const next={...settings,start,end,staff:names,services,serviceCategories:categories};if(persist(next,SETTINGS)){settings=next;draft.forEach(d=>{d.old=d.name.trim();});toast('시술자·시간표·시술 소요시간을 저장했어요.');}else reservations=oldReservations;};
