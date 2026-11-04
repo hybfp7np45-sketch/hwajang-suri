@@ -332,6 +332,14 @@ const bookingForm=$('bkForm'), customerModeBar=bookingForm.querySelector('.bk-cu
  const serviceLabel=$('bkService').closest('label'),datePair=$('bkFormDate').closest('.bk-pair'),durationPair=$('bkDuration').closest('.bk-pair');
  const reservationSection=bookingSection('예약 정보',serviceLabel);reservationSection.append(datePair);reservationSection.insertAdjacentHTML('beforeend','<label>접수자<select id="bkReceivedBy"></select></label>');reservationSection.append($('bkStatus').closest('label'));
  const serviceSection=bookingSection('서비스 정보',serviceLabel);serviceSection.append(serviceLabel,durationPair);
+ const amountLabel=$('bkAmountLabel'),paidToggle=$('bkPaid').closest('label'),paymentHint=amountLabel.nextElementSibling;
+ serviceSection.append($('bkStaff').closest('label'),startLabel,durationPair);
+ const endTime=document.createElement('p');endTime.style.cssText='font-size:13px;color:#416879';durationPair.after(endTime);
+ function updateBookingEnd(){const start=$('bkTime').value;const minutes=C.minutes(start)+Number($('bkDuration').value);endTime.textContent=start&&Number.isFinite(minutes)?'종료 예정 '+(minutes>=1440?'다음 날 ':'')+C.time(minutes%1440):'시작 시간을 선택해 주세요.';}
+ serviceSection.append(paidToggle,amountLabel);if(paymentHint?.tagName==='P')serviceSection.append(paymentHint);serviceSection.append($('bkMemo').closest('label'));
+ durationPair.style.gridTemplateColumns='minmax(0,1fr)';
+ serviceSection.addEventListener('change',updateBookingEnd);
+
  const serviceControl=$('bkService');
  serviceControl.hidden=true;serviceControl.style.display='none';serviceControl.required=false;
  const trigger=document.createElement('button');trigger.type='button';trigger.className='bk-service-trigger';trigger.setAttribute('aria-haspopup','dialog');serviceControl.after(trigger);
@@ -341,7 +349,7 @@ const bookingForm=$('bkForm'), customerModeBar=bookingForm.querySelector('.bk-cu
  trigger.onclick=()=>{const items=settings.services||[],names=[...new Set([...(settings.serviceCategories||[]),...items.map(x=>x.category||'미분류')])].filter(n=>items.some(x=>(x.category||'미분류')===n));
  const tabs=picker.querySelector('.bk-category-tabs'),choices=picker.querySelector('.bk-service-choices');tabs.replaceChildren();
  const selectGroup=n=>{for(const t of tabs.children)t.setAttribute('aria-pressed',String(t.textContent===n));choices.replaceChildren();
- for(const item of items.filter(x=>(x.category||'미분류')===n)){const b=document.createElement('button');b.type='button';b.textContent=item.name;b.onclick=()=>{serviceControl.value=item.name;serviceControl.dispatchEvent(new Event('change'));trigger.textContent=item.name;previewRules();picker.close();};choices.append(b);}
+ for(const item of items.filter(x=>(x.category||'미분류')===n)){const b=document.createElement('button');b.type='button';b.textContent=item.name;b.onclick=()=>{serviceControl.value=item.name;serviceControl.dispatchEvent(new Event('change'));trigger.textContent=item.name;updateBookingEnd();previewRules();picker.close();};choices.append(b);}
  if(!names.length)choices.textContent='환경설정에서 시술 항목을 먼저 등록해 주세요.';};
  for(const n of names){const t=document.createElement('button');t.type='button';t.textContent=n;t.onclick=()=>selectGroup(n);tabs.append(t);}
  const current=items.find(x=>x.name===serviceControl.value);selectGroup(current?(current.category||'미분류'):names[0]);picker.showModal();};
@@ -390,7 +398,7 @@ function openForm(record=null,hour=null,person=null,seed=null){
  if(seed){let c=null;if(C.digits(seed.phone))c=customers.find(c=>C.digits(c.phone)===C.digits(seed.phone)&&c.name.replace(/\s/g,'').toLowerCase()===String(seed.name||'').replace(/\s/g,'').toLowerCase());if(c){setCustomerMode('existing');chooseCustomer(c);}pasteWarnings=seed.warnings||[];$('bkPasteWarning').hidden=false;$('bkPasteWarning').textContent=pasteWarnings.length?pasteWarnings.join(' '):'글에서 예약정보를 불러왔어요. 내용을 확인하고 저장해 주세요.';}
  if(seed?.service&&!selectedService){$('bkPasteWarning').hidden=false;$('bkPasteWarning').textContent+=' 확정문의 시술이 등록 목록과 일치하지 않아요. 등록된 시술을 선택해 주세요.';}
  if(target?.time&&C.minutes(target.time)%10!==0){$('bkPasteWarning').hidden=false;$('bkPasteWarning').textContent='이전 예약 시간이 10분 단위가 아니에요. 시작 시간을 선택해 주세요.';}
- photoSession++;reading=false;$('bkPhotoFiles').disabled=false;photos=[...(record?.photos||[])];messageChoices={...(record?.messageChoices||{})};$('bkPhotoNote').textContent='';showPhotos();previewRules();dialog.showModal();
+ photoSession++;reading=false;$('bkPhotoFiles').disabled=false;photos=[...(record?.photos||[])];messageChoices={...(record?.messageChoices||{})};$('bkPhotoNote').textContent='';showPhotos();updateBookingEnd();previewRules();dialog.showModal();
 }
 function dateLabel(d){return d.slice(5).replace('-','/')+' '+['일','월','화','수','목','금','토'][new Date(d+'T12:00:00Z').getUTCDay()];}
 function rowsForRange(start,end){const filter=$('bkStatusFilter').value,person=$('bkStaffFilter').value;return reservations.filter(r=>r.date>=start&&r.date<=end&&(!person||r.staff===person)&&(filter==='all'||(filter==='active'?!['cancelled','noshow'].includes(r.status):r.status===filter)));}
