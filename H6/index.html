@@ -348,11 +348,11 @@ const bookingForm=$('bkForm'), customerModeBar=bookingForm.querySelector('.bk-cu
  picker.querySelector('header button').onclick=()=>picker.close();
  trigger.onclick=()=>{const items=settings.services||[],names=[...new Set([...(settings.serviceCategories||[]),...items.map(x=>x.category||'미분류')])].filter(n=>items.some(x=>(x.category||'미분류')===n));
  const tabs=picker.querySelector('.bk-category-tabs'),choices=picker.querySelector('.bk-service-choices');tabs.replaceChildren();
- const selectGroup=n=>{for(const t of tabs.children)t.setAttribute('aria-pressed',String(t.textContent===n));choices.replaceChildren();
- for(const item of items.filter(x=>(x.category||'미분류')===n)){const b=document.createElement('button');b.type='button';b.textContent=item.name;b.onclick=()=>{serviceControl.value=item.name;serviceControl.dispatchEvent(new Event('change'));trigger.textContent=item.name;updateBookingEnd();previewRules();picker.close();};choices.append(b);}
+ const selectGroup=n=>{for(const t of tabs.children)t.setAttribute('aria-pressed',String(t.dataset.category===(n??'')));choices.replaceChildren();
+ for(const category of n===null?names:[n]){const heading=document.createElement('strong');heading.textContent=category;choices.append(heading);for(const item of items.filter(x=>(x.category||'미분류')===category)){const b=document.createElement('button');b.type='button';b.textContent=item.name;b.onclick=()=>{serviceControl.value=item.name;serviceControl.dispatchEvent(new Event('change'));trigger.textContent=item.name;updateBookingEnd();previewRules();picker.close();};choices.append(b);}}
  if(!names.length)choices.textContent='환경설정에서 시술 항목을 먼저 등록해 주세요.';};
- for(const n of names){const t=document.createElement('button');t.type='button';t.textContent=n;t.onclick=()=>selectGroup(n);tabs.append(t);}
- const current=items.find(x=>x.name===serviceControl.value);selectGroup(current?(current.category||'미분류'):names[0]);picker.showModal();};
+ for(const n of [null,...names]){const t=document.createElement('button');t.type='button';t.dataset.category=n??'';t.textContent=n??'전체';t.onclick=()=>selectGroup(n);tabs.append(t);}
+ selectGroup(null);picker.showModal();};
 
 
  const extras=document.createElement('div');$('bkFormNotice').before(extras);
