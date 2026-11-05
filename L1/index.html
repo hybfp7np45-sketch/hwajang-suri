@@ -513,9 +513,16 @@ $('shot').onclick=async()=>{
 
 
 $('save').onclick=async()=>{
- if(!photoURL){alert('사진을 먼저 불러오거나 촬영해 주세요.');return}
- const c=document.createElement('canvas');c.width=P.naturalWidth;c.height=P.naturalHeight;const ctx=c.getContext('2d');ctx.drawImage(P,0,0);
- if(lipState.points)ctx.drawImage($('lipOverlay'),0,0);
+ if(!photoURL||!P.naturalWidth){alert('사진을 먼저 불러오거나 촬영해 주세요.');return}
+ const c=document.createElement('canvas');
+ c.width=P.naturalWidth;
+ c.height=P.naturalHeight;
+ const ctx=c.getContext('2d');
+ ctx.drawImage(P,0,0,c.width,c.height);
+ if(lipState.points){
+  if(lipPaintPending)paintLips();
+  ctx.drawImage($('lipOverlay'),0,0,c.width,c.height);
+ }
  const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.98));if(!blob){alert('사진을 저장하지 못했어요.');return}
  const name='hwajang-suri-lip-'+Date.now()+'.jpg',f=new File([blob],name,{type:'image/jpeg'});
  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]});return}catch(e){if(e.name==='AbortError')return}}
