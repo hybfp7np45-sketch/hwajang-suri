@@ -9,9 +9,9 @@
     card.className = 'bk-card msg-form';
     card.innerHTML = `<h2>팝빌 문자 수신 테스트</h2>
       <p class="msg-muted">무료 테스트 포인트로 본인 휴대폰에 1건을 보내는 단계예요.</p>
-      <p role="status"><strong>연동 키 발급 · 발신번호 승인 대기</strong></p>
+      <p role="status"><strong>발송 서버 준비 완료 · 팝빌 승인 대기</strong></p>
       <ol class="msg-muted"><li>팝빌 연동 신청 후 테스트 키 발급</li><li>테스트 계정에 발신번호 등록·승인</li><li>본인 번호로 문자 1건 발송 후 수신 확인</li></ol>
-      <a href="https://developers.popbill.com/" target="_blank" rel="noopener noreferrer">팝빌 개발자센터에서 연동 신청</a>
+      <p><a href="https://developers.popbill.com/customer-center/partner-request" target="_blank" rel="noopener noreferrer">팝빌 연동 신청</a></p><p><a class="bk-primary" style="display:block;text-align:center;padding:12px;text-decoration:none;border-radius:10px" href="https://suri-popbill-sms-test.j8yqfsnqjp.chatgpt.site/" target="_blank" rel="noopener noreferrer">문자 테스트 서버 열기</a></p>
       <label>받을 본인 휴대폰번호<input id="pbPilotPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="010-0000-0000" maxlength="13"></label>
       <label>시험할 문자<textarea id="pbPilotText" maxlength="1000">[화장수리] 문자 연결 테스트입니다.</textarea></label>
       <div class="msg-preview" id="pbPilotPreview"></div><p id="pbPilotLength" class="msg-muted" aria-live="polite"></p>
