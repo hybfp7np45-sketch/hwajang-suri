@@ -360,7 +360,7 @@ $('bkResetSize').onclick=()=>saveGridSize(100,72);
 
 $('bkForm').querySelector('label').insertAdjacentHTML('beforebegin',`<input type="hidden" id="bkCustomerId"><div id="bkPasteWarning" class="bk-paste-warning" hidden></div><div class="bk-customer-mode" role="group" aria-label="고객 구분"><button type="button" id="bkExistingMode" aria-pressed="false">기존고객</button><button type="button" id="bkNewMode" aria-pressed="true">신규고객</button></div><div id="bkExistingBox" hidden><label>고객검색<input id="bkExistingSearch" type="search" autocomplete="off" placeholder="성함 또는 연락처 · 뒷자리 검색"></label><div id="bkExistingResults" class="bk-existing-results"></div><div id="bkSelectedCustomer" class="bk-selected-customer" hidden></div></div>`);
 const identity=document.createElement('div');identity.id='bkIdentity';const nameLabel=$('bkName').closest('label'),phoneLabel=$('bkPhone').closest('label');nameLabel.before(identity);identity.append(nameLabel,phoneLabel);
-const startLabel=$('bkTime').closest('label');startLabel.innerHTML=`시작 시간 *<div class="bk-hour-selects"><select id="bkHour" aria-label="시작 시" required><option value="">시</option>${Array.from({length:24},(_,h)=>`<option value="${h}">${h<12?'오전':'오후'} ${h%12||12}시</option>`).join('')}</select><select id="bkMinute" aria-label="시작 분" required><option value="">분</option>${[0,10,20,30,40,50].map(m=>`<option value="${m}">${String(m).padStart(2,'0')}분</option>`).join('')}</select></div><input type="hidden" id="bkTime">`;
+const startLabel=$('bkTime').closest('label');startLabel.innerHTML=`시작 시간 *<div class="bk-hour-selects"><select id="bkHour" aria-label="시작 시" required><option value="">시</option></select><select id="bkMinute" aria-label="시작 분" required><option value="">분</option>${[0,10,20,30,40,50].map(m=>`<option value="${m}">${String(m).padStart(2,'0')}분</option>`).join('')}</select></div><input type="hidden" id="bkTime">`;
 $('bkDuration').required=true;$('bkDuration').innerHTML='<option value=""></option>'+Array.from({length:48},(_,i)=>(i+1)*10).map(m=>`<option value="${m}">${m>=60?Math.floor(m/60)+'시간 ':''}${m%60?m%60+'분':m<60?m+'분':''}</option>`).join('');
 $('bkStaff').closest('label').childNodes[0].textContent='시술자';
 const bookingForm=$('bkForm'), customerModeBar=bookingForm.querySelector('.bk-customer-mode');
@@ -426,6 +426,15 @@ $('bkAmount').oninput=()=>formatDeposit();
  bookingForm.addEventListener('change',e=>{if(['bkHour','bkMinute','bkFormDate'].includes(e.target.id))previewRules();});
  function syncBookingWeekday(){const input=$('bkFormDate');$('bkFormDateText').textContent=input.value&&Number.isFinite(input.valueAsNumber)?input.value+' · '+new Intl.DateTimeFormat('ko-KR',{weekday:'long',timeZone:'UTC'}).format(input.valueAsNumber):'날짜 선택';}
  $('bkFormDate').addEventListener('input',syncBookingWeekday);$('bkFormDate').addEventListener('change',syncBookingWeekday);
+function bookingHourOptions(start,end,previous){
+ const hours=Array.from({length:end-start},(_,i)=>Number(start)+i);
+ const options=hours.map(h=>new Option((h<12?'오전 ':'오후 ')+(h%12||12)+'시',String(h)));
+ const prior=C.minutes(previous);
+ if(Number.isFinite(prior)&&!hours.includes(Math.floor(prior/60))){
+  const h=Math.floor(prior/60);options.push(new Option((h<12?'오전 ':'오후 ')+(h%12||12)+'시 (기존 예약)',String(h)));
+ }
+ return [new Option('시',''),...options];
+}
  function setTime(value){const m=C.minutes(value);$('bkTime').value=Number.isFinite(m)?value:'';$('bkHour').value=Number.isFinite(m)?String(Math.floor(m/60)):'';$('bkMinute').value=Number.isFinite(m)&&m%10===0?String(m%60):'';if(Number.isFinite(m)&&m%10!==0)$('bkTime').value='';}
 function syncTime(){const h=$('bkHour').value,m=$('bkMinute').value;$('bkTime').value=h!==''&&m!==''?C.time(Number(h)*60+Number(m)):'';}
 $('bkService').onchange=()=>{const n=C.serviceDuration($('bkService').value,settings.services||[]);if(n)$('bkDuration').value=String(n);};
@@ -483,10 +492,15 @@ function openForm(record=null,hour=null,person=null,seed=null,minute=0){
  if(legacyService){const old=new Option(legacyService+' (기존 예약)',legacyService);old.disabled=true;service.add(old);}service.value=selectedService||legacyService||'';trigger.textContent=service.value||'시술 선택';bookedServices=record?.serviceItems?.slice()||(service.value?[{name:service.value,duration:Number(items.find(x=>x.name===service.value)?.duration||target?.duration||60)}]:[]);
  $('bkReceivedBy').replaceChildren(new Option('접수자 선택',''),...[...new Set([...staffList(),...(record?.receivedBy?[record.receivedBy]:[])])].map(n=>new Option(n,n)));
  $('bkReceivedBy').value=record?record.receivedBy||'':staffList().length===1?staffList()[0]:'';
- $('bkServiceHelp').textContent=legacyService?'이전 시술명은 보존돼요. 변경하려면 등록된 시술을 선택하세요.':serviceNames.length?'환경설정에 등록한 시술만 선택할 수 있어요.':'내예약 → 환경설정 → 시술 항목에서 시술을 등록해 주세요.';$('bkFormDate').value=target?target.date:date;syncBookingWeekday();setTime(target?target.time:C.time((hour??settings.start)*60+minute));
+ $('bkServiceHelp').textContent=legacyService?'이전 시술명은 보존돼요. 변경하려면 등록된 시술을 선택하세요.':serviceNames.length?'환경설정에 등록한 시술만 선택할 수 있어요.':'내예약 → 환경설정 → 시술 항목에서 시술을 등록해 주세요.';$('bkFormDate').value=target?target.date:date;syncBookingWeekday();
+ $('bkHour').replaceChildren(...bookingHourOptions(settings.start,settings.end,record?.time));
+ const initialTime=target?target.time:C.time((hour??settings.start)*60+minute);
+ const initialMinutes=C.minutes(initialTime),outside=initialMinutes<settings.start*60||initialMinutes>=settings.end*60;
+ setTime(outside&&!record?'':initialTime);
  setBookingDuration(Number(target?.duration)||C.defaultDuration(settings));$('bkStaff').value=record?.staff||settings.staff[0];$('bkStatus').value=record?.status||'confirmed';$('bkMemo').value=record?.manualMemo??record?.memo??'';refreshRecordLink();
  $('bkPaid').checked=record?.depositReceived===true;$('bkAmount').readOnly=true;$('bkAmount').value=record?.depositReceived?record.depositAmount??settings.defaultDeposit??'':settings.defaultDeposit??'';$('bkAmount').disabled=!$('bkPaid').checked;formatDeposit();$('bkAmountLabel').hidden=!$('bkPaid').checked;$('bkAmount').required=$('bkPaid').checked;
  if(seed){let c=null;if(C.digits(seed.phone))c=customers.find(c=>C.digits(c.phone)===C.digits(seed.phone)&&c.name.replace(/\s/g,'').toLowerCase()===String(seed.name||'').replace(/\s/g,'').toLowerCase());if(c){setCustomerMode('existing');chooseCustomer(c);}pasteWarnings=seed.warnings||[];$('bkPasteWarning').hidden=false;$('bkPasteWarning').textContent=pasteWarnings.length?pasteWarnings.join(' '):'글에서 예약정보를 불러왔어요. 내용을 확인하고 저장해 주세요.';}
+ if(seed&&outside&&Number.isFinite(initialMinutes))$('bkPasteWarning').textContent+=' 확정문의 시간이 영업시간 밖이에요. 시작 시간을 다시 선택해 주세요.';
  if(seed?.service&&!selectedService){$('bkPasteWarning').hidden=false;$('bkPasteWarning').textContent+=' 확정문의 시술이 등록 목록과 일치하지 않아요. 등록된 시술을 선택해 주세요.';}
  if(target?.time&&C.minutes(target.time)%10!==0){$('bkPasteWarning').hidden=false;$('bkPasteWarning').textContent='이전 예약 시간이 10분 단위가 아니에요. 시작 시간을 선택해 주세요.';}
  photoSession++;reading=false;$('bkPhotoFiles').disabled=false;photos=[...(record?.photos||[])];messageChoices={...(record?.messageChoices||{})};$('bkPhotoNote').textContent='';showPhotos();updateBookingEnd();previewRules();dialog.showModal();
@@ -650,7 +664,7 @@ $('bkForm').onsubmit=e=>{
  if(!r.date)return fail('예약 날짜를 선택해 주세요.');
  if(r.phone&&C.digits(r.phone).length<8)return fail('연락처를 확인해 주세요.');
  if(!r.duration)return fail('소요 시간을 선택해 주세요.');
- const m=C.minutes(r.time);if(!Number.isFinite(m)||m%10!==0)return fail('시작 시간을 10분 단위로 선택해 주세요.');
+ const m=C.minutes(r.time);if((m<settings.start*60||m>=settings.end*60)&&previous?.time!==r.time)return fail('영업시간 안에서 시작 시간을 선택해 주세요.');if(!Number.isFinite(m)||m%10!==0)return fail('시작 시간을 10분 단위로 선택해 주세요.');
  if(m+r.duration>1440)return fail('자정을 넘는 예약은 나누어 등록해 주세요.');
  if(customerMode==='new'&&C.digits(r.phone)){const old=customers.find(c=>C.digits(c.phone)===C.digits(r.phone)&&c.name.replace(/\s/g,'').toLowerCase()===r.name.replace(/\s/g,'').toLowerCase());if(old)return fail('같은 이름과 연락처로 등록된 고객이 있어요. 기존고객에서 검색해 선택해 주세요.');}
  if(r.depositReceived&&($('bkAmount').value===''||!Number.isSafeInteger(r.depositAmount)||r.depositAmount<0||r.depositAmount>999999999))return fail('받은 예약금을 확인해 주세요.');
