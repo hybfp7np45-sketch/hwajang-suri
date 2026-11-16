@@ -45,6 +45,15 @@ service cloud.firestore {
       allow get: if owned(uid);
       allow list, create, update, delete: if false;
     }
+    match /bookingAccounts/{uid}/{kind}/{recordId} {
+      function bookingOwner() {
+        return owned(uid) && request.auth.token.email_verified == true
+          && kind in ['reservations', 'customers', 'treatmentRecords'];
+      }
+      allow read: if bookingOwner();
+      allow create, update: if bookingOwner() && request.resource.data.id == recordId;
+      allow delete: if bookingOwner();
+    }
     match /{path=**} { allow read, write: if false; }
   }
 }
