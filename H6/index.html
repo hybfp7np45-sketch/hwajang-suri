@@ -420,7 +420,7 @@ function renderTimeline(lanes,rows){
   html+='<div class="bk-lane">';
   for(let t=start*60;t<end*60;t+=10){
    const time=C.time(t);
-   html+=`<button type="button" class="bk-slot bk-ten" style="top:${(t-start*60)/60*size}px;height:${size/6}px" data-hour="${Math.floor(t/60)}" data-minute="${t%60}" data-person="${esc(lane.person||'')}" data-day="${lane.date}" aria-label="${esc(lane.title)} ${time} 예약등록">${time}</button>`;
+   html+=`<button type="button" class="bk-slot bk-ten" style="top:${(t-start*60)/60*size}px;height:${size/6}px" data-hour="${Math.floor(t/60)}" data-minute="${t%60}" data-person="${esc(lane.person||'')}" data-day="${lane.date}" aria-label="${esc(lane.title)} ${time} 예약등록"></button>`;
   }
   html+=`<div aria-hidden="true" class="bk-elapsed" data-day="${lane.date}" data-start="${start}" data-size="${size}"></div>`;
  const events=rows.filter(r=>r.date===lane.date&&(!lane.person||r.staff===lane.person)).sort((a,b)=>C.minutes(a.time)-C.minutes(b.time));const placement=eventColumns(events);
