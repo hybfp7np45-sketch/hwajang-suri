@@ -73,20 +73,24 @@ function completeDue(rows,now=Date.now()){
 function defaultDuration(settings){const value=Number(settings.defaultDuration);return Number.isInteger(value)&&value>=10&&value<=480&&value%10===0?value:120;}
 function serviceDuration(service,items=[]){const key=x=>String(x||'').normalize('NFKC').replace(/\s/g,'').toLowerCase();const found=items.filter(x=>key(x.name)===key(service)&&key(service));return found.length===1&&Number(found[0].duration)>=10&&Number(found[0].duration)<=480&&Number(found[0].duration)%10===0?Number(found[0].duration):null;}
 function parse(text,today,staff=[],hours={start:9,end:21}){
- const s=String(text||'').normalize('NFKC').replace(/\r/g,''),warnings=[],result={name:'',phone:'',date:'',time:'',service:'',staff:'',duration:defaultDuration(hours),warnings};
+ const s=String(text||'').normalize('NFKC').replace(/[\r\u200B-\u200D\u2060\uFEFF]/g,''),warnings=[],result={name:'',phone:'',date:'',time:'',service:'',staff:'',duration:defaultDuration(hours),warnings};
  const phones=[...s.matchAll(/(?<!\d)(01[016789])[ -]?(\d{3,4})[ -]?(\d{4})(?!\d)/g)];
- if(phones.length===1)result.phone=phones[0][1]+'-'+phones[0][2]+'-'+phones[0][3];else warnings.push(phones.length?'연락처가 여러 개예요. 고객 연락처를 선택해 주세요.':'고객 연락처를 입력해 주세요.');
+ const uniquePhones=[...new Set(phones.map(m=>m.slice(1).join('-')))];
+ if(uniquePhones.length===1)result.phone=uniquePhones[0];else warnings.push(phones.length?'연락처가 여러 개예요. 고객 연락처를 선택해 주세요.':'고객 연락처를 입력해 주세요.');
  const lines=s.split('\n').map(x=>x.trim()).filter(Boolean);
  let match=s.match(/(?:성함|고객\s*명|예약자(?:명)?|이름)\s*[:：=]\s*([가-힣A-Za-z][가-힣A-Za-z ·.-]{0,40}?)(?=\s+(?:연락처|전화|예약|시술|날짜|시간)|\s*[|/,\n]|$)/m);
  if(match)result.name=match[1].trim().replace(/\s*(고객)?님$/,'');
  if(!result.name){match=s.match(/(?:^|[\s\[(])([가-힣]{2,5})\s*(?:고객\s*)?님(?:[\s,!\].]|$)/m);if(match&&!['고객','원장','담당자'].includes(match[1]))result.name=match[1];}
  if(!result.name){for(const line of lines){match=line.match(/^(?:성함|고객\s*명|예약자(?:명)?|이름)\s*[:：=]?\s+([가-힣]{2,6})(?:\s*님)?$/);if(match){result.name=match[1];break;}}}
- if(!result.name && phones.length===1){
-  const phone=phones[0], before=s.slice(0,phone.index), after=s.slice(phone.index+phone[0].length);
+ if(!result.name && uniquePhones.length===1){
+  const nearby=phones.flatMap(phone=>{
+  const before=s.slice(0,phone.index), after=s.slice(phone.index+phone[0].length);
   const left=before.match(/(?:^|\n)[ \t]*([가-힣]{3})[ \t,|/:·-]*(?:\n[ \t]*)?$/);
   const right=after.match(/^[ \t,|/:·-]*(?:\n[ \t]*)?([가-힣]{3})[ \t]*(?=\n|$)/);
+  return [left?.[1],right?.[1]];
+  });
   const labels=['연락처','예약금','고객님','담당자','예약자','휴대폰','핸드폰','입금자','예약일','방문일','전화기','연락용'];
-  const names=[...new Set([left?.[1],right?.[1]].filter(n=>n&&!labels.includes(n)))];
+  const names=[...new Set(nearby.filter(n=>n&&!labels.includes(n)))];
   if(names.length===1)result.name=names[0];
  }
  if(!result.name)warnings.push('고객 이름을 확인해 주세요.');
