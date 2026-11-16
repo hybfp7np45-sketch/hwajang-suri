@@ -373,11 +373,7 @@ const bookingForm=$('bkForm'), customerModeBar=bookingForm.querySelector('.bk-cu
  function updateBookingEnd(){const start=$('bkTime').value;const minutes=C.minutes(start)+Number($('bkDuration').value);endTime.textContent=start&&$('bkDuration').value&&Number.isFinite(minutes)?'종료 예정 '+(minutes>=1440?'다음 날 ':'')+C.time(minutes%1440):'';endTime.hidden=!endTime.textContent;}
  serviceSection.append(paidToggle,amountLabel);
  $('bkPaid').onchange=()=>{amountLabel.hidden=!$('bkPaid').checked;$('bkAmount').disabled=!$('bkPaid').checked;$('bkAmount').required=$('bkPaid').checked;$('bkAmount').readOnly=$('bkAmount').value!=='';};
-function depositWords(n){
- if(n===0)return '0원';
- const eok=Math.floor(n/100000000),man=Math.floor(n/10000)%10000,rest=n%10000;
- return [eok?eok+'억':'',man?man.toLocaleString('ko-KR')+'만':'',rest?(rest%1000===0?(rest/1000)+'천':rest.toLocaleString('ko-KR')):''].filter(Boolean).join(' ')+' 원';
-}
+function depositWords(n){return passWonWords(String(n)).replace(/원$/, ' 원');}
 function formatDeposit(input=$('bkAmount'),words=$('bkAmountWords')){
  const raw=input.value;
  const digits=raw.replace(/,/g,'');
