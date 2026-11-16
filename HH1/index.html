@@ -76,6 +76,7 @@ function parse(text,today,staff=[],hours={start:9,end:21}){
  const s=String(text||'').normalize('NFKC').replace(/[\r\u200B-\u200D\u2060\uFEFF]/g,''),warnings=[],result={name:'',phone:'',date:'',time:'',service:'',staff:'',duration:defaultDuration(hours),warnings};
  const phones=[...s.matchAll(/(?<!\d)(01[016789])[ -]?(\d{3,4})[ -]?(\d{4})(?!\d)/g)];
  const uniquePhones=[...new Set(phones.map(m=>m.slice(1).join('-')))];
+ result.phoneOptions=uniquePhones;
  if(uniquePhones.length===1)result.phone=uniquePhones[0];else warnings.push(phones.length?'연락처가 여러 개예요. 고객 연락처를 선택해 주세요.':'고객 연락처를 입력해 주세요.');
  const lines=s.split('\n').map(x=>x.trim()).filter(Boolean);
  let match=s.match(/(?:성함|고객\s*명|예약자(?:명)?|이름)\s*[:：=]\s*([가-힣A-Za-z][가-힣A-Za-z ·.-]{0,40}?)(?=\s+(?:연락처|전화|예약|시술|날짜|시간)|\s*[|/,\n]|$)/m);
@@ -599,7 +600,19 @@ function close(){shell.hidden=true;const home=document.querySelector('main.app')
 $('bkView').onchange=e=>{view=e.target.value;renderSchedule();};
 $('bkGrid').onclick=e=>{const event=e.target.closest('[data-reservation]');if(event){const plan=scheduleEntries().find(r=>r.id===event.dataset.reservation);if(plan)openPlan(plan);else openForm(reservations.find(r=>r.id===event.dataset.reservation));return;}const month=e.target.closest('[data-month-day]');if(month){date=month.dataset.monthDay;renderSchedule();return;}const day=e.target.closest('[data-day-view]');if(day){date=day.dataset.dayView;view='day';renderSchedule();return;}const slot=e.target.closest('[data-hour]');if(slot){date=slot.dataset.day;openForm(null,Number(slot.dataset.hour),slot.dataset.person||null,null,Number(slot.dataset.minute));}};
 const pasteDialog=document.createElement('dialog');pasteDialog.className='bk-dialog';pasteDialog.setAttribute('aria-labelledby','bkPasteTitle');pasteDialog.innerHTML=`<header><span id="bkPasteTitle">예약확정문 붙여넣기</span><button type="button" id="bkPasteClose" aria-label="확정문 창 닫기">×</button></header><form class="bk-form" id="bkPasteForm"><label>예약확정 안내문<textarea id="bkPasteText" required maxlength="10000" style="min-height:230px" placeholder="카카오톡이나 문자로 보낸 예약확정 안내문을 붙여넣어 주세요."></textarea></label><p class="bk-paste-tip">이름·연락처·날짜·시간·시술을 찾아 예약창에 채워드려요. 빠진 정보는 직접 확인한 뒤 저장할 수 있어요.</p><p class="bk-paste-tip">붙여넣은 글은 이 기기에서 분석하며 외부 AI로 전송하지 않아요.</p><button type="submit" class="bk-primary" style="width:100%">예약정보 불러오기</button></form>`;document.body.append(pasteDialog);
-$('bkPaste').onclick=()=>{$('bkPasteText').value='';pasteDialog.showModal();};$('bkPasteClose').onclick=()=>pasteDialog.close();$('bkPasteForm').onsubmit=e=>{e.preventDefault();const text=$('bkPasteText').value.trim();if(!text)return;const data=C.parse(text,seoulDate(),staffList(),settings);pasteDialog.close();openForm(null,null,null,data);};
+const phoneChoice=document.createElement('label'),phoneSelect=document.createElement('select');
+phoneChoice.textContent='번호가 여러 개예요. 고객 연락처를 골라 주세요.';phoneChoice.append(phoneSelect);
+$('bkPasteForm').querySelector('button[type=submit]').before(phoneChoice);
+function clearPhoneChoice(){phoneSelect.replaceChildren();phoneChoice.hidden=true;}
+clearPhoneChoice();$('bkPasteText').addEventListener('input',clearPhoneChoice);
+$('bkPaste').onclick=()=>{$('bkPasteText').value='';clearPhoneChoice();pasteDialog.showModal();};$('bkPasteClose').onclick=()=>pasteDialog.close();$('bkPasteForm').onsubmit=e=>{e.preventDefault();const text=$('bkPasteText').value.trim();if(!text)return;const data=C.parse(text,seoulDate(),staffList(),settings);if(data.phoneOptions.length>1){
+ const chosen=phoneSelect.value;
+ if(!data.phoneOptions.includes(chosen)){
+  phoneSelect.replaceChildren(new Option('고객 연락처 선택',''),...data.phoneOptions.map(n=>new Option(n,n)));
+  phoneChoice.hidden=false;phoneSelect.focus();return;
+ }
+ data.phone=chosen;data.warnings=data.warnings.filter(w=>!w.startsWith('연락처가 여러 개'));
+ }pasteDialog.close();openForm(null,null,null,data);};
 $('bkForm').onsubmit=e=>{
  e.preventDefault();syncTime();const previous=reservations.find(x=>x.id===$('bkId').value);if(reading){$('bkFormNotice').textContent='사진 준비가 끝난 뒤 저장해 주세요.';return;}const r={...previous,skipRecord:$('bkSkipRecord').checked,serviceItems:bookedServices.slice(),photos:[...photos],messageChoices:{...messageChoices},receivedBy:$('bkReceivedBy').value,id:$('bkId').value||uid(),customerId:$('bkCustomerId').value||'',name:$('bkName').value.trim(),phone:$('bkPhone').value.trim(),service:$('bkService').value.trim(),date:$('bkFormDate').value,time:$('bkTime').value,duration:Number($('bkDuration').value),staff:$('bkStaff').value,status:$('bkStatus').value,manualMemo:$('bkMemo').value.trim(),memo:[$('bkMemo').value.trim(),previous?.recordMemo].filter(Boolean).join('\n\n'),depositReceived:$('bkPaid').checked,depositAmount:$('bkPaid').checked?Number($('bkAmount').value):null};
  const fail=t=>{$('bkFormNotice').textContent=t;};
