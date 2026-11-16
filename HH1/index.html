@@ -80,6 +80,14 @@ function parse(text,today,staff=[],hours={start:9,end:21}){
  if(match)result.name=match[1].trim().replace(/\s*(고객)?님$/,'');
  if(!result.name){match=s.match(/(?:^|[\s\[(])([가-힣]{2,5})\s*(?:고객\s*)?님(?:[\s,!\].]|$)/m);if(match&&!['고객','원장','담당자'].includes(match[1]))result.name=match[1];}
  if(!result.name){for(const line of lines){match=line.match(/^(?:성함|고객\s*명|예약자(?:명)?|이름)\s*[:：=]?\s+([가-힣]{2,6})(?:\s*님)?$/);if(match){result.name=match[1];break;}}}
+ if(!result.name && phones.length===1){
+  const phone=phones[0], before=s.slice(0,phone.index), after=s.slice(phone.index+phone[0].length);
+  const left=before.match(/(?:^|\n)[ \t]*([가-힣]{3})[ \t,|/:·-]*(?:\n[ \t]*)?$/);
+  const right=after.match(/^[ \t,|/:·-]*(?:\n[ \t]*)?([가-힣]{3})[ \t]*(?=\n|$)/);
+  const labels=['연락처','예약금','고객님','담당자','예약자','휴대폰','핸드폰','입금자','예약일','방문일','전화기','연락용'];
+  const names=[...new Set([left?.[1],right?.[1]].filter(n=>n&&!labels.includes(n)))];
+  if(names.length===1)result.name=names[0];
+ }
  if(!result.name)warnings.push('고객 이름을 확인해 주세요.');
  const year=Number(today.slice(0,4));
  let dates=[...s.matchAll(/(?<!\d)(20\d{2})\s*(?:년\s*|[./-]\s*)(\d{1,2})\s*(?:월\s*|[./-]\s*)(\d{1,2})\s*일?/g)].map(x=>validDate(Number(x[1]),Number(x[2]),Number(x[3]))).filter(Boolean);
@@ -320,7 +328,7 @@ $('bkStaffFilter').insertAdjacentHTML('beforebegin','<select id="bkView" aria-la
 $('bkGrid').removeAttribute('tabindex');$('bkGrid').insertAdjacentHTML('beforebegin','<div class="bk-period-label" id="bkRange"></div>');
 $('bkGrid').setAttribute('aria-label','예약 달력');
 $('bkGridHelp').insertAdjacentHTML('afterend','<p class="bk-storage">종료 시간이 지난 예약은 자동으로 시술완료가 돼요. 취소·노쇼는 제외하며, 결제 기록은 바뀌지 않아요.</p>');
-$('bkGrid').insertAdjacentHTML('beforebegin','<details class="bk-size-controls" id="bkSizeControls"><summary>시간표 크기 조절</summary><div class="bk-size-options"><label>칸 가로<select id="bkColumnZoom" aria-label="시간표 칸 가로 크기"><option value="75">작게 · 75%</option><option value="100">기본 · 100%</option><option value="125">크게 · 125%</option><option value="150">더 크게 · 150%</option><option value="200">최대 · 200%</option></select></label><label>칸 세로<select id="bkRowHeight" aria-label="시간표 한 시간 칸 높이"><option value="48">작게</option><option value="60">조금 작게</option><option value="72">기본</option><option value="96">크게</option><option value="120">더 크게</option></select></label><button type="button" class="bk-secondary" id="bkResetSize">기본 크기</button></div></details>');
+$('bkGrid').insertAdjacentHTML('beforebegin','<details class="bk-size-controls" id="bkSizeControls"><summary>시간표 크기 조절</summary><div class="bk-size-options"><label>칸 가로<select id="bkColumnZoom" aria-label="시간표 칸 가로 크기"><option value="50">더 작게 · 50%</option><option value="75">작게 · 75%</option><option value="100">기본 · 100%</option><option value="125">크게 · 125%</option><option value="150">더 크게 · 150%</option><option value="200">최대 · 200%</option></select></label><label>칸 세로<select id="bkRowHeight" aria-label="시간표 한 시간 칸 높이"><option value="36">더 작게</option><option value="48">작게</option><option value="60">조금 작게</option><option value="72">기본</option><option value="96">크게</option><option value="120">더 크게</option></select></label><button type="button" class="bk-secondary" id="bkResetSize">기본 크기</button></div></details>');
 function saveGridSize(columnZoom,rowHeight){const next={...settings,columnZoom,rowHeight};if(persist(next,SETTINGS)){settings=next;renderSchedule();}}
 $('bkColumnZoom').onchange=e=>saveGridSize(Number(e.target.value),Number(settings.rowHeight)||72);
 $('bkRowHeight').onchange=e=>saveGridSize(Number(settings.columnZoom)||100,Number(e.target.value));
