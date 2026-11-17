@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>화장수리 · 입술 컬러 L2</title>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>화장수리 · 입술 컬러 L3</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;color:#304b5d;background:#e9f5fb}button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}button:focus-visible{outline:3px solid #168fc7;outline-offset:3px}.app{height:100dvh;max-width:560px;margin:auto;display:flex;flex-direction:column;background:#f6fbfe;overflow:hidden}header{flex-shrink:0;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#e9f7ff;border-bottom:1px solid #dcecf5}h1{font-size:17px;margin:0;letter-spacing:-.6px}header small{font-size:10px;color:#82a1b4;margin-left:6px}.tools{display:flex;gap:7px}.tool{border:1px solid #d3e7f3;background:#fff;border-radius:12px;height:38px;padding:0 11px;font-size:12px;font-weight:650;display:flex;align-items:center;gap:5px}.tool svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.stage{flex:1;min-height:120px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#edf3f6}.stage img{width:100%;height:100%;object-fit:contain;display:none}.empty{text-align:center;color:#8aa4b5;font-size:14px;line-height:1.9}.empty svg{width:60px;height:60px;display:block;margin:0 auto 16px;stroke:#acc8d9;fill:none;stroke-width:1.3}.photo-label{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:#ffffffdc;border-radius:20px;padding:6px 12px;font-size:10px;color:#7393a6;white-space:nowrap}.panel{flex-shrink:0;background:white;padding:0 0 calc(18px + env(safe-area-inset-bottom));border-radius:22px 22px 0 0;box-shadow:0 -5px 22px #7191a510;position:relative}.tabs{display:flex;padding:7px 22px 0;gap:12px;border-bottom:1px solid #edf3f7}.tab{flex:1;height:49px;border:0;background:none;color:#91a4b0;position:relative;font-size:16px;font-weight:650}.tab[aria-selected=true]{color:#2996c8}.tab[aria-selected=true]:after{content:"";height:3px;border-radius:4px;background:#49acd8;position:absolute;bottom:0;left:25%;right:25%}.selection{padding:14px 22px 11px;font-size:12px;display:flex;align-items:center;justify-content:space-between}.selection strong{font-weight:650}.selection span{color:#9cafbc;font-size:10px}.colors{display:flex;overflow-x:auto;gap:13px;padding:2px 22px 12px;scrollbar-width:none}.colors::-webkit-scrollbar{display:none}.swatch{flex:0 0 66px;padding:0;border:0;background:none;display:flex;align-items:center;flex-direction:column;gap:9px;font-size:11px;color:#788e9e}.chip{width:62px;height:62px;background:var(--c);border-radius:17px;display:grid;place-items:center;position:relative;box-shadow:inset 0 0 0 1px #00000005}.swatch[aria-pressed=true] .chip{outline:2px solid #42a6d3;outline-offset:3px}.swatch[aria-pressed=true] .chip:after{content:"✓";font-size:28px;color:white;text-shadow:0 1px 4px #0005}.swatch[aria-pressed=true]{color:#2d8db9;font-weight:700}.note{text-align:center;font-size:10px;color:#a5b5bf;margin:3px 0 0}.overlay{position:fixed;inset:0;background:#0007;z-index:10;display:flex;align-items:flex-end;justify-content:center}.overlay[hidden],.camera[hidden]{display:none}.sheet{width:100%;max-width:560px;padding:15px 16px calc(16px + env(safe-area-inset-bottom));background:#fff;border-radius:22px 22px 0 0;display:grid;gap:8px}.sheet button{height:50px;border:0;border-radius:13px;background:#edf7fd;font-size:15px;font-weight:650}.sheet button:last-child{background:white;color:#8a9da9}.camera{position:fixed;inset:0;background:#111;z-index:20;display:flex;flex-direction:column}.camera video{flex:1;min-height:0;width:100%;object-fit:contain}.cam-head,.cam-foot{display:flex;justify-content:space-between;align-items:center;padding:16px max(20px,env(safe-area-inset-left));color:white}.cam-head button,.cam-foot button{background:#ffffff20;border:0;border-radius:22px;padding:11px 17px;color:#fff}.cam-foot{padding-bottom:calc(20px + env(safe-area-inset-bottom));justify-content:center}.cam-foot #shutter{width:68px;height:68px;border:5px solid #aaa;background:white;border-radius:50%;padding:0}.status{font-size:12px;color:#b8c9d3;text-align:center}
 
@@ -397,7 +397,7 @@ $('pickPhotos').onclick=async()=>{$('picker').hidden=true;
 $('pickFiles').onclick=()=>{$('picker').hidden=true;const i=$('files');i.value='';try{if(typeof i.showPicker==='function'){i.showPicker();return}}catch(_){}i.click()};
 $('cancelPick').onclick=()=>{$('picker').hidden=true};$('photos').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)load(f);e.target.value=''};$('files').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)load(f);e.target.value=''};
 
-function resetLoadedPhoto(){resetView();P.style.display='block';$('empty').hidden=true;$('photoLabel').hidden=true;detectLips();}
+function resetLoadedPhoto(){window.editReplay?.begin(P);resetView();P.style.display='block';$('empty').hidden=true;$('photoLabel').hidden=true;detectLips();}
 function showPhoto(blob){return showBlob(blob)}
 $('picker').onclick=e=>{if(e.target===$('picker'))$('picker').hidden=true};
 
@@ -1181,6 +1181,199 @@ lipBrushUI();syncLipUndo();renderLipLayers();
  new ResizeObserver(schedule).observe(host);window.addEventListener('resize',schedule);window.addEventListener('pageshow',schedule);schedule();
 })();
 
+</script><script>
+function installEditReplay(photo, paint) {
+  const save = document.getElementById('save');
+  const savePhoto = save.onclick;
+  const supported = typeof MediaRecorder !== 'undefined' && !!HTMLCanvasElement.prototype.captureStream;
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const dialog = document.createElement('dialog');
+  dialog.setAttribute('aria-label', '저장');
+  dialog.style.cssText = 'width:min(320px,88vw);border:0;border-radius:18px;padding:20px;color:#25394a;box-shadow:0 8px 40px #0003';
+  dialog.innerHTML = '<strong>저장</strong><p role="status" style="line-height:1.5;font-size:14px"></p><div style="display:grid;gap:8px"></div>';
+  document.body.append(dialog);
+  const status = dialog.querySelector('p');
+  const buttons = dialog.querySelector('div');
+  let frames = [], bytes = 0, interval = 125, last = 0, awakeUntil = 0;
+  let cursor = null, color = '', colorUntil = 0, job, result, captureFailed = false;
+
+  function button(label, action) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = label;
+    b.style.cssText = 'position:static;width:100%;height:auto;min-height:42px;padding:8px;border:1px solid #cadee9;border-radius:12px;background:#f4faff;color:#295772;font:inherit';
+    b.onclick = action;
+    buttons.append(b);
+    return b;
+  }
+
+  function begin(image) {
+    if (!supported) return;
+    const scale = Math.min(1, 960 / Math.max(image.naturalWidth,image.naturalHeight));
+    canvas.width = Math.max(2, 2*Math.round(image.naturalWidth*scale/2));
+    canvas.height = Math.max(2, 2*Math.round(image.naturalHeight*scale/2));
+    frames = []; bytes = 0; interval = 125; last = 0; cursor = null; color = ''; captureFailed = false;
+    ctx.drawImage(image,0,0,canvas.width,canvas.height);
+    append(performance.now());
+    wake();
+  }
+
+  function append(now) {
+    const data = canvas.toDataURL('image/jpeg', .86);
+    if (frames.at(-1)?.data === data) return;
+    frames.push({time:now,data});
+    bytes += data.length;
+    // Retain the full session on long edits while reducing temporal detail.
+    if (bytes > 24*1024*1024 && frames.length > 3) {
+      frames = frames.filter((_,i)=>i%2===0 || i===frames.length-1);
+      bytes = frames.reduce((sum,f)=>sum+f.data.length,0);
+      interval = Math.min(1000,interval*1.5);
+    }
+  }
+
+  function sample() {
+    if (!frames.length || !photo.complete || !photo.naturalWidth) return;
+    const now = performance.now();
+    ctx.save();
+    try {
+      ctx.setTransform(1,0,0,1,0,0);
+      paint(canvas);
+      ctx.setTransform(1,0,0,1,0,0);
+      if (cursor) {
+        ctx.beginPath();
+        ctx.arc(cursor.x*canvas.width,cursor.y*canvas.height,canvas.width*.014,0,2*Math.PI);
+        ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=2; ctx.stroke();
+      }
+      if (color && now<colorUntil) {
+        ctx.beginPath(); ctx.arc(canvas.width*.93,canvas.height-canvas.width*.07,canvas.width*.025,0,2*Math.PI);
+        ctx.fillStyle=color; ctx.fill(); ctx.strokeStyle='white'; ctx.lineWidth=2; ctx.stroke();
+      }
+      append(now);
+    } catch { captureFailed = true; } finally { ctx.restore(); }
+    last=now;
+  }
+  let timer;
+  function wake() {
+    if (!frames.length || dialog.open) return;
+    awakeUntil=performance.now()+1200;
+    if (!timer) timer=setTimeout(tick,16);
+  }
+  function tick() {
+    timer=0;
+    if (dialog.open || document.hidden) return;
+    const now=performance.now();
+    if (now-last>=interval) sample();
+    if (now<awakeUntil) timer=setTimeout(tick,interval);
+  }
+  window.editReplay={begin};
+  photo.addEventListener('load',wake);
+  for (const type of ['pointerdown','pointermove','pointerup','pointercancel','click','input','change']) {
+    document.addEventListener(type,e=>{
+      if (dialog.open || (type==='pointermove' && !e.buttons)) return;
+      if (type==='pointerup' || type==='pointercancel') cursor=null;
+      if ((type==='pointerdown'||type==='pointermove') && e.target.closest('#stage,.stage')) {
+        const r=photo.getBoundingClientRect();
+        const scale=Math.min(r.width/photo.naturalWidth,r.height/photo.naturalHeight);
+        const w=scale*photo.naturalWidth,h=scale*photo.naturalHeight;
+        const x=(e.clientX-r.left-(r.width-w)/2)/w, y=(e.clientY-r.top-(r.height-h)/2)/h;
+        cursor=x>=0&&x<=1&&y>=0&&y<=1?{x,y}:null;
+      }
+      const swatch=e.target.closest('.swatch');
+      if(type==='click' && swatch){
+        color=swatch.dataset.c || swatch.querySelector('.chip')?.style.getPropertyValue('--c') || '';
+        colorUntil=performance.now()+800;
+      }
+      wake();
+    },true);
+  }
+  function close() { dialog.close(); }
+  dialog.addEventListener('close',()=>{ if(job)job.abort(); result=null; });
+  save.onclick=()=>{
+    if (!photo.naturalWidth || photo.style.display==='none') return savePhoto.call(save);
+    cursor=null; color=''; sample();
+    buttons.replaceChildren();
+    status.textContent=supported?'사진이나 편집 과정을 저장하세요.':'이 브라우저에서는 사진 저장을 사용할 수 있어요.';
+    button('사진 저장',()=>{close(); savePhoto.call(save)});
+    if(supported){
+      button('일반 영상 저장',()=>encode(1));
+      button('타임랩스 저장 · 4배속',()=>encode(4));
+    }
+    button('닫기',close);
+    dialog.showModal();
+  };
+
+  async function encode(speed) {
+    if(job)return;
+    if(!frames.length || captureFailed){status.textContent='편집 장면을 읽을 수 없어요. 사진을 다시 열어 주세요.';return}
+    const controller=new AbortController();
+    job=controller;
+    const output=document.createElement('canvas');
+    output.width=canvas.width; output.height=canvas.height;
+    const out=output.getContext('2d');
+    let stream,recorder;
+    try {
+      buttons.replaceChildren(); button('취소',close);
+      status.textContent='영상을 만드는 중이에요. 이 화면을 열어 두세요.';
+      const kind=['video/mp4','video/webm;codecs=vp8','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
+      stream=output.captureStream(24);
+      recorder=new MediaRecorder(stream,kind?{mimeType:kind}:undefined);
+      const chunks=[];
+      recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+      const stopped=new Promise(resolve=>{recorder.onstop=resolve});
+      let failed=false;
+      recorder.onerror=()=>{failed=true;controller.abort()};
+      const sequence=frames.slice();
+      let due=0;
+      for(let i=0;i<sequence.length;i++){
+        if(controller.signal.aborted)break;
+        const img=new Image();img.src=sequence[i].data;await img.decode();
+        if(controller.signal.aborted)break;
+        out.drawImage(img,0,0);
+        if(i===0){recorder.start();due=performance.now()}
+        const gap=sequence[i+1]?Math.min(1000,sequence[i+1].time-sequence[i].time):1200;
+        due+=Math.max(i===0?450:42,gap/speed);
+        // Refresh still frames so captureStream also encodes the ending hold.
+        do {
+          await new Promise(r=>setTimeout(r,42));
+          out.drawImage(img,0,0);
+        } while(performance.now()<due && !controller.signal.aborted);
+        status.textContent='영상 만들기 '+Math.round(100*(i+1)/sequence.length)+'%';
+      }
+      if(recorder.state!=='inactive'){recorder.stop();await stopped}
+      if(failed)throw new Error('recording');
+      if(controller.signal.aborted)return;
+      if(!chunks.length)throw new Error('empty');
+      const mime=recorder.mimeType||chunks[0].type;
+      const ext=mime.includes('mp4')?'mp4':'webm';
+      result=new File(chunks,'화장수리-'+(speed===1?'편집과정':'타임랩스')+'-'+Date.now()+'.'+ext,{type:mime.split(';')[0]});
+      buttons.replaceChildren();
+      status.textContent='영상이 준비됐어요.';
+      button('영상 저장 또는 공유',async()=>{
+        const file=result;
+        if(navigator.canShare?.({files:[file]})){
+          try{await navigator.share({files:[file]});return}catch(e){if(e.name==='AbortError')return}
+        }
+        const url=URL.createObjectURL(file);
+        const a=document.createElement('a');a.href=url;a.download=file.name;document.body.append(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+      });
+      button('닫기',close);
+    } catch {
+      if(dialog.open){status.textContent='영상을 만들지 못했어요. 다시 시도해 주세요.';buttons.replaceChildren();button('다시 시도',()=>encode(speed));button('닫기',close)}
+    } finally {
+      if(recorder && recorder.state!=='inactive')recorder.stop();
+      stream?.getTracks().forEach(t=>t.stop());
+      job=null;
+    }
+  }
+}
+
+installEditReplay(P, canvas => {
+ const ctx=canvas.getContext('2d');
+ ctx.drawImage(P,0,0,canvas.width,canvas.height);
+ if(lipState.points)ctx.drawImage($('lipOverlay'),0,0,canvas.width,canvas.height);
+});
 </script></body></html>
 
 
